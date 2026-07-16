@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masterband · Evaluación de Desempeño</title>
+<style>
+  :root {
+    --bg:#F5F5F3; --surface:#FFFFFF; --s2:#EFEFED; --border:#E0E0E0;
+    --text:#1A1A1A; --dim:#4A4A4A; --muted:#888888;
+    --accent:#C0001A; --ah:#8A0012; --aglow:#F5E6E9;
+    --green:#1E7A3E; --gdim:#E8F5EE; --amber:#B45309; --adim:#FEF3C7;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --sh:0 1px 3px rgba(0,0,0,0.08); --shm:0 4px 16px rgba(0,0,0,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);height:58px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sh)}
+  .brand-wrap{display:flex;align-items:center;gap:10px}
+  .brand-icon{width:34px;height:34px;background:var(--accent);border-radius:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+  .brand-text{font-size:15px;font-weight:700}.brand-text span{color:var(--accent)}
+  .brand-sub{font-size:11px;color:var(--muted)}
+  .btn-back{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--dim);cursor:pointer;text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 20px 60px}
+  .controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+  .ctl-label{font-size:13px;font-weight:700;color:var(--dim)}
+  .ctl-mes{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-family:var(--font);font-size:14px;font-weight:700;color:var(--text)}
+  .persona-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--sh);margin-bottom:22px;overflow:hidden}
+  .pc-head{padding:16px 22px;display:flex;align-items:center;justify-content:space-between;color:#fff}
+  .pc-head.ing{background:#1D6FA4}.pc-head.sup{background:#1E7A3E}.pc-head.dib{background:#7C3AED}
+  .pc-title{font-size:16px;font-weight:800}
+  .pc-sub{font-size:12px;opacity:.85}
+  .pc-body{padding:18px 22px}
+  .sec-title{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 10px}
+  .sec-title:first-child{margin-top:0}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+  .kpi{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+  .kpi-val{font-size:22px;font-weight:800;line-height:1.1}
+  .kpi-val.ok{color:var(--green)}.kpi-val.warn{color:var(--amber)}.kpi-val.bad{color:var(--accent)}.kpi-val.na{color:var(--muted);font-size:16px}
+  .kpi-name{font-size:11.5px;font-weight:700;color:var(--dim);margin-top:3px}
+  .kpi-meta{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .demoras{margin-top:10px}
+  .demora-item{font-size:12px;color:var(--dim);background:#FFF8F0;border:1px solid #F5C77E;border-radius:8px;padding:7px 12px;margin-bottom:6px}
+  .man-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .man-field label{display:block;font-size:11.5px;font-weight:700;color:var(--dim);margin-bottom:5px}
+  .man-field select,.man-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:13px;color:var(--text)}
+  .man-notas{margin-top:12px}
+  .man-notas textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--font);font-size:13px;min-height:64px;resize:vertical}
+  .pc-actions{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .btn-save{background:var(--accent);border:none;border-radius:8px;padding:10px 22px;font-family:var(--font);font-size:13px;font-weight:800;color:#fff;cursor:pointer}
+  .btn-save:hover{background:var(--ah)}
+  .btn-save:disabled{opacity:.6;cursor:default}
+  .save-info{font-size:12px;color:var(--muted)}
+  .aviso{background:var(--adim);border:1px solid #F59E0B;border-radius:10px;padding:12px 16px;font-size:13px;color:#92400E}
+  .loading{text-align:center;padding:50px;color:var(--muted)}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:12px 22px;border-radius:10px;font-size:13.5px;font-weight:600;opacity:0;transition:all .3s;z-index:400;box-shadow:var(--shm)}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.ok{background:var(--green)}.toast.err{background:var(--accent)}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+  .overlay.on{display:flex}
+  .modal{background:var(--surface);border-radius:14px;padding:26px;max-width:360px;width:100%;text-align:center;box-shadow:var(--shm)}
+  .modal-title{font-size:17px;font-weight:800;margin-bottom:6px}
+  .modal-sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .modal input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:var(--font);font-size:14px;margin-bottom:14px;text-align:center}
+  .mbtn{width:100%;background:var(--accent);border:none;border-radius:8px;padding:11px;font-family:var(--font);font-size:14px;font-weight:800;color:#fff;cursor:pointer}
+  @media(max-width:600px){ .wrap{padding:16px 12px 40px} .pc-body{padding:14px 14px} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand-wrap">
+    <img src="logo-masterband.png" alt="Masterband S.A.S." style="height:38px;width:auto">
+    <div class="brand-sub" style="margin-left:8px;border-left:1px solid var(--border);padding-left:12px">Evaluación de Desempeño · Gerencia</div>
+  </div>
+  <a class="btn-back" href="index.html">← Portal</a>
+</div>
+
+<!-- ACCESO -->
+<div class="overlay on" id="mod-pass">
+  <div class="modal">
+    <div style="margin-bottom:14px"><img src="logo-masterband.png" alt="Masterband S.A.S." style="height:44px;width:auto"></div>
+    <div style="margin-bottom:10px"><svg viewBox="0 0 24 24" fill="none" stroke="#C0001A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <div class="modal-title">Acceso Gerencia</div>
+    <div class="modal-sub">Este módulo es exclusivo de la dirección</div>
+    <input type="password" id="pass-input" placeholder="Contraseña" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" onkeydown="if(event.key==='Enter')verificarPass()">
+    <button class="mbtn" onclick="verificarPass()">Entrar</button>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <div class="controls">
+    <span class="ctl-label">Mes a evaluar:</span>
+    <input type="month" class="ctl-mes" id="mes-sel" onchange="cargarMes()">
+    <span class="save-info" id="estado-carga"></span>
+  </div>
+  <div id="contenido"><div class="loading">Selecciona un mes para cargar los indicadores</div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbxvfsbmG_aZH0OFoW3o80XBEUSlxeVlZqqrAfjAWYBaplhmhLWYg56O7I0hIarezNAx/exec';
+const PASS_GERENCIA = 'master2025';
+
+let datosMes = null;
+
+function toast(msg,type){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast on '+(type||''); setTimeout(()=>{t.className='toast'},3500); }
+
+function verificarPass(){
+  if(document.getElementById('pass-input').value.trim().toLowerCase() === PASS_GERENCIA){
+    document.getElementById('mod-pass').classList.remove('on');
+    document.getElementById('app').style.display = 'block';
+    const hoy = new Date();
+    document.getElementById('mes-sel').value = hoy.getFullYear() + '-' + String(hoy.getMonth()+1).padStart(2,'0');
+    cargarMes();
+  } else {
+    toast('Contraseña incorrecta','err');
+  }
+}
+
+async function postJSON(payload){
+  const res = await fetch(APPS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+  return JSON.parse(await res.text());
+}
+
+async function cargarMes(){
+  const mes = document.getElementById('mes-sel').value;
+  if(!mes) return;
+  document.getElementById('contenido').innerHTML = '<div class="loading">Calculando indicadores del mes...</div>';
+  document.getElementById('estado-carga').textContent = '';
+  try {
+    const res = await fetch(APPS_URL + '?tabla=eval_datos&mes=' + mes);
+    datosMes = await res.json();
+    if (Array.isArray(datosMes)) {
+      throw new Error('El Apps Script desplegado no tiene la versión con el módulo de evaluación. Ve a Implementar → Administrar implementaciones → ✏️ → Nueva versión.');
+    }
+    if(!datosMes.ok) throw new Error(datosMes.error||'Respuesta inesperada del servidor');
+    render();
+  } catch(e){
+    document.getElementById('contenido').innerHTML = '<div class="aviso">⚠ No se pudieron cargar los datos: ' + e.message + '</div>';
+  }
+}
+
+// Semáforo: compara valor vs meta
+function cls(val, meta, invertido){
+  if (val === null || val === undefined || isNaN(val)) return 'na';
+  if (invertido) return val <= meta ? 'ok' : 'bad';
+  return val >= meta ? 'ok' : (val >= meta*0.8 ? 'warn' : 'bad');
+}
+function pct(a,b){ return b>0 ? Math.round(a/b*100) : null; }
+
+function kpi(nombre, valorHtml, clase, meta){
+  return `<div class="kpi"><div class="kpi-val ${clase}">${valorHtml}</div><div class="kpi-name">${nombre}</div>${meta?`<div class="kpi-meta">Meta: ${meta}</div>`:''}</div>`;
+}
+
+function selCumple(id, val){
+  return `<select id="${id}"><option value="">— Sin registrar —</option><option value="CUMPLE" ${val==='CUMPLE'?'selected':''}>✓ Cumple</option><option value="NO CUMPLE" ${val==='NO CUMPLE'?'selected':''}>✕ No cumple</option></select>`;
+}
+function selComp(id, val){
+  const ops=[1,2,3,4,5].map(n=>`<option value="${n}" ${String(val)===String(n)?'selected':''}>${n} — ${['Insuficiente','Bajo','Aceptable','Bueno','Sobresaliente'][n-1]}</option>`).join('');
+  return `<select id="${id}"><option value="">— Sin registrar —</option>${ops}</select>`;
+}
+
+function render(){
+  const d = datosMes;
+  const man = d.manual || {};
+  const mIng = man.ingeniero || {}, mSup = man.supervisor || {}, mDib = man.dibujante || {};
+
+  // ── INGENIERO ──
+  const ing = d.ingeniero;
+  const pctVA  = pct(ing.verde + ing.amarillo, ing.finalizados);
+  const pctAct = pct(ing.actasFirmadas, ing.actasTotal);
+  let html = `
+  <div class="persona-card">
+    <div class="pc-head ing"><div><div class="pc-title">Ingeniero de Proyectos</div><div class="pc-sub">Fuente: Portal OTs y Actas</div></div></div>
+    <div class="pc-body">
+      <div class="sec-title">Indicadores automáticos del mes</div>
+      <div class="kpi-grid">
+        ${kpi('Trabajos finalizados', ing.finalizados, '', '')}
+        ${kpi('% en verde/amarillo (≤15 días)', pctVA===null?'Sin datos':pctVA+'%', cls(pctVA,80), '≥ 80%')}
+        ${kpi('Calificación promedio del cliente', ing.calProm===null?'Sin actas calificadas':ing.calProm+' / 10', cls(ing.calProm,9), '≥ 9,0')}
+        ${kpi('Actas firmadas', ing.actasTotal?ing.actasFirmadas+' de '+ing.actasTotal+(pctAct!==null?' ('+pctAct+'%)':''):'Sin actas', cls(pctAct,90), '≥ 90%')}
+      </div>
+      ${ing.demoras.length?`<div class="sec-title">Razones de demora registradas (${ing.demoras.length})</div><div class="demoras">${ing.demoras.map(x=>`<div class="demora-item"><b>CTZ${x.ctz}</b>${x.dias!==null?' · '+x.dias+' días':''} — ${x.razon}</div>`).join('')}</div>`:''}
+      <div class="sec-title">Registro cualitativo</div>
+      <div class="man-grid">
+        <div class="man-field"><label>Disciplina de reporte en el portal</label>${selCumple('ing-disciplina', mIng.disciplina)}</div>
+        <div class="man-field"><label>Competencias (equipo, comunicación, iniciativa)</label>${selComp('ing-comp', mIng.competencias)}</div>
+      </div>
+      <div class="man-notas"><label style="font-size:11.5px;font-weight:700;color:var(--dim)">Notas del 1:1 / acuerdos</label><textarea id="ing-notas" placeholder="Acuerdos del mes, temas de desarrollo...">${mIng.notas||''}</textarea></div>
+      <div class="pc-actions"><button class="btn-save" onclick="guardar('ingeniero')">Guardar evaluación</button><span class="save-info" id="info-ingeniero"></span></div>
+    </div>
+  </div>`;
+
+  // ── SUPERVISOR ──
+  const sup = d.supervisor;
+  html += `
+  <div class="persona-card">
+    <div class="pc-head sup"><div><div class="pc-title">Supervisor de Campo</div><div class="pc-sub">Fuente: módulo de Programación</div></div></div>
+    <div class="pc-body">
+      <div class="sec-title">Indicadores automáticos del mes</div>
+      <div class="kpi-grid">
+        ${kpi('Frentes programados', sup.frentes, '', '')}
+        ${kpi('Días con programación', sup.diasProgramados, '', '')}
+        ${kpi('Inasistencias registradas', sup.inasistencias, '', 'Registro al día = gestión activa')}
+      </div>
+      <div class="sec-title">Registro cualitativo</div>
+      <div class="man-grid">
+        <div class="man-field"><label>Cumplimiento de programación (%)</label><input type="number" id="sup-cumplimiento" min="0" max="100" placeholder="Ej. 92" value="${mSup.cumplimiento||''}"></div>
+        <div class="man-field"><label>Incidentes de seguridad (número)</label><input type="number" id="sup-incidentes" min="0" placeholder="0" value="${mSup.incidentes??''}"></div>
+        <div class="man-field"><label>Novedades comunicadas a tiempo</label>${selCumple('sup-novedades', mSup.novedades)}</div>
+        <div class="man-field"><label>Competencias (equipo, comunicación, iniciativa)</label>${selComp('sup-comp', mSup.competencias)}</div>
+      </div>
+      <div class="man-notas"><label style="font-size:11.5px;font-weight:700;color:var(--dim)">Notas del 1:1 / acuerdos</label><textarea id="sup-notas" placeholder="Acuerdos del mes, temas de desarrollo...">${mSup.notas||''}</textarea></div>
+      <div class="pc-actions"><button class="btn-save" onclick="guardar('supervisor')">Guardar evaluación</button><span class="save-info" id="info-supervisor"></span></div>
+    </div>
+  </div>`;
+
+  // ── DIBUJANTE ──
+  const dib = d.dibujante;
+  let kpisDib;
+  if (dib.existe) {
+    const pctT = pct(dib.aTiempo, dib.entregas);
+    kpisDib = `<div class="kpi-grid">
+      ${kpi('Planos con compromiso en el mes', dib.entregas, '', '')}
+      ${kpi('Entregas a tiempo', pctT===null?'Sin datos':pctT+'%', cls(pctT,90), '≥ 90%')}
+      ${kpi('Revisiones internas promedio', dib.revProm===null?'Sin datos':dib.revProm, cls(dib.revProm,1,true), '≤ 1 por plano')}
+      ${kpi('Errores en fabricación/campo', dib.erroresCampo, dib.erroresCampo===0?'ok':'bad', '0')}
+    </div>`;
+  } else {
+    kpisDib = `<div class="aviso">Para activar los indicadores automáticos, crea en el Sheet la pestaña <b>"Entregas Diseño"</b> con las columnas: <b>Fecha compromiso · Fecha entrega · Plano/Proyecto · Revisiones internas · Error en campo (SI/NO) · Notas</b>. Mientras tanto puedes llevar el registro cualitativo abajo.</div>`;
+  }
+  html += `
+  <div class="persona-card">
+    <div class="pc-head dib"><div><div class="pc-title">Dibujante / Diseño</div><div class="pc-sub">Fuente: pestaña Entregas Diseño</div></div></div>
+    <div class="pc-body">
+      <div class="sec-title">Indicadores automáticos del mes</div>
+      ${kpisDib}
+      <div class="sec-title">Registro cualitativo</div>
+      <div class="man-grid">
+        <div class="man-field"><label>Soporte oportuno a cotizaciones</label>${selCumple('dib-soporte', mDib.soporte)}</div>
+        <div class="man-field"><label>Competencias (equipo, comunicación, iniciativa)</label>${selComp('dib-comp', mDib.competencias)}</div>
+      </div>
+      <div class="man-notas"><label style="font-size:11.5px;font-weight:700;color:var(--dim)">Notas del 1:1 / acuerdos</label><textarea id="dib-notas" placeholder="Acuerdos del mes, temas de desarrollo...">${mDib.notas||''}</textarea></div>
+      <div class="pc-actions"><button class="btn-save" onclick="guardar('dibujante')">Guardar evaluación</button><span class="save-info" id="info-dibujante"></span></div>
+    </div>
+  </div>`;
+
+  document.getElementById('contenido').innerHTML = html;
+  document.getElementById('estado-carga').textContent = 'Indicadores de ' + d.mes + ' cargados';
+}
+
+async function guardar(persona){
+  const mes = document.getElementById('mes-sel').value;
+  let datos = {};
+  if (persona === 'ingeniero') {
+    datos = {
+      disciplina:   document.getElementById('ing-disciplina').value,
+      competencias: document.getElementById('ing-comp').value,
+      notas:        document.getElementById('ing-notas').value.trim()
+    };
+  } else if (persona === 'supervisor') {
+    datos = {
+      cumplimiento: document.getElementById('sup-cumplimiento').value,
+      incidentes:   document.getElementById('sup-incidentes').value,
+      novedades:    document.getElementById('sup-novedades').value,
+      competencias: document.getElementById('sup-comp').value,
+      notas:        document.getElementById('sup-notas').value.trim()
+    };
+  } else {
+    datos = {
+      soporte:      document.getElementById('dib-soporte').value,
+      competencias: document.getElementById('dib-comp').value,
+      notas:        document.getElementById('dib-notas').value.trim()
+    };
+  }
+  const info = document.getElementById('info-' + persona);
+  info.textContent = 'Guardando...';
+  try {
+    const res = await postJSON({ tabla:'guardar_eval', mes, persona, datos: JSON.stringify(datos) });
+    if (!res.ok) throw new Error(res.error||'Error');
+    info.textContent = '✓ Guardado';
+    toast('✓ Evaluación de ' + persona + ' guardada', 'ok');
+  } catch(e){
+    info.textContent = '';
+    toast('⚠ No se pudo guardar: ' + e.message, 'err');
+  }
+}
+</script>
+</body>
+</html>

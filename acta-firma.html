@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masterband · Acta de Entrega</title>
+<style>
+  :root {
+    --bg:#F5F5F3; --surface:#FFFFFF; --s2:#EFEFED; --border:#E0E0E0;
+    --text:#1A1A1A; --dim:#4A4A4A; --muted:#888888;
+    --accent:#C0001A; --ah:#8A0012; --aglow:#F5E6E9;
+    --green:#1E7A3E; --gdim:#E8F5EE;
+    --yellow:#F59E0B; --ydim:#FEF3C7;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --sh:0 1px 3px rgba(0,0,0,0.08); --shm:0 4px 16px rgba(0,0,0,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+
+  /* TOPBAR */
+  .topbar{background:#ffffff;border-bottom:3px solid var(--accent);padding:0 20px;height:60px;display:flex;align-items:center;gap:10px}
+  .brand-icon{width:30px;height:30px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0}
+  .brand-text{font-size:15px;font-weight:700;color:#fff}.brand-text span{color:var(--accent)}
+
+  .content{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+
+  /* LOADING / ERROR */
+  .state-screen{text-align:center;padding:60px 20px}
+  .state-icon{font-size:48px;margin-bottom:16px}
+  .state-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px}
+  .state-sub{font-size:14px;color:var(--muted)}
+
+  /* ACTA HEADER */
+  .acta-header{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:var(--sh)}
+  .acta-badge{display:inline-flex;align-items:center;gap:6px;background:var(--aglow);border:1px solid var(--accent);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--accent);margin-bottom:12px}
+  .acta-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;line-height:1.3}
+  .acta-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:500px){.acta-fields{grid-template-columns:1fr}}
+  .af-block{background:var(--s2);border-radius:8px;padding:12px}
+  .af-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  .af-val{font-size:14px;font-weight:600;color:var(--text)}
+
+  /* DESCRIPCIÓN */
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:var(--sh)}
+  .section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+  .descripcion-text{font-size:14px;color:var(--dim);line-height:1.7}
+
+  /* FOTOS */
+  .fotos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .foto-item{border-radius:8px;overflow:hidden;border:1px solid var(--border);aspect-ratio:4/3}
+  .foto-item img{width:100%;height:100%;object-fit:cover}
+
+  /* FIRMA INGENIERO */
+  .firma-entrega{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  @media(max-width:500px){.firma-entrega{grid-template-columns:1fr}}
+  .firma-box{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+  .firma-box-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+  .firma-img{width:100%;height:80px;object-fit:contain;border-bottom:1px solid var(--border);margin-bottom:8px}
+  .firma-nombre{font-size:13px;font-weight:700;color:var(--text)}
+  .firma-cargo{font-size:11px;color:var(--muted)}
+
+  /* EVALUACIÓN CLIENTE */
+  .eval-section{background:var(--surface);border:2px solid var(--accent);border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:var(--sh)}
+  .eval-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .sat-btns{display:flex;gap:10px;margin-bottom:16px}
+  .sat-btn{flex:1;padding:12px;border:2px solid var(--border);border-radius:8px;background:var(--surface);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--dim)}
+  .sat-btn.si.on{border-color:var(--green);background:var(--gdim);color:var(--green)}
+  .sat-btn.no.on{border-color:var(--accent);background:var(--aglow);color:var(--accent)}
+  .cal-grid{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+  .cal-btn{width:42px;height:42px;border:1px solid var(--border);border-radius:8px;background:var(--s2);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--dim)}
+  .cal-btn.on{border-color:var(--accent);background:var(--aglow);color:var(--accent)}
+  .pend-label{font-size:12px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
+  .pend-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;resize:vertical;min-height:70px;transition:all .2s}
+  .pend-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
+
+  /* FIRMA CANVAS */
+  .firma-canvas-wrap{position:relative;margin-bottom:6px}
+  .firma-canvas{width:100%;height:150px;background:#fff;border:2px solid var(--border);border-radius:8px;cursor:crosshair;touch-action:none;display:block}
+  .firma-canvas:focus{border-color:var(--accent)}
+  .btn-clear{position:absolute;top:8px;right:8px;background:var(--s2);border:1px solid var(--border);color:var(--muted);font-size:11px;padding:3px 9px;border-radius:5px;cursor:pointer;font-family:var(--font)}
+  .firma-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:4px}
+
+  /* BOTÓN FIRMAR */
+  .btn-firmar{width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .2s;margin-top:8px}
+  .btn-firmar:hover{background:var(--ah)}
+  .btn-firmar:disabled{background:var(--muted);cursor:not-allowed}
+
+  /* ESTADO FIRMADA */
+  .firmada-banner{background:var(--gdim);border:2px solid var(--green);border-radius:10px;padding:24px;text-align:center;margin-bottom:16px}
+  .firmada-icon{font-size:36px;margin-bottom:8px}
+  .firmada-title{font-size:18px;font-weight:700;color:var(--green)}
+  .firmada-sub{font-size:13px;color:var(--dim);margin-top:6px}
+
+  .req-mark{color:var(--accent);font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="logo-masterband.png" alt="Masterband S.A.S." style="height:42px;width:auto">
+</div>
+
+<!-- ESTADO CARGANDO -->
+<div class="content" id="screen-loading">
+  <div class="state-screen">
+    <div class="state-icon">⏳</div>
+    <div class="state-title">Cargando acta...</div>
+    <div class="state-sub">Por favor espera un momento</div>
+  </div>
+</div>
+
+<!-- ESTADO ERROR -->
+<div class="content" id="screen-error" style="display:none">
+  <div class="state-screen">
+    <div class="state-icon">❌</div>
+    <div class="state-title">Acta no encontrada</div>
+    <div class="state-sub">El link puede haber expirado o ser incorrecto. Contacta a Masterband.</div>
+  </div>
+</div>
+
+<!-- ACTA FIRMADA -->
+<div class="content" id="screen-firmada" style="display:none">
+  <div class="firmada-banner">
+    <div class="firmada-icon">✅</div>
+    <div class="firmada-title">Acta firmada correctamente</div>
+    <div class="firmada-sub">Gracias por confirmar la recepción del trabajo. Masterband ha sido notificado.</div>
+  </div>
+  <div class="section">
+    <div class="section-title">Resumen</div>
+    <div id="resumen-firmada"></div>
+  </div>
+</div>
+
+<!-- ACTA PARA FIRMAR -->
+<div class="content" id="screen-acta" style="display:none">
+
+  <!-- Header -->
+  <div class="acta-header">
+    <div class="acta-badge">📋 Acta de Entrega</div>
+    <div class="acta-title" id="acta-colilla"></div>
+    <div class="acta-fields">
+      <div class="af-block"><div class="af-label">Cotización</div><div class="af-val" id="acta-ctz"></div></div>
+      <div class="af-block"><div class="af-label">No. OC</div><div class="af-val" id="acta-oc"></div></div>
+      <div class="af-block"><div class="af-label">Cliente</div><div class="af-val" id="acta-cliente"></div></div>
+      <div class="af-block"><div class="af-label">Fecha</div><div class="af-val" id="acta-fecha"></div></div>
+      <div class="af-block"><div class="af-label">Posición</div><div class="af-val" id="acta-posicion"></div></div>
+      <div class="af-block"><div class="af-label">Lugar</div><div class="af-val" id="acta-lugar"></div></div>
+    </div>
+  </div>
+
+  <!-- Descripción -->
+  <div class="section">
+    <div class="section-title">Descripción del trabajo</div>
+    <div class="descripcion-text" id="acta-desc"></div>
+  </div>
+
+  <!-- Fotos -->
+  <div class="section" id="adjuntos-section" style="display:none">
+    <div class="section-title">Documentos técnicos</div>
+    <div id="adjuntos-lista" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+
+  <div class="section" id="fotos-section" style="display:none">
+    <div class="section-title">Registro fotográfico</div>
+    <div class="fotos-grid" id="fotos-grid"></div>
+  </div>
+
+  <!-- Firma ingeniero -->
+  <div class="section">
+    <div class="section-title">Entregado por Masterband</div>
+    <div class="firma-entrega">
+      <div class="firma-box">
+        <div class="firma-box-title">Firma</div>
+        <img id="firma-eng-img" class="firma-img" src="" alt="Firma">
+        <div class="firma-nombre" id="acta-entrega-nom"></div>
+        <div class="firma-cargo" id="acta-entrega-cargo"></div>
+      </div>
+      <div class="firma-box" style="background:var(--s2);border:2px dashed var(--border)">
+        <div class="firma-box-title">Recibido por</div>
+        <div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">Tu firma aquí abajo</div>
+        <div class="firma-nombre" style="color:var(--muted)">Pendiente de firma</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVALUACIÓN DEL CLIENTE -->
+  <div class="eval-section">
+    <div class="eval-title">✍️ Tu evaluación — Por favor completa estos campos</div>
+
+    <div style="margin-bottom:14px">
+      <label class="pend-label">Nombre de quien recibe <span class="req-mark">*</span></label>
+      <input class="pend-input" id="recibe-nombre" placeholder="Nombre completo" style="min-height:auto;height:44px;resize:none">
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label class="pend-label">Cargo de quien recibe <span class="req-mark">*</span></label>
+      <input class="pend-input" id="recibe-cargo" placeholder="Ej: Coordinador de Mantenimiento" style="min-height:auto;height:44px;resize:none">
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label class="pend-label">¿Recibes el servicio a satisfacción? <span class="req-mark">*</span></label>
+      <div class="sat-btns">
+        <button class="sat-btn si" id="sat-si" onclick="setSat('SI')">✓ Sí, sin observaciones</button>
+        <button class="sat-btn no" id="sat-no" onclick="setSat('NO')">✕ No, con observaciones</button>
+      </div>
+    </div>
+
+    <div id="pend-wrap" style="display:none;margin-bottom:14px">
+      <label class="pend-label">Observaciones o pendientes</label>
+      <textarea class="pend-input" id="pend-input" placeholder="Describe las observaciones o pendientes..."></textarea>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label class="pend-label">Calificación del trabajo (1 = menor, 10 = mayor) <span class="req-mark">*</span></label>
+      <div class="cal-grid" id="cal-grid">
+        <button class="cal-btn" onclick="setCal(1)" id="cal-1">1</button>
+        <button class="cal-btn" onclick="setCal(2)" id="cal-2">2</button>
+        <button class="cal-btn" onclick="setCal(3)" id="cal-3">3</button>
+        <button class="cal-btn" onclick="setCal(4)" id="cal-4">4</button>
+        <button class="cal-btn" onclick="setCal(5)" id="cal-5">5</button>
+        <button class="cal-btn" onclick="setCal(6)" id="cal-6">6</button>
+        <button class="cal-btn" onclick="setCal(7)" id="cal-7">7</button>
+        <button class="cal-btn" onclick="setCal(8)" id="cal-8">8</button>
+        <button class="cal-btn" onclick="setCal(9)" id="cal-9">9</button>
+        <button class="cal-btn" onclick="setCal(10)" id="cal-10">10</button>
+      </div>
+    </div>
+
+    <div>
+      <label class="pend-label">Tu firma <span class="req-mark">*</span></label>
+      <div class="firma-canvas-wrap">
+        <canvas class="firma-canvas" id="firma-cliente"></canvas>
+        <button class="btn-clear" onclick="limpiarFirma()">Limpiar</button>
+      </div>
+      <div class="firma-hint">Firma con tu dedo o el mouse</div>
+    </div>
+  </div>
+
+  <button class="btn-firmar" onclick="enviarFirma()" id="btn-firmar">
+    ✅ Firmar y devolver acta
+  </button>
+</div>
+
+<script>
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbxvfsbmG_aZH0OFoW3o80XBEUSlxeVlZqqrAfjAWYBaplhmhLWYg56O7I0hIarezNAx/exec';
+
+let actaData = null;
+let satVal   = null;
+let calVal   = null;
+let firmaCtx = null;
+let firmaDrawing = false;
+let firmaLastX = 0, firmaLastY = 0;
+
+// ── Leer CTZ de la URL ──
+function getCtzFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('acta') || params.get('ctz');
+}
+
+function showScreen(id) {
+  ['screen-loading','screen-error','screen-firmada','screen-acta'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? 'block' : 'none';
+  });
+}
+
+// ── Cargar acta ──
+async function cargarActa() {
+  const ctz = getCtzFromURL();
+  if (!ctz) { showScreen('screen-error'); return; }
+
+  try {
+    const res  = await fetch(APPS_URL + '?tabla=acta&ctz=' + encodeURIComponent(ctz));
+    const data = await res.json();
+    if (!data.ok) { showScreen('screen-error'); return; }
+    actaData = data;
+
+    if (data.estado === 'FIRMADA') {
+      mostrarFirmada(data);
+      return;
+    }
+
+    mostrarActa(data);
+  } catch(e) {
+    showScreen('screen-error');
+  }
+}
+
+function mostrarActa(d) {
+  document.getElementById('acta-colilla').textContent    = d.colilla || 'Acta de entrega';
+  document.getElementById('acta-ctz').textContent        = 'CTZ' + d.ctz;
+  document.getElementById('acta-oc').textContent         = d.noOC || '—';
+  document.getElementById('acta-cliente').textContent    = d.cliente || '—';
+  document.getElementById('acta-posicion').textContent   = d.posicion || '—';
+  document.getElementById('acta-lugar').textContent      = d.lugar || '—';
+  document.getElementById('acta-desc').textContent       = d.descripcion || '—';
+  document.getElementById('acta-entrega-nom').textContent   = d.entregaNombre || '';
+  document.getElementById('acta-entrega-cargo').textContent = d.entregaCargo  || '';
+
+  // Fecha
+  const fecha = d.fecha ? new Date(d.fecha + 'T12:00:00').toLocaleDateString('es-CO', { day:'2-digit', month:'long', year:'numeric' }) : '—';
+  document.getElementById('acta-fecha').textContent = fecha;
+
+  // Firma ingeniero
+  if (d.firmaEng) {
+    document.getElementById('firma-eng-img').src = d.firmaEng;
+  }
+
+  // Fotos
+  try {
+    // Informes PDF adjuntos
+    try {
+      const adj = JSON.parse(d.adjuntos || '[]');
+      if (adj.length) {
+        document.getElementById('adjuntos-lista').innerHTML = adj.map(a =>
+          `<a href="${a.u}" target="_blank" style="display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:8px;padding:11px 14px;text-decoration:none;background:var(--surface)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#C0001A" stroke-width="1.7" style="width:19px;height:19px;flex-shrink:0"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
+            <span style="flex:1;font-size:13.5px;font-weight:600;color:var(--text)">${a.n}</span>
+            <span style="font-size:12px;font-weight:700;color:#C0001A">Descargar</span>
+          </a>`).join('');
+        document.getElementById('adjuntos-section').style.display = 'block';
+      }
+    } catch(e) {}
+
+    const fotos = JSON.parse(d.fotos || '[]');
+    if (fotos.length) {
+      document.getElementById('fotos-section').style.display = 'block';
+      document.getElementById('fotos-grid').innerHTML = fotos
+        .filter(f => f)
+        .map(f => `<div class="foto-item"><img src="${f}" alt="Foto del trabajo"></div>`)
+        .join('');
+    }
+  } catch(e) {}
+
+  showScreen('screen-acta');
+  setTimeout(initFirma, 100);
+}
+
+function mostrarFirmada(d) {
+  document.getElementById('resumen-firmada').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase">Trabajo</span>
+        <span style="font-size:14px;font-weight:600">${d.colilla}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase">Calificación</span>
+        <span style="font-size:18px;font-weight:700;color:var(--accent)">${d.calificacion}/10</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0">
+        <span style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase">Satisfacción</span>
+        <span style="font-size:14px;font-weight:700;color:${d.satisfaccion==='SI'?'var(--green)':'var(--accent)'}">${d.satisfaccion}</span>
+      </div>
+    </div>`;
+  showScreen('screen-firmada');
+}
+
+// ── Evaluación ──
+function setSat(v) {
+  satVal = v;
+  document.getElementById('sat-si').classList.toggle('on', v==='SI');
+  document.getElementById('sat-no').classList.toggle('on', v==='NO');
+  document.getElementById('pend-wrap').style.display = v==='NO' ? 'block' : 'none';
+}
+
+function setCal(n) {
+  calVal = n;
+  [1,2,3,4,5,6,7,8,9,10].forEach(i => document.getElementById('cal-'+i).classList.toggle('on', i===n));
+}
+
+// ── Firma canvas ──
+function initFirma() {
+  const canvas = document.getElementById('firma-cliente');
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  firmaCtx = canvas.getContext('2d');
+  firmaCtx.strokeStyle = '#1A1A1A';
+  firmaCtx.lineWidth   = 2.5;
+  firmaCtx.lineCap     = 'round';
+
+  function pos(e) {
+    const r = canvas.getBoundingClientRect();
+    const s = e.touches ? e.touches[0] : e;
+    return { x: s.clientX - r.left, y: s.clientY - r.top };
+  }
+  canvas.addEventListener('mousedown',  e => { firmaDrawing=true; const p=pos(e); firmaLastX=p.x; firmaLastY=p.y; });
+  canvas.addEventListener('mousemove',  e => { if(!firmaDrawing) return; const p=pos(e); firmaCtx.beginPath(); firmaCtx.moveTo(firmaLastX,firmaLastY); firmaCtx.lineTo(p.x,p.y); firmaCtx.stroke(); firmaLastX=p.x; firmaLastY=p.y; });
+  canvas.addEventListener('mouseup',    () => firmaDrawing=false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); firmaDrawing=true; const p=pos(e); firmaLastX=p.x; firmaLastY=p.y; }, { passive:false });
+  canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!firmaDrawing) return; const p=pos(e); firmaCtx.beginPath(); firmaCtx.moveTo(firmaLastX,firmaLastY); firmaCtx.lineTo(p.x,p.y); firmaCtx.stroke(); firmaLastX=p.x; firmaLastY=p.y; }, { passive:false });
+  canvas.addEventListener('touchend',   () => firmaDrawing=false);
+}
+
+function limpiarFirma() {
+  const canvas = document.getElementById('firma-cliente');
+  firmaCtx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function firmaVacia() {
+  const canvas = document.getElementById('firma-cliente');
+  const ctx    = canvas.getContext('2d');
+  const data   = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  return !data.some(v => v !== 0);
+}
+
+// ── Enviar firma ──
+async function enviarFirma() {
+  const recibeNombre = document.getElementById('recibe-nombre').value.trim();
+  const recibeCargo  = document.getElementById('recibe-cargo').value.trim();
+  if (!recibeNombre) { alert('Por favor escribe el nombre de quien recibe.'); return; }
+  if (!recibeCargo)  { alert('Por favor escribe el cargo de quien recibe.'); return; }
+  if (!satVal)   { alert('Por favor indica si recibes el servicio a satisfacción.'); return; }
+  if (!calVal)   { alert('Por favor selecciona una calificación del 1 al 10.'); return; }
+  if (firmaVacia()) { alert('Por favor dibuja tu firma antes de enviar.'); return; }
+
+  const btn = document.getElementById('btn-firmar');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  const firmaCliente = document.getElementById('firma-cliente').toDataURL('image/png');
+  const pendientes   = document.getElementById('pend-input').value.trim();
+
+  try {
+    const res  = await fetch(APPS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        tabla:         'firmar_acta',
+        ctz:           actaData.ctz,
+        firmaCliente,
+        calificacion:  calVal,
+        satisfaccion:  satVal,
+        pendientes,
+        recibeNombre,
+        recibeCargo
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      mostrarFirmada({ ...actaData, calificacion: calVal, satisfaccion: satVal });
+    } else {
+      alert('Error al enviar: ' + (data.error || 'intenta de nuevo'));
+      btn.disabled = false; btn.textContent = '✅ Firmar y devolver acta';
+    }
+  } catch(e) {
+    alert('Error de conexión. Intenta de nuevo.');
+    btn.disabled = false; btn.textContent = '✅ Firmar y devolver acta';
+  }
+}
+
+// ── INIT ──
+cargarActa();
+</script>
+</body>
+</html>

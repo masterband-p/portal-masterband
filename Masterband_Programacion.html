@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masterband · Programación de Personal</title>
+<style>
+  :root {
+    --bg:#F5F5F3; --surface:#FFFFFF; --s2:#EFEFED; --border:#E0E0E0;
+    --text:#1A1A1A; --dim:#4A4A4A; --muted:#888888;
+    --accent:#C0001A; --ah:#8A0012; --aglow:#F5E6E9;
+    --green:#1E7A3E; --gdim:#E8F5EE;
+    --yellow:#F59E0B; --ydim:#FEF3C7;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --sh:0 1px 3px rgba(0,0,0,0.08); --shm:0 4px 16px rgba(0,0,0,0.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+  ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+  /* TOPBAR */
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--sh)}
+  .brand-wrap{display:flex;align-items:center;gap:10px}
+  .brand-icon{width:32px;height:32px;background:var(--green);border-radius:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
+  .brand-text{font-size:15px;font-weight:700;color:var(--text)}.brand-text span{color:var(--accent)}
+  .brand-div{width:1px;height:22px;background:var(--border);margin:0 10px}
+  .brand-mod{font-size:13px;color:var(--muted)}
+  .topnav{display:flex;gap:4px}
+  .tnb{background:none;border:none;color:var(--dim);font-family:var(--font);font-size:13px;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:500;transition:all .15s}
+  .tnb:hover{background:var(--s2);color:var(--text)}.tnb.on{background:var(--aglow);color:var(--accent);font-weight:600}
+  .back-btn{background:none;border:1px solid var(--border);color:var(--dim);font-family:var(--font);font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px}
+  .back-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* PAGES */
+  .page{display:none;padding:24px 20px;max-width:1100px;margin:0 auto}.page.on{display:block}
+  .ptitle{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:16px}
+
+  /* ── VISTA INGENIERO ── */
+  /* Selector de fecha */
+  .fecha-nav{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+  .fecha-display{font-size:18px;font-weight:700;color:var(--text)}
+  .btn-nav{background:var(--surface);border:1px solid var(--border);color:var(--dim);width:36px;height:36px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+  .btn-nav:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-hoy{background:var(--surface);border:1px solid var(--border);color:var(--dim);font-family:var(--font);font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s}
+  .btn-hoy:hover{border-color:var(--accent);color:var(--accent)}
+  input[type=date].fecha-input{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;cursor:pointer}
+  input[type=date].fecha-input:focus{border-color:var(--accent)}
+
+  /* Frentes del día */
+  .frentes-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  .btn-add-frente{background:var(--green);color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:opacity .2s}
+  .btn-add-frente:hover{opacity:.88}
+  .frentes-list{display:flex;flex-direction:column;gap:14px}
+  .frente-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--sh);overflow:hidden}
+  .frente-header{background:var(--green);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .frente-header.mtto{background:#1D6FA4}
+  .frente-header.proyecto{background:#6B21A8}
+  .frente-header.interno{background:var(--muted)}
+  .frente-titulo{font-size:14px;font-weight:700;color:#fff}
+  .frente-hora{font-size:12px;color:rgba(255,255,255,.8);margin-top:2px}
+  .frente-actions-top{display:flex;gap:6px}
+  .btn-frente-edit{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .btn-frente-edit:hover{background:rgba(255,255,255,.35)}
+  .frente-body{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:600px){.frente-body{grid-template-columns:1fr}}
+  .frente-section-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+  .personal-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:4px 11px;font-size:12px;font-weight:600;color:var(--dim)}
+  .chip.siso{background:#E8F5EE;border-color:#A7D7BC;color:var(--green)}
+  .materiales-text{font-size:13px;color:var(--dim);line-height:1.6}
+  .empty-dia{text-align:center;padding:48px 20px;color:var(--muted)}
+  .empty-dia-icon{font-size:36px;margin-bottom:12px}
+  .empty-dia-text{font-size:15px;font-weight:600;color:var(--dim);margin-bottom:6px}
+
+  /* ── VISTA COLABORADOR — CALENDARIO ── */
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+  .cal-month{font-size:20px;font-weight:700;color:var(--text)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:24px}
+  .cal-dow{text-align:center;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;padding:6px 0}
+  .cal-day{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 6px;min-height:60px;cursor:pointer;transition:all .15s;position:relative}
+  .cal-day:hover{border-color:var(--accent);box-shadow:var(--sh)}
+  .cal-day.hoy{border-color:var(--accent);border-width:2px}
+  .cal-day.otro-mes{opacity:.35;cursor:default}
+  .cal-day.con-actividad{background:#fff}
+  .cal-day-num{font-size:12px;font-weight:700;color:var(--dim);margin-bottom:4px}
+  .cal-day.hoy .cal-day-num{color:var(--accent)}
+  .cal-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin:1px}
+  .cal-dot.mtto{background:#1D6FA4}
+  .cal-dot.proyecto{background:#6B21A8}
+  .cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}
+  .cal-frente-count{font-size:10px;color:var(--green);font-weight:700}
+
+  /* Buscador colaborador */
+  .colab-search-wrap{max-width:480px;margin:0 auto 28px}
+  .colab-search{width:100%;background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:13px 18px;color:var(--text);font-family:var(--font);font-size:16px;outline:none;transition:all .2s;box-shadow:var(--sh)}
+  .colab-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
+  .colab-suggestions{background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shm);max-height:240px;overflow-y:auto;margin-top:4px}
+  .colab-item{padding:10px 16px;cursor:pointer;font-size:14px;color:var(--text);border-bottom:1px solid var(--border);transition:background .1s}
+  .colab-item:last-child{border-bottom:none}
+  .colab-item:hover{background:var(--aglow);color:var(--accent)}
+  .colab-item .cargo{font-size:11px;color:var(--muted)}
+  .colab-selected{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:20px;box-shadow:var(--sh)}
+  .colab-avatar{width:36px;height:36px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
+  .colab-nombre{font-size:14px;font-weight:700;color:var(--text)}
+  .colab-cargo{font-size:12px;color:var(--muted)}
+  .btn-cambiar{background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--font);font-size:12px;padding:4px 10px;border-radius:5px;cursor:pointer;margin-left:auto}
+  .btn-cambiar:hover{border-color:var(--red,#C0001A);color:var(--red,#C0001A)}
+
+  /* Detalle del día modal */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+  .overlay.on{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:24px;box-shadow:var(--shm)}
+  .modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+  .modal-title{font-size:18px;font-weight:700;color:var(--text)}
+  .modal-date{font-size:13px;color:var(--muted);margin-top:2px}
+  .btn-close{background:var(--s2);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+  .btn-close:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* Frente en modal */
+  .modal-frente{background:var(--s2);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;overflow:hidden}
+  .modal-frente-hdr{padding:10px 14px;font-weight:700;font-size:14px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+  .modal-frente-hdr.verde{background:var(--green)}
+  .modal-frente-hdr.azul{background:#1D6FA4}
+  .modal-frente-hdr.morado{background:#6B21A8}
+  .modal-frente-hdr.gris{background:var(--muted)}
+  .modal-frente-body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+  .mf-row{display:flex;gap:8px;align-items:flex-start}
+  .mf-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;min-width:72px;flex-shrink:0;padding-top:1px}
+  .mf-val{font-size:13px;color:var(--dim)}
+  .mi-chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--dim);display:inline-block;margin:2px}
+  .mi-chip.yo{background:var(--aglow);border-color:var(--accent);color:var(--accent)}
+  .mi-chip.siso{background:#E8F5EE;border-color:#A7D7BC;color:var(--green)}
+  .mi-chip.falta{background:#FDECEA;border-color:#E57373;color:#C0001A;text-decoration:line-through}
+  .chip.falta{background:#FDECEA !important;border-color:#E57373 !important;color:#C0001A !important;text-decoration:line-through}
+  .chip.clickable{cursor:pointer}
+  .chip.clickable:hover{filter:brightness(0.95)}
+  .badge-asig{margin-left:6px;background:#FDECEA;border:1px solid #E57373;color:#C0001A;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px}
+  .personal-tools{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--s2)}
+  .btn-sel-all{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;transition:all .15s}
+  .btn-sel-all:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* MODAL CREAR/EDITAR FRENTE */
+  .form-field{margin-bottom:14px}
+  .flabel{font-size:12px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;display:block}
+  .finput,.fsel,.fta{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:all .2s}
+  .finput:focus,.fsel:focus,.fta:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
+  .fsel option{background:var(--surface)}
+  .fta{resize:vertical;min-height:70px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:500px){.form-row{grid-template-columns:1fr}}
+
+  /* Selector de personal */
+  .personal-selector{border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .personal-search{width:100%;background:var(--s2);border:none;border-bottom:1px solid var(--border);padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none}
+  .personal-search:focus{background:#fff}
+  .personal-list{max-height:200px;overflow-y:auto}
+  .personal-item{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s;font-size:13px;color:var(--text)}
+  .personal-item:last-child{border-bottom:none}
+  .personal-item:hover{background:var(--aglow)}
+  .personal-item.sel{background:var(--aglow)}
+  .personal-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);flex-shrink:0}
+  .personal-item .pcargo{font-size:11px;color:var(--muted);margin-left:auto}
+  .sel-count{font-size:12px;color:var(--accent);font-weight:700;margin-top:6px}
+
+  /* Botones modal */
+  .mbtns{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .mbtn-p{background:var(--green);color:#fff;border:none;border-radius:6px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:opacity .2s}
+  .mbtn-p:hover{opacity:.88}
+  .mbtn-s{background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s}
+  .mbtn-s:hover{border-color:var(--accent);color:var(--accent)}
+  .mbtn-del{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:var(--font);transition:all .15s;margin-left:auto}
+  .mbtn-del:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* Toast */
+  .toast{position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;color:var(--text);z-index:500;box-shadow:var(--shm);display:none;max-width:320px}
+  .toast.on{display:block}.toast.ok{border-left:4px solid var(--green)}.toast.err{border-left:4px solid var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="brand-wrap">
+      <img src="logo-masterband.png" alt="Masterband S.A.S." style="height:38px;width:auto">
+    </div>
+    <div class="brand-div"></div>
+    <div class="brand-mod">Programación de Personal</div>
+    <nav class="topnav" style="margin-left:8px">
+      <button class="tnb" onclick="accederProgramar()">Programar</button>
+      <button class="tnb on" onclick="showPage('pg-colaborador',this)">Mi programación</button>
+    </nav>
+  </div>
+  <a href="index.html" class="back-btn">← Portal</a>
+</div>
+
+<!-- PÁGINA INGENIERO -->
+<div class="page" id="pg-ingeniero">
+  <div class="fecha-nav">
+    <button class="btn-nav" onclick="cambiarDia(-1)">‹</button>
+    <input type="date" class="fecha-input" id="fecha-sel" onchange="renderDia()">
+    <button class="btn-nav" onclick="cambiarDia(1)">›</button>
+    <button class="btn-hoy" onclick="irHoy()">Hoy</button>
+    <div class="fecha-display" id="fecha-display"></div>
+  </div>
+  <div class="frentes-header">
+    <div class="ptitle" style="margin:0" id="frentes-titulo">Frentes del día</div>
+    <button class="btn-add-frente" onclick="abrirNuevoFrente()">+ Agregar frente</button>
+  </div>
+  <div class="frentes-list" id="frentes-list"></div>
+</div>
+
+<!-- PÁGINA COLABORADOR -->
+<div class="page on" id="pg-colaborador">
+  <div id="colab-busqueda">
+    <div class="ptitle">¿Quién eres?</div>
+    <div class="colab-search-wrap">
+      <input class="colab-search" id="colab-input" placeholder="Escribe tu nombre..." oninput="buscarColab(this.value)" autocomplete="off">
+      <div class="colab-suggestions" id="colab-sug" style="display:none"></div>
+    </div>
+  </div>
+  <div id="colab-perfil" style="display:none">
+    <div class="colab-selected" id="colab-card"></div>
+    <div class="cal-header">
+      <button class="btn-nav" onclick="cambiarMes(-1)">‹</button>
+      <div class="cal-month" id="cal-month-label"></div>
+      <button class="btn-nav" onclick="cambiarMes(1)">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+</div>
+
+<!-- MODAL CONTRASEÑA INGENIERO -->
+<div class="overlay" id="mod-pass">
+  <div class="modal" style="max-width:360px;text-align:center">
+    <div style="margin-bottom:14px"><img src="logo-masterband.png" alt="Masterband S.A.S." style="height:44px;width:auto"></div>
+    <div style="margin-bottom:12px"><svg viewBox="0 0 24 24" fill="none" stroke="#C0001A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <div class="modal-title" style="margin-bottom:6px">Acceso Ingeniero</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Ingresa la contraseña para programar</div>
+    <input class="finput" type="password" id="pass-input" placeholder="••••••••" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" onkeydown="if(event.key==='Enter')verificarPass()" style="text-align:center;font-size:16px;letter-spacing:4px;margin-bottom:8px">
+    <div style="color:var(--accent);font-size:12px;min-height:18px;margin-bottom:16px" id="pass-err"></div>
+    <div class="mbtns" style="justify-content:center">
+      <button class="mbtn-p" onclick="verificarPass()">Entrar</button>
+      <button class="mbtn-s" onclick="closeModal('mod-pass')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CREAR/EDITAR FRENTE -->
+<div class="overlay" id="mod-frente">
+  <div class="modal" style="max-width:580px">
+    <div class="modal-header">
+      <div><div class="modal-title" id="mod-frente-title">Nuevo frente de trabajo</div></div>
+      <button class="btn-close" onclick="closeModal('mod-frente')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="flabel">Nombre del trabajo</label>
+        <input class="finput" id="f-nombre" placeholder="Ej. MTTO Extractor Sales">
+      </div>
+      <div class="form-field">
+        <label class="flabel">Tipo</label>
+        <select class="fsel" id="f-tipo">
+          <option value="mtto">Mantenimiento</option>
+          <option value="proyecto">Proyecto</option>
+          <option value="interno">Interno</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="flabel">Hora de ingreso</label>
+        <input class="finput" type="time" id="f-hora" value="06:00">
+      </div>
+      <div class="form-field">
+        <label class="flabel">SISO responsable</label>
+        <select class="fsel" id="f-siso">
+          <option value="">Sin SISO asignado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="flabel">Responsable PepsiCo de la actividad</label>
+        <input class="finput" id="f-responsable" list="lista-pep" placeholder="Buscar o escribir el nombre...">
+        <datalist id="lista-pep"></datalist>
+      </div>
+      <div class="form-field">
+        <label class="flabel">Jornada</label>
+        <select class="fsel" id="f-jornada">
+          <option value="">Jornada normal</option>
+          <option value="terminar">Hasta acabar actividades</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="flabel">Materiales / Notas</label>
+      <textarea class="fta" id="f-materiales" placeholder="Ej. Bala de argón, manlift, EPP especial..."></textarea>
+    </div>
+    <div class="form-field">
+      <label class="flabel">Personal asignado</label>
+      <div class="personal-selector">
+        <input class="personal-search" id="f-personal-search" placeholder="Buscar empleado..." oninput="filtrarPersonal(this.value)">
+        <div class="personal-tools">
+          <button class="btn-sel-all" onclick="seleccionarTodos()">✓ Seleccionar todos</button>
+          <button class="btn-sel-all" onclick="quitarTodos()">✕ Quitar todos</button>
+        </div>
+        <div class="personal-list" id="f-personal-list"></div>
+      </div>
+      <div class="sel-count" id="sel-count">0 personas seleccionadas</div>
+    </div>
+    <div class="mbtns">
+      <button class="mbtn-p" onclick="guardarFrente()">Guardar frente</button>
+      <button class="mbtn-s" onclick="closeModal('mod-frente')">Cancelar</button>
+      <button class="mbtn-del" id="btn-del-frente" onclick="eliminarFrente()" style="display:none">Eliminar frente</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE DÍA (colaborador) -->
+<div class="overlay" id="mod-dia">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="mod-dia-title">Programación del día</div>
+        <div class="modal-date" id="mod-dia-date"></div>
+      </div>
+      <button class="btn-close" onclick="closeModal('mod-dia')">✕</button>
+    </div>
+    <div id="mod-dia-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIGURACIÓN ──
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbxvfsbmG_aZH0OFoW3o80XBEUSlxeVlZqqrAfjAWYBaplhmhLWYg56O7I0hIarezNAx/exec';
+
+// ── EMPLEADOS — dinámicos desde el Sheet ──
+let EMPLEADOS = [];
+let SISO = [];
+
+// Fallback local por si el Sheet no responde
+const EMPLEADOS_LOCAL = [
+  { id:1,  nombre:'RUBIEL RUBIO GOMEZ',              cargo:'Soldador',                  area:'produccion', observacion:'' },
+  { id:2,  nombre:'NUMAÉL SERRATO GONZALEZ',          cargo:'Soldador',                  area:'produccion', observacion:'' },
+  { id:3,  nombre:'WILLIAM ALEXANDER SANCHEZ CADENA', cargo:'Supervisor',                area:'supervisor', observacion:'' },
+  { id:4,  nombre:'CARLOS ALBERTO TAPIERO',           cargo:'Aux. Producción Avanzado',  area:'produccion', observacion:'' },
+  { id:5,  nombre:'ENMANUEL ARRIETA POSADA',          cargo:'Soldador',                  area:'produccion', observacion:'' },
+  { id:6,  nombre:'WILMAR FRANCISCO CASTAÑEDA',       cargo:'Aux. Producción Avanzado',  area:'produccion', observacion:'' },
+  { id:7,  nombre:'STICK SANTIAGO RODRIGUEZ',         cargo:'Aux. Producción Básico',    area:'produccion', observacion:'' },
+  { id:8,  nombre:'DANIER LUIS MOLINA LIÑAN',         cargo:'Aux. Producción Básico',    area:'produccion', observacion:'' },
+  { id:9,  nombre:'MIGUEL MANUEL PADILLA HERNANDEZ',  cargo:'Aux. Producción Básico',    area:'produccion', observacion:'' },
+  { id:10, nombre:'CAMILO ANDRES RODRIGUEZ TORRES',   cargo:'Aux. Producción Básico',    area:'produccion', observacion:'' },
+  { id:11, nombre:'ELWY BRICEÑO VARGAS',              cargo:'Aux. Producción Básico',    area:'produccion', observacion:'' },
+  { id:12, nombre:'DANIEL FRANCISCO IBARRA ESPINOSA', cargo:'Soldador',                  area:'produccion', observacion:'' },
+  { id:13, nombre:'MADISBEL ORTEGA PABA',             cargo:'Inspector SST',             area:'sst',        observacion:'' },
+  { id:14, nombre:'CIDELYS CARRILLO ARCINIEGAS',      cargo:'Inspector SST',             area:'sst',        observacion:'' },
+  { id:15, nombre:'ANDRÉS CAMILO GUTIERREZ',          cargo:'Coordinador SST',           area:'sst',        observacion:'' },
+  { id:16, nombre:'ANDRÉS SAUL CIFUENTES',            cargo:'Inspector SST',             area:'sst',        observacion:'' },
+  { id:17, nombre:'FABIO ALONSO LUNA DUQUE',          cargo:'Soldador',                  area:'produccion', observacion:'' },
+  { id:18, nombre:'KEVIN ANDREY ORTEGA BELTRAN',      cargo:'Aux. Producción Básico',    area:'produccion', observacion:'' },
+  { id:19, nombre:'ESTEBAN ALEJANDRO ALFONSO',        cargo:'Ingeniero Mecánico',        area:'admin',      observacion:'' },
+  { id:20, nombre:'JERALDIN ANDREA NIÑO CRUZ',        cargo:'Jefe de Diseño',            area:'admin',      observacion:'' },
+  { id:21, nombre:'YEIMI VIVIANA BENAVIDES',          cargo:'Auxiliar Administrativo',   area:'admin',      observacion:'' },
+  { id:22, nombre:'NIXY ALEJANDRA CASTILLO',          cargo:'Líder de Proyectos',        area:'admin',      observacion:'' },
+  { id:23, nombre:'MARDY LINETH LAVACUDE',            cargo:'Gestora de Compras',        area:'admin',      observacion:'' },
+  { id:24, nombre:'JAQUELINE LOZANO FIGUEROA',        cargo:'Auxiliar Contable',         area:'admin',      observacion:'' },
+  { id:25, nombre:'JHON ISRAEL LOZANO',               cargo:'Auxiliar Mecánico',         area:'produccion', observacion:'' },
+];
+
+async function cargarEmpleados() {
+  try {
+    const res  = await fetch(APPS_URL + '?tabla=empleados');
+    const data = await res.json();
+    EMPLEADOS = data
+      .filter(e => e.nombre && e.estado === 'ACTIVO')
+      .map((e, i) => ({ ...e, id: i + 1 }));
+    if (!EMPLEADOS.length) throw new Error('vacío');
+  } catch(err) {
+    EMPLEADOS = EMPLEADOS_LOCAL;
+  }
+  SISO = EMPLEADOS.filter(e => e.area === 'sst');
+}
+
+const PASS_ING = 'ing2025';
+const PASS_SUP = 'sup2025'; // El supervisor también programa y modifica frentes
+let ingAcceso = false;
+
+function accederProgramar(){
+  if(ingAcceso){
+    showPage('pg-ingeniero', document.querySelector('.tnb'));
+    document.querySelectorAll('.tnb')[0].classList.add('on');
+    document.querySelectorAll('.tnb')[1].classList.remove('on');
+    return;
+  }
+  document.getElementById('pass-input').value='';
+  document.getElementById('pass-err').textContent='';
+  document.getElementById('mod-pass').classList.add('on');
+}
+
+function verificarPass(){
+  const p = document.getElementById('pass-input').value.trim().toLowerCase();
+  if(p === PASS_ING || p === PASS_SUP){
+    ingAcceso = true;
+    closeModal('mod-pass');
+    document.querySelectorAll('.tnb')[0].classList.add('on');
+    document.querySelectorAll('.tnb')[1].classList.remove('on');
+    showPage('pg-ingeniero', null);
+    renderDia();
+  } else {
+    document.getElementById('pass-err').textContent='Contraseña incorrecta';
+    document.getElementById('pass-input').value='';
+  }
+}
+
+// ── STORAGE: Sheet como fuente de verdad ──
+const KEY = 'mb_prog_cache'; // cache local para velocidad
+let prog = {}; // { 'YYYY-MM-DD': [{rowIdx, nombre, tipo, hora, siso, materiales, personal}] }
+
+function loadCache(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){ return {}; } }
+function saveCache(){ localStorage.setItem(KEY, JSON.stringify(prog)); }
+
+// Cargar programación del Sheet para una fecha
+async function cargarDia(fecha) {
+  try {
+    const res  = await fetch(APPS_URL + '?tabla=programacion&fecha=' + fecha);
+    const rows = await res.json();
+    prog[fecha] = rows.map(r => ({
+      rowIdx:     r.rowIdx,
+      nombre:     r.nombre,
+      tipo:       r.tipo,
+      hora:       r.hora,
+      siso:       r.siso,
+      materiales: r.materiales,
+      responsable: r.responsable || '',
+      jornada:    r.jornada || '',
+      personal:   r.personal ? r.personal.split(',').map(n=>n.trim()).filter(Boolean) : [],
+      inasistencias: r.inasistencias ? r.inasistencias.split(',').map(n=>n.trim()).filter(Boolean) : []
+    }));
+    saveCache();
+    return true;
+  } catch(e) {
+    // Usar cache si falla
+    if (!prog[fecha]) prog[fecha] = loadCache()[fecha] || [];
+    return false;
+  }
+}
+
+// Cargar toda la programación (para el calendario del colaborador)
+async function cargarTodaProg() {
+  try {
+    const res  = await fetch(APPS_URL + '?tabla=programacion');
+    const rows = await res.json();
+    prog = {};
+    rows.forEach(r => {
+      if (!prog[r.fecha]) prog[r.fecha] = [];
+      prog[r.fecha].push({
+        rowIdx:     r.rowIdx,
+        nombre:     r.nombre,
+        tipo:       r.tipo,
+        hora:       r.hora,
+        siso:       r.siso,
+        materiales: r.materiales,
+        responsable: r.responsable || '',
+        jornada:    r.jornada || '',
+        personal:   r.personal ? r.personal.split(',').map(n=>n.trim()).filter(Boolean) : [],
+        inasistencias: r.inasistencias ? r.inasistencias.split(',').map(n=>n.trim()).filter(Boolean) : []
+      });
+    });
+    saveCache();
+    renderCalendario();
+  } catch(e) {
+    prog = loadCache();
+    renderCalendario();
+  }
+}
+
+// Guardar frente en el Sheet
+async function syncGuardar(fecha, frente) {
+  try {
+    const personal = (frente.personal||[]).map(id => {
+      const emp = EMPLEADOS.find(e=>e.id===id);
+      return emp ? emp.nombre : '';
+    }).filter(Boolean).join(', ');
+    const siso = frente.siso ? (EMPLEADOS.find(e=>e.id===frente.siso)||{}).nombre||'' : '';
+    const params = new URLSearchParams({
+      tabla:      'guardar_frente',
+      fecha,
+      nombre:     frente.nombre,
+      tipo:       frente.tipo,
+      hora:       frente.hora,
+      siso,
+      materiales: frente.materiales||'',
+      responsable: frente.responsable||'',
+      jornada:    frente.jornada||'',
+      personal,
+      inasistencias: (frente.inasistencias||[]).join(', '),
+      rowIdx:     frente.rowIdx||''
+    });
+    const res  = await fetch(APPS_URL + '?' + params.toString());
+    const data = await res.json();
+    return data.ok;
+  } catch(e) { return false; }
+}
+
+// Guarda un frente que ya viene del Sheet (siso y personal como NOMBRES),
+// sin pasar por el mapeo de IDs — usado por el toggle de asistencia
+async function syncGuardarDirecto(fecha, f) {
+  try {
+    const params = new URLSearchParams({
+      tabla:      'guardar_frente',
+      fecha,
+      nombre:     f.nombre,
+      tipo:       f.tipo,
+      hora:       f.hora,
+      siso:       f.siso||'',
+      materiales: f.materiales||'',
+      responsable: f.responsable||'',
+      jornada:    f.jornada||'',
+      personal:   (f.personal||[]).join(', '),
+      inasistencias: (f.inasistencias||[]).join(', '),
+      rowIdx:     f.rowIdx||''
+    });
+    const res  = await fetch(APPS_URL + '?' + params.toString());
+    const data = await res.json();
+    return data.ok;
+  } catch(e) { return false; }
+}
+
+// Eliminar frente del Sheet
+async function syncEliminar(rowIdx) {
+  try {
+    const res  = await fetch(APPS_URL + '?tabla=eliminar_frente&rowIdx=' + rowIdx);
+    const data = await res.json();
+    return data.ok;
+  } catch(e) { return false; }
+}
+let fechaSel = new Date().toISOString().split('T')[0];
+let editIdx  = null;
+let selPersonal = new Set();
+let calYear, calMonth;
+let colabActual = null;
+
+// ── UTILIDADES ──
+function fmtFecha(str){
+  const [y,m,d] = str.split('-');
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const dias  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const fecha = new Date(y,m-1,d);
+  return `${dias[fecha.getDay()]}, ${d} de ${meses[m-1]} de ${y}`;
+}
+function fmtHora(t){
+  if(!t) return '';
+  t = String(t).trim();
+  // Si viene como Date serializado ("... 06:00:00 GMT..."), extraer HH:MM
+  const m1 = t.match(/(\d{1,2}):(\d{2})/);
+  if(!m1) return t;
+  const hr = parseInt(m1[1]), min = m1[2];
+  if(isNaN(hr)) return t;
+  return `${hr>12?hr-12:hr===0?12:hr}:${min} ${hr>=12?'p.m.':'a.m.'}`;
+}
+function initials(n){ const p=n.trim().split(' '); return (p[0]?.[0]||'')+(p[1]?.[0]||''); }
+function tipoColor(t){ return t==='mtto'?'azul':t==='proyecto'?'morado':'gris'; }
+function tipoLabel(t){ return t==='mtto'?'Mantenimiento':t==='proyecto'?'Proyecto':'Interno'; }
+function toast(msg,type){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast on '+(type||''); setTimeout(()=>{t.className='toast'},3500); }
+
+// ── NAVEGACIÓN ──
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.tnb').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+}
+
+// ── VISTA INGENIERO ──
+function irHoy(){ fechaSel=new Date().toISOString().split('T')[0]; document.getElementById('fecha-sel').value=fechaSel; renderDia(); }
+function cambiarDia(d){ const f=new Date(fechaSel+'T12:00:00'); f.setDate(f.getDate()+d); fechaSel=f.toISOString().split('T')[0]; document.getElementById('fecha-sel').value=fechaSel; renderDia(); }
+
+async function renderDia(){
+  fechaSel = document.getElementById('fecha-sel').value || fechaSel;
+  document.getElementById('fecha-display').textContent = fmtFecha(fechaSel);
+  document.getElementById('frentes-titulo').textContent = 'Frentes del ' + fmtFecha(fechaSel);
+  document.getElementById('frentes-list').innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted)">Cargando...</div>';
+  await cargarDia(fechaSel);
+  const frentes = prog[fechaSel] || [];
+  const list = document.getElementById('frentes-list');
+  if(!frentes.length){
+    list.innerHTML=`<div class="empty-dia"><div class="empty-dia-icon" style="font-size:14px;letter-spacing:.15em;color:#888;font-weight:700">SIN PROGRAMACIÓN</div><div class="empty-dia-text">Sin frentes programados</div><div style="font-size:13px;color:var(--muted)">Agrega el primer frente del día</div></div>`;
+    return;
+  }
+  list.innerHTML = frentes.map((f,i)=>{
+    const sisoNombre = f.siso || '';
+    const personal   = Array.isArray(f.personal) ? f.personal : [];
+    const faltas     = Array.isArray(f.inasistencias) ? f.inasistencias : [];
+    const esFalta    = n => faltas.some(x => x.trim().toUpperCase() === n.trim().toUpperCase());
+    return `
+    <div class="frente-card">
+      <div class="frente-header ${f.tipo==='mtto'?'mtto':f.tipo==='proyecto'?'proyecto':'interno'}">
+        <div>
+          <div class="frente-titulo">${f.nombre}</div>
+          <div class="frente-hora">⏰ ${fmtHora(f.hora)} · ${tipoLabel(f.tipo)}${f.jornada==='terminar'?' · <span style="background:rgba(255,255,255,.25);padding:2px 8px;border-radius:10px;font-weight:800">Hasta acabar actividades</span>':''}</div>
+        </div>
+        <div class="frente-actions-top">
+          <button class="btn-frente-edit" onclick="editarFrente(${i})" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M17 3l4 4L8 20l-5 1 1-5z"/></svg></button>
+        </div>
+      </div>
+      <div class="frente-body">
+        <div>
+          <div class="frente-section-title">Personal asignado (${personal.length})${faltas.length?` · <span style="color:#C0001A">${faltas.length} inasistencia${faltas.length>1?'s':''}</span>`:''}</div>
+          <div class="personal-chips">
+            ${sisoNombre?`<span class="chip siso">SISO · ${sisoNombre.split(' ').slice(0,3).join(' ')}</span>`:''}
+            ${personal.map(n=>`<span class="chip clickable ${esFalta(n)?'falta':''}" onclick="toggleAsistencia(${i}, '${n.replace(/'/g,"\\'")}')" title="${esFalta(n)?'Clic para quitar la inasistencia':'Clic para marcar que no asistió'}">${esFalta(n)?'✕ ':''}${n.split(' ').slice(0,3).join(' ')}${esFalta(n)?' (no asistió)':''}</span>`).join('')}
+            ${!personal.length && !sisoNombre?'<span style="font-size:12px;color:var(--muted);font-style:italic">Sin personal asignado</span>':''}
+          </div>
+          ${personal.length?'<div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic">Toca a una persona para marcar/quitar inasistencia</div>':''}
+        </div>
+        <div>
+          ${f.responsable?`<div class="frente-section-title">Responsable PepsiCo</div>
+          <div class="materiales-text" style="margin-bottom:10px">${f.responsable}</div>`:''}
+          <div class="frente-section-title">Materiales / Notas</div>
+          <div class="materiales-text">${f.materiales||'<span style="font-style:italic;color:var(--muted)">Sin materiales especificados</span>'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Marcar / desmarcar inasistencia de una persona en un frente
+async function toggleAsistencia(frenteIdx, nombre){
+  const f = (prog[fechaSel]||[])[frenteIdx];
+  if(!f) return;
+  f.inasistencias = Array.isArray(f.inasistencias) ? f.inasistencias : [];
+  const idx = f.inasistencias.findIndex(x => x.trim().toUpperCase() === nombre.trim().toUpperCase());
+  const nomCorto = nombre.split(' ').slice(0,3).join(' ');
+  if (idx >= 0) {
+    if(!confirm('¿Quitar la inasistencia de ' + nomCorto + '?')) return;
+    f.inasistencias.splice(idx, 1);
+  } else {
+    if(!confirm('¿Marcar que ' + nomCorto + ' NO asistió este día?')) return;
+    f.inasistencias.push(nombre);
+  }
+  saveCache();
+  const ok = await syncGuardarDirecto(fechaSel, f);
+  await renderDia();
+  toast(ok ? (idx>=0 ? '✓ Inasistencia eliminada' : '✓ Inasistencia registrada — ' + nomCorto) : '⚠ Guardado localmente — verifica conexión', ok ? 'ok' : 'err');
+}
+
+function abrirNuevoFrente(){
+  editIdx = null;
+  document.getElementById('mod-frente-title').textContent = 'Nuevo frente de trabajo';
+  document.getElementById('f-nombre').value = '';
+  document.getElementById('f-tipo').value = 'mtto';
+  document.getElementById('f-hora').value = '06:00';
+  document.getElementById('f-siso').value = '';
+  document.getElementById('f-materiales').value = '';
+  document.getElementById('f-responsable').value = '';
+  document.getElementById('f-jornada').value = '';
+  document.getElementById('btn-del-frente').style.display = 'none';
+  selPersonal = new Set();
+  llenarSISO(); renderPersonalList('');
+  document.getElementById('mod-frente').classList.add('on');
+}
+
+function editarFrente(i){
+  const f = (prog[fechaSel]||[])[i];
+  if(!f) return;
+  editIdx = i;
+  document.getElementById('mod-frente-title').textContent = 'Editar frente';
+  document.getElementById('f-nombre').value    = f.nombre||'';
+  document.getElementById('f-tipo').value      = f.tipo||'mtto';
+  document.getElementById('f-hora').value      = f.hora||'06:00';
+  document.getElementById('f-materiales').value= f.materiales||'';
+  document.getElementById('f-responsable').value = f.responsable||'';
+  document.getElementById('f-jornada').value = f.jornada||'';
+  document.getElementById('btn-del-frente').style.display = 'block';
+  // El Sheet guarda NOMBRES pero la lista funciona con IDs — mapear para
+  // que el personal quede preseleccionado al editar
+  selPersonal = new Set((f.personal||[]).map(n => {
+    const emp = EMPLEADOS.find(e => e.nombre.trim().toUpperCase() === String(n).trim().toUpperCase());
+    return emp ? emp.id : null;
+  }).filter(id => id !== null));
+  // El SISO también viene como nombre — buscar su ID para preseleccionarlo
+  const sisoEmp = f.siso ? SISO.find(s => s.nombre.trim().toUpperCase() === String(f.siso).trim().toUpperCase()) : null;
+  llenarSISO(sisoEmp ? sisoEmp.id : null);
+  renderPersonalList('');
+  document.getElementById('mod-frente').classList.add('on');
+}
+
+function llenarSISO(sel){
+  const fsel = document.getElementById('f-siso');
+  fsel.innerHTML = '<option value="">Sin SISO asignado</option>' +
+    SISO.map(s=>`<option value="${s.id}" ${s.id===sel?'selected':''}>${s.nombre.split(' ').slice(0,3).join(' ')}</option>`).join('');
+}
+
+function filtrarPersonal(q){
+  renderPersonalList(q);
+}
+
+// Empleados ya asignados a OTROS frentes del mismo día → Map(id → nombre del frente)
+function asignadosOtroFrente(){
+  const map = new Map();
+  (prog[fechaSel]||[]).forEach((f, i) => {
+    if (editIdx !== null && i === editIdx) return; // el frente que se está editando no cuenta
+    const nombres = [...(f.personal||[]), ...(f.siso ? [f.siso] : [])];
+    nombres.forEach(n => {
+      const emp = EMPLEADOS.find(e => e.nombre.trim().toUpperCase() === String(n).trim().toUpperCase());
+      if (emp && !map.has(emp.id)) map.set(emp.id, f.nombre);
+    });
+  });
+  return map;
+}
+
+function renderPersonalList(q){
+  const asignados = asignadosOtroFrente();
+  const lista = EMPLEADOS.filter(e=>!q||e.nombre.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('f-personal-list').innerHTML = lista.map(e=>`
+    <label class="personal-item ${selPersonal.has(e.id)?'sel':''}">
+      <input type="checkbox" ${selPersonal.has(e.id)?'checked':''} onchange="togglePersonal(${e.id},this.checked)">
+      <span style="flex:1">
+        ${e.nombre.split(' ').slice(0,3).join(' ')}
+        ${e.observacion ? `<span style="margin-left:6px;background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px">⚠ ${e.observacion}</span>` : ''}
+        ${asignados.has(e.id) ? `<span class="badge-asig">En: ${asignados.get(e.id)}</span>` : ''}
+      </span>
+      <span class="pcargo">${e.cargo}</span>
+    </label>`).join('');
+  document.getElementById('sel-count').textContent = selPersonal.size + ' persona' + (selPersonal.size!==1?'s':'') + ' seleccionada' + (selPersonal.size!==1?'s':'');
+}
+
+function togglePersonal(id, checked){
+  if (checked) {
+    // Advertir si ya está asignado a otro frente del mismo día
+    const asignados = asignadosOtroFrente();
+    if (asignados.has(id)) {
+      const emp = EMPLEADOS.find(e=>e.id===id);
+      if (!confirm('⚠ ' + (emp?.nombre?.split(' ').slice(0,3).join(' ') || 'Esta persona') +
+        ' ya está asignado/a al frente "' + asignados.get(id) + '" este día.\n\n¿Asignarlo/a también a este frente?')) {
+        renderPersonalList(document.getElementById('f-personal-search').value);
+        return;
+      }
+    }
+    selPersonal.add(id);
+  } else {
+    selPersonal.delete(id);
+  }
+  document.getElementById('sel-count').textContent = selPersonal.size + ' persona' + (selPersonal.size!==1?'s':'') + ' seleccionada' + (selPersonal.size!==1?'s':'');
+  // Actualizar clases
+  document.querySelectorAll('#f-personal-list .personal-item').forEach(el=>{
+    const cb = el.querySelector('input');
+    el.classList.toggle('sel', cb.checked);
+  });
+}
+
+// Selecciona todos los empleados visibles (respeta el filtro de búsqueda).
+// Los que ya están en otro frente del día se omiten para no duplicar.
+function seleccionarTodos(){
+  const q = document.getElementById('f-personal-search').value;
+  const asignados = asignadosOtroFrente();
+  const lista = EMPLEADOS.filter(e=>!q||e.nombre.toLowerCase().includes(q.toLowerCase()));
+  let omitidos = 0;
+  lista.forEach(e => {
+    if (asignados.has(e.id)) { if(!selPersonal.has(e.id)) omitidos++; return; }
+    selPersonal.add(e.id);
+  });
+  renderPersonalList(q);
+  if (omitidos > 0) toast('⚠ ' + omitidos + ' persona' + (omitidos>1?'s':'') + ' omitida' + (omitidos>1?'s':'') + ' por estar en otro frente', 'err');
+}
+
+function quitarTodos(){
+  selPersonal = new Set();
+  renderPersonalList(document.getElementById('f-personal-search').value);
+}
+
+async function guardarFrente(){
+  const nombre = document.getElementById('f-nombre').value.trim();
+  if(!nombre){ alert('El nombre del frente es obligatorio.'); return; }
+  // Conservar inasistencias ya registradas (solo de quienes siguen asignados)
+  const prev = editIdx !== null ? (prog[fechaSel]||[])[editIdx] : null;
+  const nombresNuevos = [...selPersonal].map(id => EMPLEADOS.find(e=>e.id===id)?.nombre || '').filter(Boolean);
+  const inasistencias = (prev?.inasistencias||[]).filter(n =>
+    nombresNuevos.some(nn => nn.trim().toUpperCase() === n.trim().toUpperCase()));
+  const frente = {
+    nombre,
+    tipo:       document.getElementById('f-tipo').value,
+    hora:       document.getElementById('f-hora').value,
+    siso:       parseInt(document.getElementById('f-siso').value)||null,
+    materiales: document.getElementById('f-materiales').value.trim(),
+    responsable: document.getElementById('f-responsable').value.trim(),
+    jornada:    document.getElementById('f-jornada').value,
+    personal:   [...selPersonal],
+    inasistencias,
+    rowIdx:     editIdx !== null ? (prog[fechaSel]||[])[editIdx]?.rowIdx : null
+  };
+  const btn = document.querySelector('#mod-frente .mbtn-p');
+  btn.textContent = 'Guardando...'; btn.disabled = true;
+  const ok = await syncGuardar(fechaSel, frente);
+  btn.textContent = 'Guardar frente'; btn.disabled = false;
+  closeModal('mod-frente');
+  await renderDia();
+  renderCalendario();
+  toast(ok ? '✓ Frente guardado' : '⚠ Guardado localmente — verifica conexión', ok ? 'ok' : 'err');
+}
+
+async function eliminarFrente(){
+  if(!confirm('¿Eliminar este frente de trabajo?')) return;
+  const frente = (prog[fechaSel]||[])[editIdx];
+  if(frente?.rowIdx) {
+    await syncEliminar(frente.rowIdx);
+  }
+  closeModal('mod-frente');
+  await renderDia();
+  renderCalendario();
+  toast('Frente eliminado', '');
+}
+
+// ── VISTA COLABORADOR ──
+function buscarColab(q){
+  const sug = document.getElementById('colab-sug');
+  if(!q || q.length < 2){ sug.style.display='none'; return; }
+  const res = EMPLEADOS.filter(e=>e.nombre.toLowerCase().includes(q.toLowerCase()));
+  if(!res.length){ sug.style.display='none'; return; }
+  sug.style.display='block';
+  sug.innerHTML = res.map(e=>`
+    <div class="colab-item" onclick="seleccionarColab(${e.id})">
+      ${e.nombre.split(' ').slice(0,3).join(' ')}
+      <div class="cargo">${e.cargo}</div>
+    </div>`).join('');
+}
+
+function seleccionarColab(id){
+  colabActual = EMPLEADOS.find(e=>e.id===id);
+  if(!colabActual) return;
+  document.getElementById('colab-sug').style.display='none';
+  document.getElementById('colab-input').value='';
+  document.getElementById('colab-busqueda').style.display='none';
+  document.getElementById('colab-perfil').style.display='block';
+  const ini = initials(colabActual.nombre);
+  document.getElementById('colab-card').innerHTML=`
+    <div class="colab-avatar">${ini}</div>
+    <div><div class="colab-nombre">${colabActual.nombre.split(' ').slice(0,3).join(' ')}</div><div class="colab-cargo">${colabActual.cargo}</div></div>
+    <button class="btn-cambiar" onclick="cambiarColab()">Cambiar</button>`;
+  const hoy = new Date();
+  calYear = hoy.getFullYear(); calMonth = hoy.getMonth();
+  // Cargar toda la programación del Sheet
+  document.getElementById('cal-grid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted)">Cargando calendario...</div>';
+  cargarTodaProg();
+}
+
+function cambiarColab(){
+  colabActual=null;
+  document.getElementById('colab-busqueda').style.display='block';
+  document.getElementById('colab-perfil').style.display='none';
+}
+
+function cambiarMes(d){
+  calMonth+=d;
+  if(calMonth<0){ calMonth=11; calYear--; }
+  if(calMonth>11){ calMonth=0; calYear++; }
+  renderCalendario();
+}
+
+function renderCalendario(){
+  if(!colabActual) return;
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-month-label').textContent = meses[calMonth]+' '+calYear;
+  const hoy = new Date();
+  const primerDia = new Date(calYear,calMonth,1).getDay();
+  const diasMes   = new Date(calYear,calMonth+1,0).getDate();
+  const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  let html = dias.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  // Días del mes anterior
+  for(let i=0;i<primerDia;i++){
+    const d2 = new Date(calYear,calMonth,1-primerDia+i);
+    html+=`<div class="cal-day otro-mes"><div class="cal-day-num">${d2.getDate()}</div></div>`;
+  }
+  // Días del mes
+  for(let d=1;d<=diasMes;d++){
+    const str = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const esHoy = hoy.getFullYear()===calYear&&hoy.getMonth()===calMonth&&hoy.getDate()===d;
+    const frentes = prog[str]||[];
+    const miNombre = colabActual?.nombre?.split(' ')[0]?.toUpperCase() || '';
+    const misFrente = frentes.filter(f=>
+      (Array.isArray(f.personal) && f.personal.some(n=>n.toUpperCase().includes(miNombre))) ||
+      (f.siso && f.siso.toUpperCase().includes(miNombre))
+    );
+    const tieneProg = misFrente.length > 0;
+    html+=`<div class="cal-day ${esHoy?'hoy':''} ${tieneProg?'con-actividad':''}" onclick="abrirDia('${str}')">
+      <div class="cal-day-num">${d}</div>
+      ${tieneProg?`<div class="cal-dots">${misFrente.map(f=>`<span class="cal-dot ${f.tipo==='mtto'?'mtto':f.tipo==='proyecto'?'proyecto':''}"></span>`).join('')}</div><div class="cal-frente-count">${misFrente.length} frente${misFrente.length>1?'s':''}</div>`:''}
+    </div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+function abrirDia(str){
+  const frentes = prog[str]||[];
+  if(!frentes.length) return;
+  document.getElementById('mod-dia-title').textContent = 'Programación del día';
+  document.getElementById('mod-dia-date').textContent = fmtFecha(str);
+  document.getElementById('mod-dia-content').innerHTML = frentes.map(f=>{
+    const sisoNombre = f.siso || '';
+    const personal   = Array.isArray(f.personal) ? f.personal : [];
+    const faltas     = Array.isArray(f.inasistencias) ? f.inasistencias : [];
+    const esFalta    = n => faltas.some(x => x.trim().toUpperCase() === n.trim().toUpperCase());
+    const miNombre   = colabActual?.nombre || '';
+    const esMio = personal.some(n => n.toUpperCase().includes(miNombre.split(' ')[0])) ||
+                  sisoNombre.toUpperCase().includes(miNombre.split(' ')[0]);
+    return `
+    <div class="modal-frente">
+      <div class="modal-frente-hdr ${tipoColor(f.tipo)}" ${esMio?'style="outline:3px solid #fff;outline-offset:-3px"':''}>
+        <span>${f.nombre} ${esMio?'<span style="font-size:11px;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:10px">✓ Tú estás aquí</span>':''}</span>
+        <span style="font-size:12px;opacity:.85">${tipoLabel(f.tipo)}</span>
+      </div>
+      <div class="modal-frente-body">
+        ${f.jornada==='terminar'?`<div style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:10px;padding:12px 16px;margin-bottom:12px;text-align:center"><span style="font-size:14px;font-weight:800;color:#92400E">JORNADA HASTA ACABAR ACTIVIDADES — ¡LLEVA TU ALMUERZO!</span></div>`:''}
+        <div class="mf-row"><span class="mf-label">Hora de ingreso</span><span class="mf-val">
+          <span style="display:inline-block;background:var(--aglow);border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:4px 14px;font-size:15px;font-weight:800">⏰ ${fmtHora(f.hora) || 'Por definir'}</span>
+        </span></div>
+        ${f.responsable?`<div class="mf-row"><span class="mf-label">Responsable PepsiCo</span><span class="mf-val" style="font-weight:600;color:var(--text)">${f.responsable}</span></div>`:''}
+        ${sisoNombre?`<div class="mf-row"><span class="mf-label">SISO</span><span class="mf-val">
+          <span class="mi-chip siso ${sisoNombre.toUpperCase().includes(miNombre.split(' ')[0])?'yo':''}">
+            SISO · ${sisoNombre.split(' ').slice(0,3).join(' ')}
+            ${sisoNombre.toUpperCase().includes(miNombre.split(' ')[0])?' (tú)':''}
+          </span></span></div>`:''}
+        <div class="mf-row">
+          <span class="mf-label">Equipo</span>
+          <span class="mf-val">${personal.length
+            ? personal.map(n=>`<span class="mi-chip ${esFalta(n)?'falta':(n.toUpperCase().includes(miNombre.split(' ')[0])?'yo':'')}">${esFalta(n)?'✕ ':''}${n.split(' ').slice(0,3).join(' ')}${esFalta(n)?' (no asistió)':(n.toUpperCase().includes(miNombre.split(' ')[0])?' (tú)':'')}</span>`).join('')
+            : '<span style="font-size:12px;color:var(--muted)">Sin asignar</span>'}</span>
+        </div>
+        ${f.materiales?`<div class="mf-row"><span class="mf-label">Materiales</span><span class="mf-val" style="font-weight:600;color:var(--text)">${f.materiales}</span></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('mod-dia').classList.add('on');
+}
+
+// ── MODALES ──
+function closeModal(id){ document.getElementById(id).classList.remove('on'); }
+// El modal de frente NO se cierra con clic afuera — evita perder el avance del ingeniero
+document.querySelectorAll('.overlay').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m && m.id!=='mod-frente') m.classList.remove('on'); }));
+
+// ── INIT ──
+document.getElementById('fecha-sel').value = fechaSel;
+// La vista por defecto es colaborador — sin contraseña
+cargarEmpleados(); // Carga empleados del Sheet en background
+
+// Cargar contactos PepsiCo para el datalist de responsable
+async function cargarContactosPep(){
+  try {
+    const res = await fetch(APPS_URL + '?tabla=correos_pep');
+    const contactos = await res.json();
+    if (Array.isArray(contactos)) {
+      document.getElementById('lista-pep').innerHTML = contactos
+        .map(c => `<option value="${c.nombre}">${c.area||''}</option>`).join('');
+    }
+  } catch(e) { /* sin lista: el campo funciona como texto libre */ }
+}
+cargarContactosPep();</script>
+</body>
+</html>

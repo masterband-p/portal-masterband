@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masterband · Gestión de Trabajos</title>
+<style>
+  :root {
+    --bg:#F5F5F3; --surface:#FFFFFF; --s2:#EFEFED; --border:#E0E0E0;
+    --text:#1A1A1A; --dim:#4A4A4A; --muted:#888888;
+    --accent:#C0001A; --ah:#8A0012; --aglow:#F5E6E9;
+    --green:#1E7A3E; --gdim:#E8F5EE; --yellow:#F59E0B; --ydim:#FEF3C7;
+    --red:#C0001A; --rdim:#F5E6E9;
+    --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --mono:'Courier New',monospace;
+    --sh:0 1px 3px rgba(0,0,0,0.08); --shm:0 4px 12px rgba(0,0,0,0.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+  ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+  .lcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:44px;width:380px;box-shadow:var(--shm)}
+  .llogo-wrap{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+  .llogo-icon{width:38px;height:38px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0}
+  .llogo-text{font-size:20px;font-weight:700;color:var(--text)}.llogo-text span{color:var(--accent)}
+  .llogo-sub{font-size:13px;color:var(--muted)}
+  .ltitle{font-size:18px;font-weight:700;color:var(--text);margin-bottom:24px}
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+  .rbtn{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:14px 10px;cursor:pointer;text-align:center;font-family:var(--font);color:var(--dim);transition:all .2s}
+  .rbtn:hover,.rbtn.on{border-color:var(--accent);background:var(--aglow);color:var(--accent)}
+  .rbtn .icon{font-size:22px;margin-bottom:5px}.rbtn .label{font-size:12px;font-weight:600}
+  .flabel{font-size:12px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block}
+  .fgroup{margin-bottom:16px}
+  .finput{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-family:var(--font);font-size:14px;outline:none;transition:all .2s}
+  .finput:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
+  .btn-in{width:100%;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);transition:background .2s}
+  .btn-in:hover{background:var(--ah)}
+  .lerr{color:var(--red);font-size:12px;margin-top:10px;text-align:center;min-height:18px}
+  #app{display:none}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);height:58px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--sh)}
+  .brand-wrap{display:flex;align-items:center;gap:8px}
+  .brand-icon{width:32px;height:32px;background:var(--accent);border-radius:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
+  .brand-text{font-size:15px;font-weight:700;color:var(--text)}.brand-text span{color:var(--accent)}
+  .brand-div{width:1px;height:24px;background:var(--border);margin:0 8px}
+  .brand-mod{font-size:13px;color:var(--muted)}
+  .topnav{display:flex;gap:2px}
+  .tnb{background:none;border:none;color:var(--dim);font-family:var(--font);font-size:13px;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:500;transition:all .15s}
+  .tnb:hover{background:var(--s2);color:var(--text)}.tnb.on{background:var(--aglow);color:var(--accent);font-weight:600}
+  .topright{display:flex;align-items:center;gap:10px}
+  .sync-btn{background:var(--surface);border:1px solid var(--border);color:var(--dim);font-family:var(--font);font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .2s}
+  .sync-btn:hover{border-color:var(--accent);color:var(--accent)}.sync-btn.busy{opacity:.5;cursor:wait}
+  .ubadge{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;color:var(--dim);display:flex;align-items:center;gap:6px}
+  .udot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  .outbtn{background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--font);font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s}
+  .outbtn:hover{border-color:var(--red);color:var(--red)}
+  .page{display:none;padding:28px;max-width:1300px;margin:0 auto}.page.on{display:block}
+  .ptitle{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:16px}
+  .ing-header{margin-bottom:24px}.ing-greeting{font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px}.ing-sub{font-size:13px;color:var(--muted)}
+  .ing-kpis{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+  .ikpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;min-width:130px;box-shadow:var(--sh)}
+  .ikpi-val{font-size:26px;font-weight:700;line-height:1}
+  .ikpi-val.a{color:var(--accent)}.ikpi-val.g{color:var(--green)}.ikpi-val.y{color:var(--yellow)}.ikpi-val.r{color:var(--red)}
+  .ikpi-label{font-size:11px;color:var(--muted);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .work-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+  .work-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px;border-top:3px solid var(--border);box-shadow:var(--sh);transition:box-shadow .2s}
+  .work-card:hover{box-shadow:var(--shm)}.work-card.proceso{border-top-color:var(--yellow)}.work-card.finalizado{border-top-color:var(--green)}
+  .wc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+  .wc-code{font-size:11px;font-family:var(--mono);color:var(--accent);font-weight:700}
+  .wc-area{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:2px 9px}
+  .wc-name{font-size:15px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:14px}
+  .wc-fields{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+  .wc-field{display:flex;gap:10px;align-items:baseline}
+  .wc-flabel{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;min-width:72px;flex-shrink:0}
+  .wc-fval{font-size:13px;color:var(--dim)}.wc-fval.oc{font-family:var(--mono);color:var(--accent);font-weight:700;font-size:12px}
+  .wc-status{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600}
+  .status-pill.proceso{background:var(--ydim);color:#92400E}.status-pill.finalizado{background:var(--gdim);color:var(--green)}
+  .acta-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+  .acta-pill.ok{background:var(--gdim);color:var(--green)}.acta-pill.pend{background:var(--s2);color:var(--muted);border:1px solid var(--border)}
+  .wc-obs{background:var(--s2);border-left:3px solid var(--border);border-radius:0 6px 6px 0;padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--dim);line-height:1.6}
+  .wc-obs.has-obs{border-left-color:var(--accent);background:var(--aglow)}
+  .wc-actions{display:flex;gap:8px}
+  .btn-done{background:var(--green);color:#fff;border:none;border-radius:6px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);flex:1;transition:opacity .2s}
+  .btn-done:hover{opacity:.88}.btn-done:disabled{background:var(--s2);color:var(--muted);border:1px solid var(--border);cursor:not-allowed}
+  .btn-note{background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s}
+  .btn-note:hover{border-color:var(--accent);color:var(--accent)}
+  .ing-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .itab{background:var(--surface);border:1px solid var(--border);color:var(--dim);font-family:var(--font);font-size:13px;font-weight:600;padding:7px 16px;border-radius:20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;box-shadow:var(--sh)}
+  .itab:hover{border-color:var(--accent);color:var(--accent)}.itab.on{background:var(--aglow);border-color:var(--accent);color:var(--accent)}
+  .itab-cnt{background:var(--s2);border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;color:var(--muted)}.itab.on .itab-cnt{background:var(--accent);color:#fff}
+  .ing-search{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:9px 14px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:all .2s;box-shadow:var(--sh)}
+  .ing-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}.empty-icon{font-size:40px;margin-bottom:12px}.empty-text{font-size:15px;font-weight:600;color:var(--dim);margin-bottom:6px}.empty-sub{font-size:13px}
+  .kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+  .kcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;box-shadow:var(--sh)}
+  .kval{font-size:28px;font-weight:700;line-height:1}.kval.a{color:var(--accent)}.kval.g{color:var(--green)}.kval.y{color:var(--yellow)}.kval.r{color:var(--red)}
+  .klabel{font-size:11px;color:var(--muted);margin-top:5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .meta-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 24px;margin-bottom:24px;box-shadow:var(--sh)}
+  .meta-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+  .meta-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .meta-nums{display:flex;align-items:baseline;gap:10px}.meta-cur{font-size:28px;font-weight:700;color:var(--green)}.meta-of{font-size:13px;color:var(--muted)}
+  .ptrack{background:var(--s2);border-radius:4px;height:8px;overflow:hidden}.pfill{height:100%;border-radius:4px;background:var(--accent);transition:width .6s ease}
+  .meta-pct{font-size:12px;color:var(--muted);margin-top:8px}
+  .filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .fbtn{background:var(--surface);border:1px solid var(--border);color:var(--dim);font-family:var(--font);font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer;transition:all .15s}
+  .fbtn:hover{border-color:var(--accent);color:var(--accent)}.fbtn.on{background:var(--aglow);border-color:var(--accent);color:var(--accent)}
+  .gtbl{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--sh)}
+  .gtbl th{background:var(--s2);border-bottom:1px solid var(--border);padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+  .gtbl td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text);vertical-align:middle}
+  .gtbl tr:last-child td{border-bottom:none}.gtbl tr:hover td{background:#FAFAFA;cursor:pointer}
+  .mono{font-family:var(--mono);font-size:12px}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;white-space:nowrap}
+  .badge::before{content:"●";font-size:8px}
+  .bg{background:var(--gdim);color:var(--green)}.by{background:var(--ydim);color:#92400E}
+  .br{background:var(--rdim);color:var(--red)}.bgr{background:var(--s2);color:var(--muted)}.ba{background:var(--aglow);color:var(--accent)}
+  .spill{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:10px;font-weight:600;color:var(--dim);white-space:nowrap}
+  .pipeline{display:flex;overflow-x:auto;gap:12px;padding-bottom:10px;margin-bottom:24px}
+  .pcol{min-width:180px;flex-shrink:0}
+  .pcolh{background:var(--s2);border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;padding:8px 12px;display:flex;justify-content:space-between;align-items:center}
+  .pcolname{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .pcolcnt{font-size:10px;font-weight:700;background:var(--border);color:var(--muted);padding:2px 6px;border-radius:10px}
+  .pcards{background:var(--surface);border:1px solid var(--border);border-radius:0 0 8px 8px;min-height:80px;padding:8px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh)}
+  .pcard{background:var(--s2);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:6px;padding:9px 11px;cursor:pointer;transition:all .15s}
+  .pcard:hover{border-color:var(--accent);background:var(--aglow)}
+  .pcard.proceso{border-left-color:var(--yellow)}.pcard.finalizado{border-left-color:var(--green)}.pcard.facturado{border-left-color:var(--accent)}
+  .pc-code{font-size:9px;font-family:var(--mono);color:var(--muted);font-weight:700}.pc-name{font-size:11px;font-weight:600;color:var(--text);margin-top:2px;line-height:1.3}.pc-client{font-size:10px;color:var(--muted);margin-top:4px}
+  .pempty{text-align:center;padding:14px 8px;font-size:11px;color:var(--muted)}
+  .alert-list{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+  .alert-item{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--yellow);border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;box-shadow:var(--sh);transition:box-shadow .15s}
+  .alert-item:hover{box-shadow:var(--shm)}.ai-title{font-size:13px;font-weight:600;color:var(--text)}.ai-sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .ftbl{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:24px;box-shadow:var(--sh)}
+  .ftbl th{background:var(--s2);border-bottom:1px solid var(--border);padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .ftbl td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text)}.ftbl tr:last-child td{border-bottom:none}
+  .mark-btn{background:var(--green);border:none;color:#fff;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--font)}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .overlay.on{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto;padding:28px;box-shadow:var(--shm)}
+  .mhdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}.mtitle{font-size:18px;font-weight:700;color:var(--text)}
+  .mclose{background:var(--s2);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+  .mclose:hover{border-color:var(--red);color:var(--red)}
+  .fta{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;resize:vertical;min-height:90px;transition:all .2s}
+  .fta:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
+  .mbtns{display:flex;gap:10px;margin-top:16px}
+  .mbtn-p{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:background .2s}
+  .mbtn-p:hover{background:var(--ah)}
+  .mbtn-s{background:var(--surface);border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s}
+  .mbtn-s:hover{border-color:var(--accent);color:var(--accent)}
+  .det-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+  .det-block{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+  .det-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}.det-val{font-size:14px;font-weight:600;color:var(--text)}
+  .fin-block{background:var(--aglow);border:1px solid #F0C0C8;border-radius:8px;padding:16px;margin-bottom:16px}
+  .fin-title{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+  .fin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.fin-label{font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:600}.fin-val{font-size:14px;font-weight:700;color:var(--text)}
+  .obs-block{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:16px}
+  .obs-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}.obs-text{font-size:13px;color:var(--dim);line-height:1.6}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;color:var(--text);z-index:500;box-shadow:var(--shm);display:none;max-width:340px}
+  .toast.on{display:block}.toast.ok{border-left:4px solid var(--green)}.toast.err{border-left:4px solid var(--red)}
+  .tsearch{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 14px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;width:240px;transition:all .2s;box-shadow:var(--sh)}
+  .tsearch:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
+  .tbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+
+  /* ACTA DE ENTREGA */
+  #acta-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;overflow-y:auto}
+  .acta-topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:var(--sh)}
+  .acta-body{max-width:780px;margin:0 auto;padding:24px 16px}
+  .acta-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px;box-shadow:var(--sh)}
+  .acta-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+  .acta-field{margin-bottom:12px}
+  .acta-label{font-size:12px;font-weight:600;color:var(--dim);margin-bottom:5px;display:block}
+  .acta-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:all .2s}
+  .acta-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
+  .acta-textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;resize:vertical;min-height:80px;transition:all .2s}
+  .acta-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
+  .acta-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:600px){.acta-row{grid-template-columns:1fr}}
+  .foto-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+  .foto-slot{border:2px dashed var(--border);border-radius:8px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;background:var(--s2);transition:border-color .2s;position:relative}
+  .foto-slot:hover{border-color:var(--accent)}
+  .foto-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+  .foto-slot-label{font-size:12px;color:var(--muted);text-align:center;z-index:1;pointer-events:none}
+  .foto-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .firma-wrap{position:relative}
+  .firma-canvas{width:100%;height:150px;background:#fff;border:1px solid var(--border);border-radius:8px;cursor:crosshair;touch-action:none;display:block}
+  .btn-clear-firma{position:absolute;top:8px;right:8px;background:var(--s2);border:1px solid var(--border);color:var(--muted);font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:var(--font)}
+  .satisfaccion-btns{display:flex;gap:10px;margin-top:8px}
+  .sat-btn{flex:1;padding:11px;border:2px solid var(--border);border-radius:8px;background:var(--surface);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--dim)}
+  .sat-btn.si.on{border-color:var(--green);background:var(--gdim);color:var(--green)}
+  .sat-btn.no.on{border-color:var(--red);background:var(--rdim);color:var(--red)}
+  .calificacion{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .cal-btn{width:40px;height:40px;border:1px solid var(--border);border-radius:6px;background:var(--s2);font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--dim)}
+  .cal-btn.on{border-color:var(--accent);background:var(--aglow);color:var(--accent)}
+  .check-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--dim);cursor:pointer}
+  .check-item:last-child{border-bottom:none}
+  .check-item input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+  .acta-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+  .btn-pdf{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);flex:1;transition:background .2s}
+  .btn-pdf:hover{background:var(--ah)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="lcard">
+    <div class="llogo-wrap" style="justify-content:center"><div style="text-align:center"><img src="logo-masterband.png" alt="Masterband S.A.S." style="height:52px;width:auto"><div class="llogo-sub" style="margin-top:6px">Gestión de Órdenes de Trabajo</div></div></div>
+    <div class="ltitle">Bienvenido</div>
+    <div class="fgroup">
+      <label class="flabel">Ingresar como</label>
+      <div class="roles">
+        <button class="rbtn on" onclick="pickRole('gerencia')" id="r-g">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px"><rect x="3" y="7" width="18" height="13" rx="1"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg></div><div class="label">Gerencia</div>
+        </button>
+        <button class="rbtn" onclick="pickRole('ingeniero')" id="r-i">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 5.6L3 17.6V21h3.4l5.7-5.7a4.5 4.5 0 0 0 5.6-6L14.5 12.5l-3-3z"/></svg></div><div class="label">Ingeniero</div>
+        </button>
+      </div>
+    </div>
+    <div class="fgroup">
+      <label class="flabel">Contraseña</label>
+      <input class="finput" type="password" id="lpass" placeholder="••••••••" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="btn-in" onclick="login()">Ingresar</button>
+    <div class="lerr" id="lerr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="brand-wrap"><img src="logo-masterband.png" alt="Masterband S.A.S." style="height:38px;width:auto"></div>
+      <div class="brand-div"></div><div class="brand-mod">Gestión de Trabajos</div>
+      <nav class="topnav" id="topnav"></nav>
+    </div>
+    <div class="topright">
+      <button class="sync-btn" id="syncbtn" onclick="sync()">⟳ Sincronizar</button>
+      <div class="ubadge"><div class="udot"></div><span id="urole">–</span></div>
+      <button class="outbtn" onclick="logout()">Salir</button>
+    </div>
+  </div>
+
+  <!-- PÁGINAS INGENIERO -->
+  <div class="page on" id="pg-ing-trabajos">
+    <div class="ing-header">
+      <div class="ing-greeting">Mis trabajos activos</div>
+      <div class="ing-sub" id="ing-sub">Trabajos con OC recibida pendientes de finalizar</div>
+    </div>
+    <div class="ing-kpis" id="ing-kpis"></div>
+    <div class="ing-tabs" id="ing-tabs"></div>
+    <div style="margin-bottom:18px">
+      <input class="ing-search" id="ing-search" placeholder="Buscar por No. OC o No. cotización..." oninput="renderIngTrab()">
+    </div>
+    <div class="work-grid" id="work-grid"></div>
+  </div>
+
+  <!-- PÁGINAS GERENCIA -->
+  <div class="page" id="pg-ger-dashboard">
+    <div class="ptitle">Resumen del mes</div>
+    <div class="meta-card">
+      <div class="meta-row">
+        <div class="meta-label">Meta de facturación mensual</div>
+        <div class="meta-nums">
+          <div class="meta-cur" id="meta-cur">$0</div>
+          <div class="meta-of">de <strong>$211.000.000</strong></div>
+        </div>
+      </div>
+      <div class="ptrack"><div class="pfill" id="meta-bar" style="width:0%"></div></div>
+      <div class="meta-pct" id="meta-pct">0% alcanzado</div>
+    </div>
+    <div class="kgrid" id="kgrid"></div>
+    <div class="ptitle">Cotizaciones sin OC — requieren seguimiento</div>
+    <div class="alert-list" id="alert-list"></div>
+  </div>
+
+  <div class="page" id="pg-ger-pipeline">
+    <div class="ptitle">Pipeline de cotizaciones</div>
+    <div class="filters" id="pipeline-filters"></div>
+    <div class="pipeline" id="pipeline"></div>
+  </div>
+
+  <div class="page" id="pg-ger-ordenes">
+    <div class="tbar">
+      <div class="ptitle" style="margin:0">Todas las cotizaciones</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="filters" id="tbl-filters" style="margin:0"></div>
+        <input class="tsearch" placeholder="Buscar..." oninput="filterTbl(this.value)" id="tsearch">
+      </div>
+    </div>
+    <table class="gtbl">
+      <thead>
+        <tr>
+          <th>CTZ</th><th>Trabajo</th><th>Cliente</th><th>Área</th>
+          <th>Estado</th><th>Aprobación</th><th>No. OC</th>
+          <th>Estado trabajo</th><th>Días</th><th>Acta</th><th>Facturado</th><th>Costo</th>
+        </tr>
+      </thead>
+      <tbody id="gtbody"></tbody>
+    </table>
+  </div>
+
+  <div class="page" id="pg-ger-facturacion">
+    <div class="ptitle">Control de facturación</div>
+    <div id="billing-content"></div>
+  </div>
+
+  <div class="page" id="pg-ger-desempeno">
+    <div class="ptitle">Desempeño — Ingeniero residente</div>
+    <div id="desemp-content"></div>
+  </div>
+</div>
+
+<!-- MODAL RAZÓN DE DEMORA -->
+<div class="overlay" id="mod-demora">
+  <div class="modal" style="max-width:500px">
+    <div class="mhdr">
+      <div>
+        <div class="mtitle">Finalizar trabajo</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:3px" id="dem-titulo"></div>
+      </div>
+      <button class="mclose" onclick="closeModal('mod-demora')">✕</button>
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="flabel" style="display:block;margin-bottom:8px">¿Hubo alguna demora en este trabajo?</label>
+      <div style="display:flex;flex-direction:column;gap:8px" id="dem-opciones">
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px">
+          <input type="radio" name="dem-r" value="sin_demora" onchange="document.getElementById('dem-razon').value=this.value;onDemoraChange()"> Sin demoras — todo según lo planeado
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px">
+          <input type="radio" name="dem-r" value="cliente" onchange="document.getElementById('dem-razon').value=this.value;onDemoraChange()"> Demora por el cliente
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px">
+          <input type="radio" name="dem-r" value="materiales" onchange="document.getElementById('dem-razon').value=this.value;onDemoraChange()"> Demora por materiales
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px">
+          <input type="radio" name="dem-r" value="personal" onchange="document.getElementById('dem-razon').value=this.value;onDemoraChange()"> Demora por personal
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px">
+          <input type="radio" name="dem-r" value="diseno" onchange="document.getElementById('dem-razon').value=this.value;onDemoraChange()"> Demora por diseño o ingeniería
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:13px">
+          <input type="radio" name="dem-r" value="otra" onchange="document.getElementById('dem-razon').value=this.value;onDemoraChange()"> Otra razón
+        </label>
+      </div>
+      <input type="hidden" id="dem-razon">
+    </div>
+    <div id="dem-detalle-wrap" style="display:none;margin-bottom:16px">
+      <label class="flabel" style="display:block;margin-bottom:6px">Detalle (opcional)</label>
+      <textarea class="fta" id="dem-detalle" placeholder="Describe brevemente qué causó la demora..." style="min-height:70px"></textarea>
+    </div>
+    <div class="mbtns">
+      <button class="mbtn-p" onclick="confirmarFinalizado()">✓ Confirmar finalización</button>
+      <button class="mbtn-s" onclick="closeModal('mod-demora')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTA (ingeniero) -->
+<div class="overlay" id="mod-nota">
+  <div class="modal" style="max-width:460px">
+    <div class="mhdr"><div class="mtitle">Agregar nota</div><button class="mclose" onclick="closeModal('mod-nota')">✕</button></div>
+    <label class="flabel">Novedad o actualización</label>
+    <textarea class="fta" id="nota-input" placeholder="Describe lo que ocurrió en campo..."></textarea>
+    <div class="mbtns">
+      <button class="mbtn-p" onclick="saveNota()">Guardar nota</button>
+      <button class="mbtn-s" onclick="closeModal('mod-nota')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE (gerencia) -->
+<div class="overlay" id="mod-det">
+  <div class="modal">
+    <div class="mhdr">
+      <div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--accent);font-weight:600;margin-bottom:3px" id="det-code"></div>
+        <div class="mtitle" id="det-name"></div>
+      </div>
+      <button class="mclose" onclick="closeModal('mod-det')">✕</button>
+    </div>
+    <div class="det-grid">
+      <div class="det-block"><div class="det-label">Cliente</div><div class="det-val" id="det-client"></div></div>
+      <div class="det-block"><div class="det-label">Contacto</div><div class="det-val" id="det-contact"></div></div>
+      <div class="det-block"><div class="det-label">Área</div><div class="det-val" id="det-area"></div></div>
+      <div class="det-block"><div class="det-label">Estado trabajo</div><div class="det-val" id="det-etrab"></div></div>
+      <div class="det-block"><div class="det-label">Aprobación</div><div class="det-val" id="det-apro"></div></div>
+      <div class="det-block"><div class="det-label">Acta de entrega</div><div class="det-val" id="det-acta"></div></div>
+    </div>
+    <div class="fin-block">
+      <div class="fin-title">Información financiera</div>
+      <div class="fin-grid">
+        <div><div class="fin-label">Costo antes IVA</div><div class="fin-val" id="det-costo"></div></div>
+        <div><div class="fin-label">No. OC</div><div class="fin-val" id="det-oc"></div></div>
+        <div><div class="fin-label">N° Factura</div><div class="fin-val" id="det-fact"></div></div>
+      </div>
+    </div>
+    <div class="obs-block" style="margin-bottom:16px">
+      <div class="obs-label">⏱ Tiempo de ejecución</div>
+      <div class="obs-text" id="det-fechas">—</div>
+    </div>
+    <div class="obs-block">
+      <div class="obs-label">Observaciones / NE</div>
+      <div class="obs-text" id="det-obs"></div>
+    </div>
+    <div class="mbtns">
+      <button class="mbtn-s" onclick="closeModal('mod-det')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANTALLA ACTA DE ENTREGA -->
+<div id="acta-screen">
+  <div class="acta-topbar">
+    <div style="font-size:15px;font-weight:700;color:var(--text)">Acta de Entrega</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-pdf" onclick="generarPDF()" style="padding:7px 16px;font-size:13px">Descargar PDF</button>
+      <button class="mbtn-s" onclick="cerrarActa()" style="padding:7px 14px;font-size:13px">✕ Cerrar</button>
+    </div>
+  </div>
+  <div class="acta-body">
+
+    <!-- Encabezado -->
+    <div class="acta-section">
+      <div class="acta-section-title">Información del proyecto</div>
+      <div class="acta-row">
+        <div class="acta-field"><label class="acta-label">Cotización N°</label><input class="acta-input" id="ac-ctz" readonly></div>
+        <div class="acta-field"><label class="acta-label">Orden de Compra</label><input class="acta-input" id="ac-oc" readonly></div>
+      </div>
+      <div class="acta-row">
+        <div class="acta-field"><label class="acta-label">Posición / Área</label><input class="acta-input" id="ac-posicion" placeholder="Ej. Cuarto Saborizado"></div>
+        <div class="acta-field"><label class="acta-label">Lugar de ejecución</label><input class="acta-input" id="ac-lugar" placeholder="Ej. Marco puerta"></div>
+      </div>
+      <div class="acta-field"><label class="acta-label">Descripción del trabajo</label><textarea class="acta-textarea" id="ac-desc" rows="3"></textarea></div>
+      <div class="acta-row">
+        <div class="acta-field"><label class="acta-label">Fecha</label><input class="acta-input" type="date" id="ac-fecha"></div>
+        <div class="acta-field"><label class="acta-label">Cliente</label><input class="acta-input" id="ac-cliente" readonly></div>
+      </div>
+    </div>
+
+    <!-- Fotos -->
+    <div class="acta-section">
+      <div class="acta-section-title">Registro fotográfico del trabajo final</div>
+      <div class="foto-grid">
+        <div style="display:contents" id="fotos-grid"></div>
+        <div class="foto-slot" id="foto-add"><span class="foto-slot-label">+ Agregar fotos<br><span style="font-size:10px">Puedes elegir varias</span></span><input type="file" accept="image/*" multiple onchange="agregarFotos(this)"></div>
+      </div>
+    </div>
+
+    <!-- Firmas -->
+    <div class="acta-section">
+      <div class="acta-section-title">Entrega y recepción</div>
+      <div class="acta-row">
+        <div>
+          <div class="acta-field"><label class="acta-label">Entregado por</label><input class="acta-input" id="ac-entrega-nom" placeholder="Nombre"></div>
+          <div class="acta-field"><label class="acta-label">Cargo</label><input class="acta-input" id="ac-entrega-cargo" placeholder="Cargo"></div>
+          <div class="acta-field">
+            <label class="acta-label">Firma</label>
+            <div class="firma-wrap">
+              <canvas class="firma-canvas" id="firma-entrega"></canvas>
+              <button class="btn-clear-firma" onclick="limpiarFirma('firma-entrega')">Limpiar</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="border:1px dashed var(--border);background:var(--s2);border-radius:8px;padding:22px 18px;height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;margin:0 auto 10px"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <div style="font-size:13px;font-weight:700;color:var(--dim);margin-bottom:4px">Sección del cliente</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.5">El nombre, cargo y firma de quien recibe los completa el solicitante desde el link que le llega por correo.</div>
+          </div>
+          <div style="display:none">
+            <input id="ac-recibe-nom"><input id="ac-recibe-cargo">
+            <canvas id="firma-recibe"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Satisfacción: solo el cliente la diligencia desde el link -->
+    <div class="acta-section" style="display:none">
+      <div class="acta-section-title">Evaluación del servicio</div>
+      <div class="acta-field">
+        <label class="acta-label">El servicio se recibe a satisfacción, sin observaciones pendientes</label>
+        <div class="satisfaccion-btns">
+          <button class="sat-btn si" id="sat-si" onclick="setSat('SI')">✓ SI</button>
+          <button class="sat-btn no" id="sat-no" onclick="setSat('NO')">✕ NO</button>
+        </div>
+      </div>
+      <div class="acta-field" id="pendientes-wrap">
+        <label class="acta-label">Pendientes</label>
+        <textarea class="acta-textarea" id="ac-pendientes" placeholder="Describe los pendientes..." style="min-height:60px"></textarea>
+      </div>
+      <div class="acta-field">
+        <label class="acta-label">¿Cómo califica la ejecución, respuesta y calidad del trabajo? (1 = menor, 10 = mayor)</label>
+        <div class="calificacion" id="cal-btns"></div>
+      </div>
+    </div>
+
+    <!-- Informes adjuntos en PDF -->
+    <div class="acta-section">
+      <div class="acta-section-title">Informes adjuntos (PDF)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Informe técnico, certificado de material, protocolo de pruebas... El cliente podrá descargarlos desde el acta.</div>
+      <div id="adjuntos-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+      <label style="display:inline-flex;align-items:center;gap:8px;border:1px dashed var(--border);border-radius:8px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:700;color:var(--dim);background:var(--s2)">
+        + Adjuntar PDF
+        <input type="file" accept="application/pdf" multiple onchange="agregarAdjuntos(this)" style="display:none">
+      </label>
+    </div>
+
+    <!-- Documentos anexos -->
+    <div class="acta-section">
+      <div class="acta-section-title">Documentos anexos</div>
+      <label class="check-item"><input type="checkbox" id="doc-reporte"> Reporte técnico final</label>
+      <label class="check-item"><input type="checkbox" id="doc-planos"> Planos</label>
+      <label class="check-item"><input type="checkbox" id="doc-protocolos"> Protocolos de pruebas</label>
+      <label class="check-item"><input type="checkbox" id="doc-cert"> Certificado de materiales</label>
+      <label class="check-item"><input type="checkbox" id="doc-check"> Check list firmados</label>
+      <div class="acta-field" style="margin-top:12px"><label class="acta-label">Otros</label><input class="acta-input" id="doc-otros" placeholder="Otros documentos..."></div>
+    </div>
+
+    <!-- Contacto cliente -->
+    <div class="acta-section" id="ac-contacto-section">
+      <div class="acta-section-title">Contacto del cliente</div>
+      <div class="acta-field">
+        <label class="acta-label">Buscar contacto PepsiCo</label>
+        <input class="acta-input" id="ac-contacto-search" placeholder="Escribe el nombre del contacto..." oninput="filtrarContactos(this.value)" autocomplete="off">
+        <div id="ac-contacto-sug" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-top:4px;display:none;max-height:200px;overflow-y:auto;box-shadow:var(--shm)"></div>
+      </div>
+      <div id="ac-contacto-sel" style="display:none;background:var(--gdim);border:1px solid var(--green);border-radius:8px;padding:12px 14px;margin-top:8px">
+        <div style="font-size:12px;color:var(--green);font-weight:700;margin-bottom:4px">✓ Contacto seleccionado</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text)" id="ac-contacto-nombre"></div>
+        <div style="font-size:12px;color:var(--muted)" id="ac-contacto-info"></div>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+        Si el cliente no es PepsiCo o no aparece en la lista, escribe el correo manualmente:
+      </div>
+      <div class="acta-row" style="margin-top:8px">
+        <div class="acta-field"><label class="acta-label">Correo del contacto</label><input class="acta-input" id="ac-correo-manual" placeholder="correo@cliente.com"></div>
+        <div class="acta-field"><label class="acta-label">Área del contacto</label><input class="acta-input" id="ac-area-manual" placeholder="Ej. Servicio, Proceso..."></div>
+      </div>
+    </div>
+
+    <div id="modo-prueba-wrap" style="background:#FFF8E6;border:1px solid #E6C860;border-radius:8px;padding:12px 14px;margin-top:14px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#7A5C00;cursor:pointer">
+        <input type="checkbox" id="modo-prueba" checked style="width:16px;height:16px;accent-color:#C0001A">
+        Modo prueba — enviar el correo solo a esta dirección (el cliente y los líderes NO reciben nada)
+      </label>
+      <input class="acta-input" id="correo-prueba" placeholder="tu-correo@masterband.com.co" style="margin-top:8px">
+    </div>
+
+    <div class="acta-actions">
+      <button class="btn-pdf" onclick="generarPDF()">Descargar PDF</button>
+      <button class="btn-pdf" onclick="enviarAlCliente()" style="background:var(--green)" id="btn-enviar-cliente">Enviar al cliente para firma</button>
+      <button class="mbtn-s" onclick="cerrarActa()" style="flex:0;padding:12px 20px">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbxvfsbmG_aZH0OFoW3o80XBEUSlxeVlZqqrAfjAWYBaplhmhLWYg56O7I0hIarezNAx/exec';
+const META     = 211000000;
+
+// POST con text/plain: evita el preflight CORS y permite payloads grandes (fotos/firmas base64)
+async function postJSON(payload) {
+  const res  = await fetch(APPS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  const text = await res.text();
+  return JSON.parse(text);
+}
+const PASS     = { gerencia: 'master2025', ingeniero: 'ing2025' };
+const LKEY     = 'mb_ots_v4';
+const NKEY     = 'mb_notas_v4';
+
+// ── ESTADO ──
+let role = 'gerencia', chosen = 'gerencia';
+let ots  = [], notas = {}, curOT = null;
+let filtroArea = 'todos', filtroTbl = '';
+
+// Columnas del Sheet (índice 0):
+// 0:Cotización 1:Año 2:Colilla 3:Cliente 4:Nombre cot 5:Contacto
+// 6:Área 7:Estado 8:Aprobación 9:No.OC 10:Estado trabajo
+// 11:Costo antes IVA 12:Facturado 13:Acta entrega 14:N°Factura 15:Observaciones
+// NOTA: el sheet tiene Nombre cot en col 4 (concatenado), Cliente en col 3
+
+// ── STORAGE ──
+function loadLocal() {
+  try { const s = localStorage.getItem(LKEY); return s ? JSON.parse(s) : []; } catch(e) { return []; }
+}
+function saveLocal() {
+  try { localStorage.setItem(LKEY, JSON.stringify(ots)); } catch(e) {}
+}
+function loadNotas() {
+  try { const s = localStorage.getItem(NKEY); return s ? JSON.parse(s) : {}; } catch(e) { return {}; }
+}
+function saveNotas() {
+  try { localStorage.setItem(NKEY, JSON.stringify(notas)); } catch(e) {}
+}
+
+// ── ETAPA ──
+// Etapas reales: Pendiente → Enviada → Aprobada → OC recibida → En proceso → Finalizado → Facturado
+function mapEtapa(estado, apro, noOC, etrab, facturado, nfact) {
+  const e = (estado  ||'').toLowerCase().trim();
+  const a = (apro    ||'').toLowerCase().trim();
+  const t = (etrab   ||'').toLowerCase().trim();
+  const f = (facturado||'').toLowerCase().trim();
+  if (f === 'si' || f === 'sí' || (nfact||'').trim()) return 6; // Facturado
+  if (t === 'finalizado')                              return 5; // Finalizado
+  if (t === 'en proceso' && (noOC||'').trim())        return 4; // En proceso
+  if ((noOC||'').trim())                              return 3; // OC recibida
+  if (a === 'si' || a === 'sí')                       return 2; // Aprobada
+  if (e === 'enviada')                                return 1; // Enviada
+  return 0;                                                      // Pendiente
+}
+
+const ETAPAS = ['Pendiente','Enviada','Aprobada','OC recibida','En proceso','Finalizado','Facturado'];
+
+// ── ROW → OT ──
+function gc(row, i) { return String(row[i] || '').trim(); }
+
+function rowToOT(row) {
+  const num = gc(row, 0).replace(/\D/g,'');
+  if (!num) return null;
+  const anio    = gc(row, 1).replace('.0','');
+  const noOC    = gc(row, 9);
+  const etrab   = gc(row, 10);
+  const fact    = gc(row, 12);
+  const nfact   = gc(row, 14);
+  const apro    = gc(row, 8);
+  const estado  = gc(row, 7);
+  const costoRaw = gc(row, 11).replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.');
+  const fechaIni = gc(row, 16); // Col Q
+  const fechaFin = gc(row, 17); // Col R
+  const razonDemora = gc(row, 18); // Col S
+
+  // Calcular días de ejecución
+  let diasEjecucion = null;
+  if (fechaIni) {
+    const fin = fechaFin ? parseFecha(fechaFin) : new Date();
+    const ini = parseFecha(fechaIni);
+    if (ini && fin) diasEjecucion = Math.round((fin - ini) / 86400000);
+  }
+
+  return {
+    id:       'CTZ' + num + '-' + anio,
+    num, anio,
+    colilla:  gc(row, 2) || 'Sin descripción',
+    cliente:  gc(row, 4) || '—',
+    contacto: gc(row, 5) || '—',
+    area:     gc(row, 6) || 'N/A',
+    estado,
+    apro,
+    noOC,
+    etrab,
+    costo:    parseFloat(costoRaw) || 0,
+    facturado: fact,
+    acta:     (() => { const v = gc(row, 13).toUpperCase(); return v === 'SI' || v === 'SÍ'; })(),
+    nfact,
+    obs:      gc(row, 15),
+    fechaIni,
+    fechaFin,
+    diasEjecucion,
+    razonDemora: razonDemora || '',
+    etapa:    mapEtapa(estado, apro, noOC, etrab, fact, nfact)
+  };
+}
+
+function parseFecha(str) {
+  if (!str) return null;
+  // Soporta dd/MM/yyyy y yyyy-MM-dd
+  const partes = str.includes('/') ? str.split('/') : str.split('-');
+  if (partes.length !== 3) return null;
+  const [a, b, c] = partes;
+  if (str.includes('/')) return new Date(c, b - 1, a); // dd/MM/yyyy
+  return new Date(a, b - 1, c); // yyyy-MM-dd
+}
+
+// ── SYNC ──
+async function sync() {
+  const btn = document.getElementById('syncbtn');
+  btn.classList.add('busy'); btn.textContent = '⟳ Sincronizando...';
+  try {
+    const res  = await fetch(APPS_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length < 2) throw new Error('Sin datos');
+    const imported = [];
+    for (let i = 1; i < data.length; i++) {
+      const ot = rowToOT(data[i]);
+      if (ot) imported.push(ot);
+    }
+    if (!imported.length) throw new Error('No se encontraron cotizaciones');
+    ots = imported;
+    saveLocal();
+    renderAll();
+    toast('✓ ' + ots.length + ' cotizaciones actualizadas', 'ok');
+  } catch(e) {
+    toast('✕ ' + e.message, 'err');
+  } finally {
+    btn.classList.remove('busy'); btn.textContent = '⟳ Sincronizar';
+  }
+}
+
+// ── AUTH ──
+function pickRole(r) {
+  chosen = r;
+  document.getElementById('r-g').classList.toggle('on', r === 'gerencia');
+  document.getElementById('r-i').classList.toggle('on', r === 'ingeniero');
+}
+function login() {
+  const p = document.getElementById('lpass').value.trim().toLowerCase();
+  if (p === PASS[chosen]) {
+    role = chosen;
+    document.getElementById('lerr').textContent = '';
+    document.getElementById('lpass').value = '';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('urole').textContent = role === 'gerencia' ? 'Gerencia' : 'Ingeniero';
+    buildNav();
+    renderAll();
+    sync();
+  } else {
+    document.getElementById('lerr').textContent = 'Contraseña incorrecta.';
+    document.getElementById('lpass').value = '';
+  }
+}
+function logout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('lpass').value = '';
+}
+
+// ── NAVEGACIÓN ──
+const NAV_ING = [{ id: 'pg-ing-trabajos', label: 'Mis trabajos' }];
+const NAV_GER = [
+  { id: 'pg-ger-dashboard',   label: 'Dashboard' },
+  { id: 'pg-ger-pipeline',    label: 'Pipeline' },
+  { id: 'pg-ger-ordenes',     label: 'Órdenes' },
+  { id: 'pg-ger-facturacion', label: 'Facturación' },
+  { id: 'pg-ger-desempeno',   label: 'Desempeño' },
+];
+
+function buildNav() {
+  const nav   = role === 'gerencia' ? NAV_GER : NAV_ING;
+  const topnav = document.getElementById('topnav');
+  topnav.innerHTML = nav.map((n, i) =>
+    `<button class="tnb ${i===0?'on':''}" onclick="showPage('${n.id}',this)">${n.label}</button>`
+  ).join('');
+  // Mostrar primera página del rol
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.getElementById(nav[0].id).classList.add('on');
+}
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  document.querySelectorAll('.tnb').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  renderPage(id);
+}
+
+function renderPage(id) {
+  if (id === 'pg-ing-trabajos')   renderIngTrab();
+  if (id === 'pg-ger-dashboard')  renderDash();
+  if (id === 'pg-ger-pipeline')   renderPipeline();
+  if (id === 'pg-ger-ordenes')    renderOrdenes();
+  if (id === 'pg-ger-facturacion') renderBilling();
+  if (id === 'pg-ger-desempeno')  renderDesempeno();
+}
+
+function renderAll() {
+  const active = document.querySelector('.page.on');
+  if (active) renderPage(active.id);
+}
+
+// ── UTILIDADES ──
+function fmt(n) { return n ? '$' + Math.round(n).toLocaleString('es-CO') : '—'; }
+function areaColor(area) {
+  if (area === 'Mantenimiento') return '#F59E0B';
+  if (area === 'Proyectos')     return '#C0001A';
+  return '#888888';
+}
+
+// ── VISTA INGENIERO ──
+let ingFiltro = 'todos'; // todos | proceso | finalizado | acta
+
+// Días transcurridos desde la finalización (para la meta de acta ≤ 5 días)
+function parseFechaDMA(s){
+  if(!s) return null;
+  s = String(s).trim();
+  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  return null;
+}
+function diasDesdeFin(o){
+  const f = parseFechaDMA(o.fechaFin);
+  if(!f) return null;
+  const hoy = new Date(); hoy.setHours(0,0,0,0); f.setHours(0,0,0,0);
+  return Math.max(0, Math.round((hoy - f)/864e5));
+}
+
+function renderIngTrab() {
+  const activos      = ots.filter(o => o.etapa >= 3 && o.etapa < 6);
+  const enProceso    = activos.filter(o => o.etapa === 4);
+  const finalizados  = activos.filter(o => o.etapa === 5)
+    // Más días sin acta = más arriba (los que rompen la meta de 5 días primero)
+    .sort((a,b) => (diasDesdeFin(b) ?? -1) - (diasDesdeFin(a) ?? -1));
+  const actaPend     = finalizados.filter(o => !o.acta);
+  const actasVencidas = actaPend.filter(o => (diasDesdeFin(o) ?? 0) > 5).length;
+
+  // KPIs
+  document.getElementById('ing-kpis').innerHTML = `
+    <div class="ikpi"><div class="ikpi-val a">${activos.length}</div><div class="ikpi-label">Total activos</div></div>
+    <div class="ikpi"><div class="ikpi-val y">${enProceso.length}</div><div class="ikpi-label">En proceso</div></div>
+    <div class="ikpi"><div class="ikpi-val g">${finalizados.length}</div><div class="ikpi-label">Finalizados</div></div>
+    <div class="ikpi"><div class="ikpi-val r">${actaPend.length}</div><div class="ikpi-label">Acta pendiente</div></div>
+    <div class="ikpi" ${actasVencidas ? 'style="outline:2px solid var(--red);outline-offset:-2px;border-radius:10px"' : ''}><div class="ikpi-val r">${actasVencidas}</div><div class="ikpi-label">⚠ Vencidas (+5 días)</div></div>
+  `;
+
+  // Pestañas de filtro
+  const tabs = [
+    { key: 'todos',      label: `Todos`,           cnt: activos.length },
+    { key: 'proceso',    label: `En proceso`,   cnt: enProceso.length },
+    { key: 'finalizado', label: `Finalizados`,  cnt: finalizados.length },
+    { key: 'acta',       label: `Acta pendiente`, cnt: actaPend.length },
+  ];
+  document.getElementById('ing-tabs').innerHTML = tabs.map(t => `
+    <button class="itab ${ingFiltro === t.key ? 'on' : ''}" onclick="setIngFiltro('${t.key}')">
+      ${t.label} <span class="itab-cnt">${t.cnt}</span>
+    </button>`).join('');
+
+  // Filtrar por pestaña
+  let visible = activos;
+  if (ingFiltro === 'proceso')    visible = enProceso;
+  if (ingFiltro === 'finalizado') visible = finalizados;
+  if (ingFiltro === 'acta')       visible = actaPend;
+
+  // Filtrar por búsqueda (OC o CTZ)
+  const q = (document.getElementById('ing-search')?.value || '').toLowerCase().trim();
+  if (q) visible = visible.filter(o =>
+    o.noOC.toLowerCase().includes(q) ||
+    o.id.toLowerCase().includes(q) ||
+    o.num.toLowerCase().includes(q)
+  );
+
+  if (!visible.length) {
+    document.getElementById('work-grid').innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon">${ingFiltro === 'acta' ? '—' : '✓'}</div>
+        <div class="empty-text">${
+          ingFiltro === 'acta'       ? 'Ningún trabajo con acta pendiente' :
+          ingFiltro === 'proceso'    ? 'Ningún trabajo en proceso' :
+          ingFiltro === 'finalizado' ? 'Ningún trabajo finalizado' :
+          'Sin trabajos activos por ahora'
+        }</div>
+        <div class="empty-sub">${ingFiltro === 'todos' ? 'Cuando llegue una OC nueva te llegará un correo y aparecerá aquí' : ''}</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('work-grid').innerHTML = visible.map(o => {
+    const nota = (notas[o.id] || []).slice(-1)[0] || null;
+    const esFinalizado = o.etapa === 5;
+    // Semáforo de la meta de acta ≤ 5 días tras finalizar
+    const dAf = (esFinalizado && !o.acta) ? diasDesdeFin(o) : null;
+    let actaPill;
+    if (o.acta) {
+      actaPill = `<span class="acta-pill ok">✓ Acta generada</span>`;
+    } else if (esFinalizado && dAf !== null) {
+      const c = dAf > 5 ? ['#FDECEA','#C0001A','#C0001A'] : dAf >= 4 ? ['#FEF3C7','#F59E0B','#92400E'] : ['#E8F5EE','#1E7A3E','#1E7A3E'];
+      actaPill = `<span class="acta-pill pend" style="background:${c[0]};border:1px solid ${c[1]};color:${c[2]};font-weight:800">Acta pendiente · ${dAf} día${dAf!==1?'s':''}${dAf>5?' ⚠ VENCIDA':dAf>=4?' — ¡vence pronto!':''}</span>`;
+    } else {
+      actaPill = `<span class="acta-pill pend">Acta pendiente</span>`;
+    }
+    return `
+      <div class="work-card ${esFinalizado ? 'finalizado' : 'proceso'}">
+        <div class="wc-top">
+          <div class="wc-code">${o.id}</div>
+          <div class="wc-area" style="border-color:${areaColor(o.area)};color:${areaColor(o.area)}">${o.area}</div>
+        </div>
+        <div class="wc-name">${o.colilla}</div>
+        <div class="wc-fields">
+          <div class="wc-field"><span class="wc-flabel">Cliente</span><span class="wc-fval">${o.cliente}</span></div>
+          <div class="wc-field"><span class="wc-flabel">Contacto</span><span class="wc-fval">${o.contacto}</span></div>
+          <div class="wc-field"><span class="wc-flabel">No. OC</span><span class="wc-fval oc">${o.noOC}</span></div>
+          ${o.fechaIni ? `<div class="wc-field"><span class="wc-flabel">Inicio</span><span class="wc-fval">${o.fechaIni}</span></div>` : ''}
+          ${o.fechaFin ? `<div class="wc-field"><span class="wc-flabel">Finalizado</span><span class="wc-fval">${o.fechaFin}</span></div>` : ''}
+          ${o.diasEjecucion !== null ? `<div class="wc-field"><span class="wc-flabel">Duración</span><span class="wc-fval" style="font-weight:700;color:${o.diasEjecucion > 15 ? 'var(--red)' : o.diasEjecucion > 7 ? 'var(--yellow)' : 'var(--green)'}">⏱ ${o.diasEjecucion} día${o.diasEjecucion !== 1 ? 's' : ''}</span></div>` : ''}
+        </div>
+        <div class="wc-status">
+          <span class="status-pill ${esFinalizado ? 'finalizado' : 'proceso'}">
+            ${esFinalizado ? '✓ Finalizado' : '● En proceso'}
+          </span>
+          ${actaPill}
+        </div>
+        <div class="wc-obs ${nota || o.obs ? 'has-obs' : ''}">
+          ${nota ? `<strong>Última nota:</strong> ${nota.txt}` : (o.obs ? o.obs : '<span style="color:var(--muted);font-style:italic">Sin observaciones registradas</span>')}
+        </div>
+        <div class="wc-actions">
+          <button class="btn-done" ${esFinalizado ? 'disabled' : ''} onclick="marcarFinalizado('${o.id}')">
+            ${esFinalizado ? 'Ya finalizado' : '✅ Marcar como finalizado'}
+          </button>
+          ${esFinalizado
+            ? `<button class="btn-note" style="background:var(--aglow);border-color:var(--accent);color:var(--accent)" onclick="abrirActa('${o.id}')">${o.acta ? 'Ver acta' : 'Generar acta'}</button>`
+            : `<button class="btn-note" onclick="abrirNota('${o.id}')">+ Nota</button>`
+          }
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function setIngFiltro(f) {
+  ingFiltro = f;
+  renderIngTrab();
+}
+
+function marcarFinalizado(id) {
+  const o = ots.find(x => x.id === id);
+  if (!o) return;
+  curOT = id;
+  // Mostrar modal de razón de demora
+  document.getElementById('dem-titulo').textContent = o.colilla;
+  document.getElementById('dem-razon').value = '';
+  document.getElementById('dem-detalle-wrap').style.display = 'none';
+  document.getElementById('dem-detalle').value = '';
+  openModal('mod-demora');
+}
+
+function onDemoraChange() {
+  const val = document.getElementById('dem-razon').value;
+  document.getElementById('dem-detalle-wrap').style.display =
+    (val && val !== 'sin_demora') ? 'block' : 'none';
+}
+
+function confirmarFinalizado() {
+  const razonVal = document.getElementById('dem-razon').value;
+  if (!razonVal) { alert('Por favor selecciona una opción.'); return; }
+  const detalle  = document.getElementById('dem-detalle').value.trim();
+  const razonTexto = {
+    sin_demora: 'Sin demoras',
+    cliente:    'Demora por el cliente',
+    materiales: 'Demora por materiales',
+    personal:   'Demora por personal',
+    diseno:     'Demora por diseño o ingeniería',
+    otra:       'Otra razón'
+  }[razonVal] || razonVal;
+  const razonFinal = detalle ? razonTexto + ': ' + detalle : razonTexto;
+
+  const o = ots.find(x => x.id === curOT);
+  if (!o) return;
+  o.etapa        = 5;
+  o.etrab        = 'Finalizado';
+  o.razonDemora  = razonFinal;
+  saveLocal();
+  closeModal('mod-demora');
+  renderAll();
+  enviarCambio('finalizado', o.num, razonFinal)
+    .then(() => toast('✓ Trabajo finalizado — Sheet actualizado', 'ok'))
+    .catch(() => toast('⚠ Marcado localmente. No se pudo actualizar el Sheet.', 'err'));
+}
+
+function marcarActa(id) {
+  const o = ots.find(x => x.id === id);
+  if (!o) return;
+  if (!confirm(`¿Confirmas que el acta de entrega de "${o.colilla}" fue generada?`)) return;
+  o.acta = true;
+  saveLocal();
+  renderAll();
+  enviarCambio('acta', o.num)
+    .then(() => toast('✓ Acta confirmada — Sheet actualizado y notificación enviada', 'ok'))
+    .catch(() => toast('⚠ Marcado localmente. No se pudo actualizar el Sheet — verifica tu conexión.', 'err'));
+}
+
+async function enviarCambio(accion, ctzNum, razon) {
+  let url = APPS_URL + '?accion=' + encodeURIComponent(accion) + '&ctzNum=' + encodeURIComponent(ctzNum);
+  if (razon) url += '&razon=' + encodeURIComponent(razon);
+  console.log('[MB] Llamando:', url);
+  const res = await fetch(url, { method: 'GET' });
+  console.log('[MB] Status:', res.status);
+  const text = await res.text();
+  console.log('[MB] Respuesta:', text);
+  const data = JSON.parse(text);
+  if (!data.ok) throw new Error(data.error || 'Error desconocido');
+}
+
+function abrirNota(id) {
+  curOT = id;
+  document.getElementById('nota-input').value = '';
+  openModal('mod-nota');
+}
+function saveNota() {
+  const txt = document.getElementById('nota-input').value.trim();
+  if (!txt) return;
+  if (!notas[curOT]) notas[curOT] = [];
+  notas[curOT].push({ txt, fecha: new Date().toLocaleDateString('es-CO') });
+  saveNotas();
+  closeModal('mod-nota');
+  renderAll();
+  toast('✓ Nota guardada', 'ok');
+}
+
+// ── DASHBOARD GERENCIA ──
+function renderDash() {
+  const total     = ots.length;
+  const sinOC     = ots.filter(o => o.etapa < 3).length;
+  const activos   = ots.filter(o => o.etapa >= 3 && o.etapa < 6).length;
+  const finalizados = ots.filter(o => o.etapa >= 5).length;
+  const facturados  = ots.filter(o => o.etapa === 6).length;
+
+  document.getElementById('kgrid').innerHTML = `
+    <div class="kcard"><div class="kval a">${total}</div><div class="klabel">Total CTZ</div></div>
+    <div class="kcard"><div class="kval y">${sinOC}</div><div class="klabel">Sin OC</div></div>
+    <div class="kcard"><div class="kval">${activos}</div><div class="klabel">En ejecución</div></div>
+    <div class="kcard"><div class="kval g">${finalizados}</div><div class="klabel">Finalizados</div></div>
+    <div class="kcard"><div class="kval a">${facturados}</div><div class="klabel">Facturados</div></div>
+  `;
+
+  const billed = ots.filter(o => o.etapa === 6).reduce((s,o) => s + (o.costo||0), 0);
+  const pct    = Math.min(100, Math.round(billed / META * 100));
+  document.getElementById('meta-cur').textContent = fmt(billed);
+  document.getElementById('meta-bar').style.width = pct + '%';
+  document.getElementById('meta-pct').textContent = `${pct}% alcanzado · Faltan ${fmt(META - billed)}`;
+
+  // Alertas: cotizaciones aprobadas sin OC (requieren seguimiento)
+  const alerts = ots.filter(o => o.etapa === 2);
+  document.getElementById('alert-list').innerHTML = alerts.length
+    ? alerts.map(o => `
+        <div class="alert-item" onclick="openDet('${o.id}')">
+          <div>
+            <div class="ai-title">${o.colilla}</div>
+            <div class="ai-sub">${o.cliente} · Aprobada sin OC</div>
+          </div>
+          <span class="badge by">Sin OC</span>
+        </div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:12px 0">Sin alertas pendientes ✅</div>';
+}
+
+// ── PIPELINE GERENCIA ──
+function renderPipeline() {
+  renderAreaFilters('pipeline-filters', () => renderPipeline());
+  const data = filtroArea === 'todos' ? ots : ots.filter(o => o.area === filtroArea);
+  document.getElementById('pipeline').innerHTML = ETAPAS.map((etapa, i) => {
+    const cards = data.filter(o => o.etapa === i);
+    return `
+      <div class="pcol">
+        <div class="pcolh"><span class="pcolname">${etapa}</span><span class="pcolcnt">${cards.length}</span></div>
+        <div class="pcards">
+          ${cards.length ? cards.map(o => `
+            <div class="pcard ${o.etrab === 'Finalizado' ? 'finalizado' : o.etrab === 'En proceso' ? 'proceso' : o.etapa === 6 ? 'facturado' : ''}" onclick="openDet('${o.id}')">
+              <div class="pc-code">${o.id}</div>
+              <div class="pc-name">${o.colilla}</div>
+              <div class="pc-client">${o.cliente}</div>
+            </div>`).join('')
+          : '<div class="pempty">—</div>'}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── ÓRDENES GERENCIA ──
+function renderOrdenes() {
+  renderAreaFilters('tbl-filters', () => renderOrdenes());
+  let data = filtroArea === 'todos' ? ots : ots.filter(o => o.area === filtroArea);
+  if (filtroTbl) {
+    const q = filtroTbl.toLowerCase();
+    data = data.filter(o => o.colilla.toLowerCase().includes(q) || o.cliente.toLowerCase().includes(q) || o.id.toLowerCase().includes(q));
+  }
+  document.getElementById('gtbody').innerHTML = data.length
+    ? data.map(o => `
+        <tr onclick="openDet('${o.id}')">
+          <td><span class="mono">${o.id}</span></td>
+          <td style="max-width:200px">${o.colilla}</td>
+          <td>${o.cliente}</td>
+          <td><span style="font-size:11px;font-weight:700;color:${areaColor(o.area)}">${o.area}</span></td>
+          <td>${estadoBadge(o.estado)}</td>
+          <td>${o.apro ? `<span class="badge bg">Sí</span>` : `<span class="badge bgr">No</span>`}</td>
+          <td><span class="mono" style="color:var(--accent)">${o.noOC || '—'}</span></td>
+          <td>${etrabBadge(o.etrab)}</td>
+          <td>${o.diasEjecucion !== null ? `<span style="font-weight:700;color:${o.diasEjecucion > 15 ? 'var(--red)' : o.diasEjecucion > 7 ? 'var(--yellow)' : 'var(--green)'}">${o.diasEjecucion}d</span>` : '—'}</td>
+          <td>${o.acta ? `<span class="badge bg">Sí</span>` : `<span class="badge bgr">No</span>`}</td>
+          <td>${o.facturado === 'SI' || o.facturado === 'Sí' ? `<span class="badge bg">Sí</span>` : `<span class="badge bgr">No</span>`}</td>
+          <td><span class="mono">${fmt(o.costo)}</span></td>
+        </tr>`).join('')
+    : `<tr><td colspan="11" style="text-align:center;padding:32px;color:var(--muted)">Sin resultados</td></tr>`;
+}
+
+function filterTbl(q) { filtroTbl = q; renderOrdenes(); }
+
+function estadoBadge(e) {
+  if (!e) return '<span class="badge bgr">—</span>';
+  if (e.toLowerCase() === 'enviada') return `<span class="badge ba">${e}</span>`;
+  return `<span class="badge bgr">${e}</span>`;
+}
+function etrabBadge(e) {
+  if (!e) return '<span class="badge bgr">—</span>';
+  if (e.toLowerCase() === 'finalizado')  return `<span class="badge bg">${e}</span>`;
+  if (e.toLowerCase() === 'en proceso') return `<span class="badge by">${e}</span>`;
+  return `<span class="badge bgr">${e}</span>`;
+}
+
+// ── FACTURACIÓN ──
+function renderBilling() {
+  const conNE   = ots.filter(o => o.obs && o.etrap >= 5 && o.facturado !== 'SI' && o.facturado !== 'Sí');
+  const facturados = ots.filter(o => o.facturado === 'SI' || o.facturado === 'Sí');
+  const total   = facturados.reduce((s,o) => s + (o.costo||0), 0);
+  const pct     = Math.min(100, Math.round(total/META*100));
+
+  // Finalizados pendientes de facturar
+  const pendFact = ots.filter(o => o.etapa === 5 && o.facturado !== 'SI' && o.facturado !== 'Sí');
+
+  document.getElementById('billing-content').innerHTML = `
+    <div class="meta-card" style="margin-bottom:20px">
+      <div class="meta-row">
+        <div class="meta-label">Facturado este mes</div>
+        <div class="meta-nums"><div class="meta-cur">${fmt(total)}</div><div class="meta-of">meta: <strong>${fmt(META)}</strong></div></div>
+      </div>
+      <div class="ptrack"><div class="pfill" style="width:${pct}%"></div></div>
+      <div class="meta-pct">${pct}% · Faltan ${fmt(META-total)}</div>
+    </div>
+
+    ${pendFact.length ? `
+    <div class="ptitle">Finalizados pendientes de facturar</div>
+    <table class="ftbl" style="margin-bottom:24px">
+      <thead><tr><th>CTZ</th><th>Trabajo</th><th>Cliente</th><th>Costo</th><th>Acta</th><th>NE (Observaciones)</th></tr></thead>
+      <tbody>${pendFact.map(o=>`
+        <tr onclick="openDet('${o.id}')" style="cursor:pointer">
+          <td class="mono">${o.id}</td><td>${o.colilla}</td><td>${o.cliente}</td>
+          <td class="mono">${fmt(o.costo)}</td>
+          <td>${o.acta ? '<span class="badge bg">Sí</span>' : '<span class="badge bgr">No</span>'}</td>
+          <td style="color:var(--accent)">${o.obs || '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>` : ''}
+
+    <div class="ptitle">Facturado en el mes</div>
+    ${facturados.length ? `
+    <table class="ftbl">
+      <thead><tr><th>CTZ</th><th>Trabajo</th><th>Cliente</th><th>N° Factura</th><th>Costo</th></tr></thead>
+      <tbody>
+        ${facturados.map(o=>`
+          <tr onclick="openDet('${o.id}')" style="cursor:pointer">
+            <td class="mono">${o.id}</td><td>${o.colilla}</td><td>${o.cliente}</td>
+            <td class="mono">${o.nfact||'—'}</td>
+            <td class="mono" style="color:var(--green)">${fmt(o.costo)}</td>
+          </tr>`).join('')}
+        <tr style="background:var(--surface2)">
+          <td colspan="4" style="text-align:right;font-weight:700;color:var(--dim)">Total</td>
+          <td class="mono" style="color:var(--green);font-weight:700">${fmt(total)}</td>
+        </tr>
+      </tbody>
+    </table>`
+    : '<div style="text-align:center;padding:32px;color:var(--muted)">No hay cotizaciones facturadas este mes.</div>'}
+  `;
+}
+
+// ── FILTROS DE ÁREA ──
+function renderAreaFilters(containerId, onFilter) {
+  const areas = ['todos', ...new Set(ots.map(o=>o.area).filter(Boolean))];
+  document.getElementById(containerId).innerHTML = areas.map(a =>
+    `<button class="fbtn ${filtroArea===a?'on':''}" onclick="setArea('${a}','${containerId}',${onFilter.toString()})">${a === 'todos' ? 'Todas las áreas' : a}</button>`
+  ).join('');
+}
+function setArea(a, cid, fn) {
+  filtroArea = a;
+  fn();
+}
+
+// ── MODAL DETALLE GERENCIA ──
+function openDet(id) {
+  const o = ots.find(x => x.id === id);
+  if (!o) return;
+  document.getElementById('det-code').textContent    = o.id;
+  document.getElementById('det-name').textContent    = o.colilla;
+  document.getElementById('det-client').textContent  = o.cliente;
+  document.getElementById('det-contact').textContent = o.contacto;
+  document.getElementById('det-area').textContent    = o.area;
+  document.getElementById('det-etrab').textContent   = o.etrab || '—';
+  document.getElementById('det-apro').textContent    = o.apro || '—';
+  document.getElementById('det-acta').textContent    = o.acta ? 'Sí' : 'Pendiente';
+  document.getElementById('det-costo').textContent   = fmt(o.costo);
+  document.getElementById('det-oc').textContent      = o.noOC || 'Pendiente';
+  document.getElementById('det-fact').textContent    = o.nfact || 'Pendiente';
+  document.getElementById('det-obs').textContent     = o.obs || 'Sin observaciones';
+  document.getElementById('det-fechas').innerHTML = o.fechaIni
+    ? `<div style="display:flex;gap:20px;flex-wrap:wrap">
+        <span><strong>Inicio:</strong> ${o.fechaIni}</span>
+        ${o.fechaFin ? `<span><strong>Fin:</strong> ${o.fechaFin}</span>` : `<span style="color:var(--muted)">En curso</span>`}
+        ${o.diasEjecucion !== null ? `<span style="font-weight:700;color:${o.diasEjecucion > 15 ? 'var(--red)' : o.diasEjecucion > 7 ? 'var(--yellow)' : 'var(--green)'}">⏱ ${o.diasEjecucion} días</span>` : ''}
+       </div>`
+    : `<span style="color:var(--muted)">Sin fecha de inicio registrada</span>`;
+  openModal('mod-det');
+}
+
+// ── MODALES ──
+function openModal(id)  { document.getElementById(id).classList.add('on'); }
+function closeModal(id) { document.getElementById(id).classList.remove('on'); }
+document.querySelectorAll('.overlay').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('on'); })
+);
+
+// ── TOAST ──
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast on ' + (type||'');
+  setTimeout(() => { t.className = 'toast'; }, 5000);
+}
+
+// ── DESEMPEÑO ──
+function renderDesempeno() {
+  const finalizados = ots.filter(o => o.etapa >= 5 && o.diasEjecucion !== null);
+  const conDemora   = finalizados.filter(o => o.razonDemora && !o.razonDemora.startsWith('Sin'));
+  const sinDemora   = finalizados.filter(o => !o.razonDemora || o.razonDemora.startsWith('Sin'));
+  const promDias    = finalizados.length
+    ? (finalizados.reduce((s,o) => s + (o.diasEjecucion||0), 0) / finalizados.length).toFixed(1)
+    : '—';
+
+  // Contar razones de demora
+  const razones = {};
+  conDemora.forEach(o => {
+    const r = (o.razonDemora || 'Otra').split(':')[0].trim();
+    razones[r] = (razones[r] || 0) + 1;
+  });
+  const razonTop = Object.entries(razones).sort((a,b) => b[1]-a[1])[0];
+
+  // Trabajos por área
+  const porArea = {};
+  finalizados.forEach(o => {
+    if (!porArea[o.area]) porArea[o.area] = { total: 0, dias: 0 };
+    porArea[o.area].total++;
+    porArea[o.area].dias += o.diasEjecucion || 0;
+  });
+
+  document.getElementById('desemp-content').innerHTML = `
+    <div class="kgrid" style="margin-bottom:28px">
+      <div class="kcard"><div class="kval g">${finalizados.length}</div><div class="klabel">Trabajos completados</div></div>
+      <div class="kcard"><div class="kval a">${promDias}</div><div class="klabel">Promedio días / trabajo</div></div>
+      <div class="kcard"><div class="kval r">${conDemora.length}</div><div class="klabel">Con demora</div></div>
+      <div class="kcard"><div class="kval g">${sinDemora.length}</div><div class="klabel">Sin demora</div></div>
+    </div>
+
+    ${razonTop ? `
+    <div class="ptitle">Causas de demora</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px">
+      ${Object.entries(razones).sort((a,b)=>b[1]-a[1]).map(([r,n]) => {
+        const pct = Math.round(n / conDemora.length * 100);
+        return `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;box-shadow:var(--sh)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--text)">${r}</span>
+              <span style="font-size:12px;color:var(--muted)">${n} trabajo${n!==1?'s':''} · ${pct}%</span>
+            </div>
+            <div style="background:var(--s2);border-radius:4px;height:6px;overflow:hidden">
+              <div style="height:100%;border-radius:4px;background:var(--accent);width:${pct}%"></div>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>` : '<div style="color:var(--muted);font-size:13px;padding:12px 0;margin-bottom:28px">Sin demoras registradas ✅</div>'}
+
+    <div class="ptitle">Desempeño por área</div>
+    <table class="gtbl" style="margin-bottom:28px">
+      <thead><tr><th>Área</th><th>Trabajos completados</th><th>Promedio días</th></tr></thead>
+      <tbody>
+        ${Object.entries(porArea).map(([area, d]) => `
+          <tr>
+            <td style="font-weight:600;color:${areaColor(area)}">${area}</td>
+            <td>${d.total}</td>
+            <td style="font-weight:700;color:${(d.dias/d.total)>15?'var(--red)':(d.dias/d.total)>7?'var(--yellow)':'var(--green)'}">
+              ${(d.dias/d.total).toFixed(1)} días
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+
+    <div class="ptitle">Detalle por trabajo</div>
+    <table class="gtbl">
+      <thead><tr><th>CTZ</th><th>Trabajo</th><th>Cliente</th><th>Inicio</th><th>Fin</th><th>Días</th><th>Razón demora</th></tr></thead>
+      <tbody>
+        ${finalizados.length ? finalizados.map(o => `
+          <tr>
+            <td class="mono">${o.id}</td>
+            <td style="max-width:180px">${o.colilla}</td>
+            <td>${o.cliente}</td>
+            <td>${o.fechaIni || '—'}</td>
+            <td>${o.fechaFin || '—'}</td>
+            <td style="font-weight:700;color:${(o.diasEjecucion||0)>15?'var(--red)':(o.diasEjecucion||0)>7?'var(--yellow)':'var(--green)'}">
+              ${o.diasEjecucion !== null ? o.diasEjecucion + 'd' : '—'}
+            </td>
+            <td style="font-size:12px;color:var(--muted)">${o.razonDemora || '—'}</td>
+          </tr>`).join('')
+        : `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">Sin trabajos finalizados aún</td></tr>`}
+      </tbody>
+    </table>
+  `;
+}
+
+// ── SELECTOR DE CONTACTO EN ACTA ──
+let contactoSeleccionado = null;
+
+function filtrarContactos(q) {
+  const sug = document.getElementById('ac-contacto-sug');
+  if (!q || q.length < 2) { sug.style.display = 'none'; return; }
+  const res = correosPep.filter(c =>
+    c.nombre.toLowerCase().includes(q.toLowerCase()) && c.correo
+  );
+  if (!res.length) { sug.style.display = 'none'; return; }
+  sug.style.display = 'block';
+  sug.innerHTML = res.map(c => `
+    <div onclick="seleccionarContacto(${correosPep.indexOf(c)})"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px;transition:background .1s"
+      onmouseover="this.style.background='var(--aglow)'" onmouseout="this.style.background=''">
+      <div style="font-weight:600;color:var(--text)">${c.nombre}</div>
+      <div style="font-size:11px;color:var(--muted)">${c.area} ${c.esLider ? '· LÍDER' : ''} · ${c.correo}</div>
+    </div>`).join('');
+}
+
+function seleccionarContacto(idx) {
+  contactoSeleccionado = correosPep[idx];
+  document.getElementById('ac-contacto-sug').style.display = 'none';
+  document.getElementById('ac-contacto-search').value = contactoSeleccionado.nombre;
+  document.getElementById('ac-contacto-sel').style.display = 'block';
+  document.getElementById('ac-contacto-nombre').textContent = contactoSeleccionado.nombre;
+  document.getElementById('ac-contacto-info').textContent =
+    contactoSeleccionado.area + (contactoSeleccionado.esLider ? ' · LÍDER' : '') + ' · ' + contactoSeleccionado.correo;
+  document.getElementById('ac-correo-manual').value = contactoSeleccionado.correo;
+  document.getElementById('ac-area-manual').value   = contactoSeleccionado.area;
+}
+
+// ── ENVIAR ACTA AL CLIENTE ──
+async function enviarAlCliente() {
+  const correo = document.getElementById('ac-correo-manual').value.trim();
+  if (!correo) { alert('Por favor selecciona o escribe el correo del contacto.'); return; }
+  if (!actaOT) return;
+
+  const modoPrueba   = document.getElementById('modo-prueba').checked;
+  const correoPrueba = document.getElementById('correo-prueba').value.trim();
+  if (modoPrueba && !correoPrueba) {
+    alert('Modo prueba activo: escribe el correo de prueba, o desmarca la casilla para enviar al cliente real.');
+    return;
+  }
+  if (modoPrueba && !confirm('MODO PRUEBA: el correo irá solo a ' + correoPrueba + '. ¿Continuar?')) return;
+  if (!modoPrueba && !confirm('⚠️ ENVÍO REAL: el correo irá al cliente (' + correo + ') con los líderes en copia. ¿Continuar?')) return;
+
+  const btn = document.getElementById('btn-enviar-cliente');
+  btn.disabled = true; btn.textContent = '⏳ Enviando...';
+
+  const fotosData = fotos.filter(f => f);
+  const firmaEng  = document.getElementById('firma-entrega').toDataURL('image/png');
+
+  const payload = {
+    tabla:           'guardar_acta',
+    ctz:             actaOT.num,
+    fecha:           document.getElementById('ac-fecha').value,
+    contacto:        contactoSeleccionado?.nombre || document.getElementById('ac-contacto-search').value,
+    correoContacto:  correo,
+    areaContacto:    document.getElementById('ac-area-manual').value,
+    posicion:        document.getElementById('ac-posicion').value,
+    lugar:           document.getElementById('ac-lugar').value,
+    descripcion:     document.getElementById('ac-desc').value,
+    fotos:           JSON.stringify(fotosData),
+    adjuntos:        JSON.stringify(adjuntos),
+    firmaEng,
+    entregaNombre:   document.getElementById('ac-entrega-nom').value,
+    entregaCargo:    document.getElementById('ac-entrega-cargo').value,
+    noOC:            actaOT.noOC    || '',
+    cliente:         actaOT.cliente || '',
+    colilla:         actaOT.colilla || '',
+    modoPrueba:      modoPrueba ? '1' : '',
+    correoPrueba:    modoPrueba ? correoPrueba : ''
+  };
+
+  try {
+    const data = await postJSON(payload);
+    if (data.ok) {
+      const destino = modoPrueba ? correoPrueba + ' (modo prueba)' : correo;
+      toast('✓ Acta enviada a ' + destino + ' — abre el link del correo para firmar', 'ok');
+      if (!actaOT.acta) marcarActa(actaOT.id);
+      btn.textContent = '✓ Enviado';
+    } else {
+      toast('✕ Error: ' + (data.error || 'intenta de nuevo'), 'err');
+      btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
+    }
+  } catch(e) {
+    toast('✕ Error de conexión', 'err');
+    btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
+  }
+}
+let satVal = null;
+let calVal = null;
+let fotos = []; // dinámico — las que se necesiten
+let adjuntos = []; // informes PDF: [{nombre, data}]
+const firmaCtx = {};
+let correosPep = [];
+
+async function cargarCorreosPep() {
+  try {
+    const res  = await fetch(APPS_URL + '?tabla=correos_pep');
+    correosPep = await res.json();
+  } catch(e) { correosPep = []; }
+}
+
+function abrirActa(id) {
+  actaOT = ots.find(o => o.id === id);
+  if (!actaOT) return;
+
+  // Prellenar datos automáticos
+  document.getElementById('ac-ctz').value   = actaOT.num || '';
+  document.getElementById('ac-oc').value    = actaOT.noOC || '';
+  document.getElementById('ac-desc').value  = actaOT.colilla || '';
+  document.getElementById('ac-cliente').value = actaOT.cliente || '';
+  document.getElementById('ac-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('ac-posicion').value  = '';
+  document.getElementById('ac-lugar').value     = '';
+  document.getElementById('ac-entrega-nom').value   = 'William Sánchez';
+  document.getElementById('ac-entrega-cargo').value = 'Supervisor';
+  document.getElementById('ac-recibe-nom').value    = '';
+  document.getElementById('ac-recibe-cargo').value  = '';
+  document.getElementById('ac-pendientes').value    = '';
+
+  // Reset contacto
+  contactoSeleccionado = null;
+  document.getElementById('ac-contacto-search').value = '';
+  document.getElementById('ac-contacto-sug').style.display = 'none';
+  document.getElementById('ac-contacto-sel').style.display = 'none';
+  document.getElementById('ac-correo-manual').value = '';
+  document.getElementById('ac-area-manual').value = '';
+  document.getElementById('btn-enviar-cliente').disabled = false;
+  document.getElementById('btn-enviar-cliente').textContent = 'Enviar al cliente para firma';
+
+  // Reset fotos y adjuntos
+  fotos = [];
+  renderFotos();
+  adjuntos = [];
+  renderAdjuntos();
+
+  // Reset satisfacción y calificación
+  satVal = null; calVal = null;
+  document.getElementById('sat-si').classList.remove('on');
+  document.getElementById('sat-no').classList.remove('on');
+  document.getElementById('pendientes-wrap').style.display = 'none';
+  // Generar botones de calificación dinámicamente
+  document.getElementById('cal-btns').innerHTML = [1,2,3,4,5,6,7,8,9,10]
+    .map(n => `<button class="cal-btn" onclick="setCal(${n})" id="cal-${n}">${n}</button>`).join('');
+
+  // Reset checkboxes
+  ['doc-reporte','doc-planos','doc-protocolos','doc-cert','doc-check'].forEach(id => {
+    document.getElementById(id).checked = false;
+  });
+  document.getElementById('doc-otros').value = '';
+
+  // Mostrar pantalla
+  document.getElementById('acta-screen').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+
+  // Inicializar canvas de firmas
+  setTimeout(() => {
+    iniciarFirma('firma-entrega');
+    iniciarFirma('firma-recibe');
+  }, 100);
+}
+
+function cerrarActa() {
+  document.getElementById('acta-screen').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function setSat(v) {
+  satVal = v;
+  document.getElementById('sat-si').classList.toggle('on', v === 'SI');
+  document.getElementById('sat-no').classList.toggle('on', v === 'NO');
+  document.getElementById('pendientes-wrap').style.display = v === 'NO' ? 'block' : 'none';
+}
+
+function setCal(n) {
+  calVal = n;
+  [1,2,3,4,5,6,7,8,9,10].forEach(i => document.getElementById('cal-' + i).classList.toggle('on', i === n));
+}
+
+// Comprime cada imagen en el navegador (máx 1400px, JPEG 75%) — una foto
+// de celular pasa de ~3 MB a ~150 KB sin perder calidad visible
+function comprimirImagen(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1400;
+        let w = img.width, hgt = img.height;
+        if (w > MAX || hgt > MAX) {
+          if (w >= hgt) { hgt = Math.round(hgt * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / hgt); hgt = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = hgt;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, hgt);
+        resolve(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function agregarFotos(input) {
+  const files = [...input.files];
+  input.value = '';
+  for (const file of files) {
+    try {
+      fotos.push(await comprimirImagen(file));
+    } catch(e) { toast('No se pudo cargar una imagen', 'err'); }
+  }
+  renderFotos();
+}
+
+function quitarFoto(i) {
+  fotos.splice(i, 1);
+  renderFotos();
+}
+
+async function agregarAdjuntos(input) {
+  const files = [...input.files];
+  input.value = '';
+  for (const file of files) {
+    if (file.size > 8 * 1024 * 1024) { alert('"' + file.name + '" supera 8 MB. Comprime el PDF e inténtalo de nuevo.'); continue; }
+    const data = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+    adjuntos.push({ nombre: file.name, data });
+  }
+  renderAdjuntos();
+}
+
+function quitarAdjunto(i) {
+  adjuntos.splice(i, 1);
+  renderAdjuntos();
+}
+
+function renderAdjuntos() {
+  document.getElementById('adjuntos-lista').innerHTML = adjuntos.map((a, i) => `
+    <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:8px;padding:8px 12px;background:var(--surface)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#C0001A" stroke-width="1.7" style="width:18px;height:18px;flex-shrink:0"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
+      <span style="flex:1;font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.nombre}</span>
+      <button onclick="quitarAdjunto(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;font-weight:700">✕</button>
+    </div>`).join('');
+}
+
+function renderFotos() {
+  document.getElementById('fotos-grid').innerHTML = fotos.map((f, i) => `
+    <div class="foto-slot" style="border-style:solid">
+      <img src="${f}" style="display:block">
+      <button onclick="quitarFoto(${i})" style="position:absolute;top:6px;right:6px;z-index:2;background:rgba(20,22,28,.75);color:#fff;border:none;border-radius:4px;width:24px;height:24px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
+    </div>`).join('');
+}
+
+// ── FIRMA DIGITAL ──
+function iniciarFirma(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#1A1A1A';
+  ctx.lineWidth   = 2;
+  ctx.lineCap     = 'round';
+  firmaCtx[canvasId] = { ctx, drawing: false, lastX: 0, lastY: 0 };
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const src  = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+  }
+  function start(e) { e.preventDefault(); const p = getPos(e); firmaCtx[canvasId].drawing = true; firmaCtx[canvasId].lastX = p.x; firmaCtx[canvasId].lastY = p.y; }
+  function draw(e)  { e.preventDefault(); if (!firmaCtx[canvasId].drawing) return; const p = getPos(e); ctx.beginPath(); ctx.moveTo(firmaCtx[canvasId].lastX, firmaCtx[canvasId].lastY); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaCtx[canvasId].lastX = p.x; firmaCtx[canvasId].lastY = p.y; }
+  function stop()   { firmaCtx[canvasId].drawing = false; }
+
+  canvas.addEventListener('mousedown',  start);
+  canvas.addEventListener('mousemove',  draw);
+  canvas.addEventListener('mouseup',    stop);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove',  draw,  { passive: false });
+  canvas.addEventListener('touchend',   stop);
+}
+
+function limpiarFirma(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// ── GENERAR PDF ──
+async function generarPDF() {
+  const o = actaOT;
+  if (!o) return;
+
+  const fecha = document.getElementById('ac-fecha').value;
+  const fechaFmt = fecha ? new Date(fecha + 'T12:00:00').toLocaleDateString('es-CO', { day:'2-digit', month:'2-digit', year:'numeric' }) : '';
+
+  // Capturar firmas
+  const firmaEnt = document.getElementById('firma-entrega').toDataURL('image/png');
+  const firmaRec = document.getElementById('firma-recibe').toDataURL('image/png');
+
+  // Documentos marcados
+  const docs = [];
+  if (document.getElementById('doc-reporte').checked)   docs.push('Reporte técnico final');
+  if (document.getElementById('doc-planos').checked)    docs.push('Planos');
+  if (document.getElementById('doc-protocolos').checked) docs.push('Protocolos de pruebas');
+  if (document.getElementById('doc-cert').checked)      docs.push('Certificado de materiales');
+  if (document.getElementById('doc-check').checked)     docs.push('Check list firmados');
+  const otros = document.getElementById('doc-otros').value.trim();
+  if (otros) docs.push(otros);
+
+  // Construir HTML del acta para impresión
+  const actaHTML = `
+    <!DOCTYPE html><html><head><meta charset="UTF-8">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:Arial,sans-serif;font-size:11px;color:#111;background:#fff;padding:20px}
+      h1{text-align:center;font-size:15px;font-weight:700;background:#90EE90;padding:10px;border:1px solid #ccc;margin-bottom:0}
+      .acta-num{text-align:center;font-size:12px;font-weight:700;padding:6px;border:1px solid #ccc;border-top:none;margin-bottom:12px}
+      table{width:100%;border-collapse:collapse;margin-bottom:10px}
+      td,th{border:1px solid #bbb;padding:5px 8px;font-size:11px;vertical-align:top}
+      .th-label{background:#ddd;font-weight:700;width:35%}
+      .section-header{background:#bdd7ee;font-weight:700;text-align:center;padding:5px}
+      .fotos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+      .fotos img{width:100%;height:160px;object-fit:cover;border:1px solid #ccc}
+      .fotos-empty{text-align:center;padding:20px;color:#888;border:1px dashed #ccc}
+      .firma-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+      .firma-box{border:1px solid #ccc;padding:8px;text-align:center}
+      .firma-box img{height:70px;object-fit:contain;display:block;margin:0 auto 4px}
+      .firma-label{font-size:10px;color:#555;border-top:1px solid #ccc;padding-top:4px;margin-top:4px}
+      .sat-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+      .cal-box{display:flex;gap:4px;margin-top:4px}
+      .cal-num{width:24px;height:24px;border:1px solid #bbb;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+      .cal-num.sel{background:#C0001A;color:#fff;border-color:#C0001A}
+      .doc-list{padding:6px 0}
+      .doc-item{padding:3px 0;font-size:11px}
+      .doc-item::before{content:"☑ "}
+    </style></head><body>
+    <h1>ACTA ENTREGA</h1>
+    <div class="acta-num">${String(o.num || '').padStart(2,'0')} -${o.anio || new Date().getFullYear()}</div>
+    <table>
+      <tr><td class="th-label">COTIZACIÓN N°</td><td>${o.num || ''}</td><td class="th-label">FECHA</td><td>${fechaFmt}</td></tr>
+      <tr><td class="th-label">ORDEN DE COMPRA</td><td>${o.noOC || ''}</td><td class="th-label">CLIENTE</td><td>${o.cliente || ''}</td></tr>
+      <tr><td class="th-label">POSICIÓN</td><td>${document.getElementById('ac-posicion').value}</td><td class="th-label">LUGAR DE EJECUCIÓN</td><td>${document.getElementById('ac-lugar').value}</td></tr>
+    </table>
+    <table>
+      <tr><td class="section-header" colspan="2">DESCRIPCIÓN DEL TRABAJO</td></tr>
+      <tr><td colspan="2" style="padding:8px">${document.getElementById('ac-desc').value}</td></tr>
+    </table>
+    <div class="section-header">REGISTRO FOTOGRÁFICO TRABAJO FINAL</div>
+    <div class="fotos">
+      ${fotos.filter(f=>f).map(f=>`<img src="${f}">`).join('') || '<div class="fotos-empty" style="grid-column:1/-1">Sin fotos adjuntas</div>'}
+    </div>
+    <div class="firma-row">
+      <div class="firma-box">
+        <div style="font-weight:700;margin-bottom:6px;font-size:11px">ENTREGADO POR:</div>
+        <img src="${firmaEnt}">
+        <div class="firma-label">Nombre: ${document.getElementById('ac-entrega-nom').value}</div>
+        <div class="firma-label">Cargo: ${document.getElementById('ac-entrega-cargo').value}</div>
+        <div class="firma-label">Fecha: ${fechaFmt}</div>
+      </div>
+      <div class="firma-box">
+        <div style="font-weight:700;margin-bottom:6px;font-size:11px">RECIBIDO POR:</div>
+        <img src="${firmaRec}">
+        <div class="firma-label">Nombre: ${document.getElementById('ac-recibe-nom').value}</div>
+        <div class="firma-label">Cargo: ${document.getElementById('ac-recibe-cargo').value}</div>
+        <div class="firma-label">Fecha: &nbsp;</div>
+      </div>
+    </div>
+    <div class="sat-row" style="margin-top:10px">
+      <span>El servicio se recibe a satisfacción, sin observaciones pendientes:</span>
+      <strong style="color:${satVal==='SI'?'#1E7A3E':'#C0001A'}">${satVal || '—'}</strong>
+    </div>
+    ${satVal === 'NO' && document.getElementById('ac-pendientes').value ? `<div style="padding:6px;border:1px solid #ccc;margin-top:4px"><strong>PENDIENTES:</strong> ${document.getElementById('ac-pendientes').value}</div>` : ''}
+    <div style="margin-top:10px">
+      <div style="font-size:11px;margin-bottom:4px">¿Cómo califica la ejecución, respuesta y calidad del trabajo final? <em>(1 es la más baja y 10 es la mejor calificación)</em></div>
+      <div class="cal-box">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<div class="cal-num ${calVal===n?'sel':''}">${n}</div>`).join('')}</div>
+    </div>
+    ${docs.length ? `<div style="margin-top:10px"><strong>Documentos anexos:</strong><div class="doc-list">${docs.map(d=>`<div class="doc-item">${d}</div>`).join('')}</div></div>` : ''}
+    </body></html>
+  `;
+
+  // Abrir ventana de impresión
+  const win = window.open('', '_blank', 'width=800,height=900');
+  win.document.write(actaHTML);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); }, 500);
+
+  // Marcar acta como generada y enviar al cliente
+  if (actaOT) {
+    const contactoNombre = document.getElementById('ac-recibe-nom').value.trim();
+    const contactoPep = correosPep.find(c =>
+      c.nombre.toLowerCase().includes(contactoNombre.toLowerCase().split(' ')[0])
+    );
+    const correoContacto = contactoPep?.correo || '';
+    const areaContacto   = contactoPep?.area   || '';
+
+    const fotosData = fotos.filter(f => f);
+    const payload = {
+      tabla:           'guardar_acta',
+      ctz:             actaOT.num,
+      fecha:           document.getElementById('ac-fecha').value,
+      contacto:        contactoNombre,
+      correoContacto,
+      areaContacto,
+      posicion:        document.getElementById('ac-posicion').value,
+      lugar:           document.getElementById('ac-lugar').value,
+      descripcion:     document.getElementById('ac-desc').value,
+      fotos:           JSON.stringify(fotosData),
+      adjuntos:        JSON.stringify(adjuntos),
+      firmaEng:        document.getElementById('firma-entrega').toDataURL('image/png'),
+      entregaNombre:   document.getElementById('ac-entrega-nom').value,
+      entregaCargo:    document.getElementById('ac-entrega-cargo').value,
+      noOC:            actaOT.noOC || '',
+      cliente:         actaOT.cliente || '',
+      colilla:         actaOT.colilla || ''
+    };
+
+    postJSON(payload)
+      .then(d => {
+        if (d.ok && correoContacto) {
+          toast('✓ Acta enviada al cliente: ' + correoContacto, 'ok');
+        } else if (d.ok) {
+          toast('✓ Acta guardada. Sin correo registrado para este contacto.', 'ok');
+        }
+      })
+      .catch(() => toast('⚠ Acta guardada localmente, no se pudo enviar.', 'err'));
+
+    if (actaOT && !actaOT.acta) marcarActa(actaOT.id);
+  }
+}
+
+// ── INIT ──
+ots   = loadLocal();
+notas = loadNotas();
+cargarCorreosPep(); // Cargar correos PepsiCo en background
+</script>
+</body>
+</html>

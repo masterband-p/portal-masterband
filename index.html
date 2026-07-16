@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masterband · Portal de Gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#14161C; --steel:#3D434F; --muted:#7A8089;
+    --mist:#EEF0F2; --surface:#FFFFFF; --line:#D9DCE1;
+    --red:#C0001A; --red-dark:#8A0012; --red-tint:#FBF0F1;
+    --display:'Barlow Condensed',sans-serif;
+    --body:'Barlow',-apple-system,sans-serif;
+    --sh:0 1px 2px rgba(20,22,28,.06),0 4px 14px rgba(20,22,28,.06);
+    --shm:0 2px 4px rgba(20,22,28,.08),0 12px 28px rgba(20,22,28,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--body);background:var(--mist);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+
+  /* ── TOPBAR ── */
+  .topbar{background:var(--surface);border-bottom:1px solid var(--line);height:64px;padding:0 28px;display:flex;align-items:center;justify-content:space-between}
+  .wordmark{display:flex;align-items:center;gap:12px;text-decoration:none}
+  .mark{width:34px;height:34px;background:var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .mark svg{width:20px;height:20px;stroke:#fff}
+  .wm-text{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:.14em;color:#fff;line-height:1;text-transform:uppercase}
+  .wm-text b{color:var(--red);font-weight:700}
+  .wm-sub{font-size:10px;letter-spacing:.22em;color:#8A8F98;text-transform:uppercase;margin-top:3px}
+  .rol-wrap{display:flex;align-items:center;gap:12px}
+  .rol-pill{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:2px;padding:6px 13px;font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--ink);text-transform:uppercase}
+  .rol-pill svg{width:14px;height:14px;stroke:var(--red)}
+  .btn-rol{background:none;border:none;font-family:var(--body);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:.03em}
+  .btn-rol:hover{color:var(--red)}
+
+  /* ── HERO: plano técnico ── */
+  .hero{position:relative;background:var(--surface);border-bottom:1px solid var(--line);overflow:hidden}
+  .hero::before{content:'';position:absolute;inset:0;
+    background-image:linear-gradient(rgba(20,22,28,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(20,22,28,.045) 1px,transparent 1px);
+    background-size:36px 36px}
+  .hero-inner{position:relative;max-width:980px;margin:0 auto;padding:54px 28px 46px}
+  .eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .eyebrow .tick{width:26px;height:2px;background:var(--red)}
+  .eyebrow span{font-size:12px;font-weight:600;letter-spacing:.28em;color:var(--steel);text-transform:uppercase}
+  .hero-title{font-family:var(--display);font-weight:700;font-size:52px;line-height:.98;letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
+  .hero-title em{font-style:normal;color:var(--red)}
+  .hero-sub{margin-top:14px;font-size:15.5px;color:var(--steel);max-width:520px;line-height:1.55}
+
+  /* ── MÓDULOS: cajetines de plano ── */
+  .modules-zone{max-width:980px;margin:0 auto;width:100%;padding:38px 28px 64px;flex:1}
+  .zone-label{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
+  .zone-label .n{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+  .zone-label .rule{flex:1;height:1px;background:var(--line)}
+  .modules{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
+  .module-card{position:relative;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:box-shadow .18s,transform .18s,border-color .18s;box-shadow:var(--sh);display:none;padding:26px 26px 22px}
+  .module-card.visible{display:block}
+  .module-card::after{content:'';position:absolute;top:0;left:0;width:44px;height:3px;background:var(--red);transition:width .22s}
+  .module-card:hover{box-shadow:var(--shm);transform:translateY(-3px);border-color:#C6CAD1}
+  .module-card:hover::after{width:100%}
+  .mod-icon{width:46px;height:46px;background:var(--ink);display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+  .mod-icon svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .mod-code{position:absolute;top:20px;right:22px;font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.16em;color:#C0C4CB}
+  .mod-title{font-family:var(--display);font-weight:600;font-size:21px;letter-spacing:.02em;text-transform:uppercase;line-height:1.1;margin-bottom:8px}
+  .mod-desc{font-size:13.5px;color:var(--steel);line-height:1.55;margin-bottom:16px;min-height:42px}
+  .mod-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .mod-tag{border:1px solid var(--line);padding:3px 10px;font-size:11px;font-weight:600;letter-spacing:.05em;color:var(--steel);text-transform:uppercase}
+  .mod-arrow{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--red);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .mod-arrow::after{content:'';width:22px;height:1.5px;background:var(--red);transition:width .2s}
+  .module-card:hover .mod-arrow::after{width:34px}
+
+  /* ── SELECTOR DE ROL ── */
+  .overlay{position:fixed;inset:0;background:rgba(20,22,28,.66);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
+  .overlay.on{display:flex}
+  .rol-modal{background:var(--surface);max-width:440px;width:100%;box-shadow:var(--shm);border-top:3px solid var(--red);padding:32px}
+  .rol-title{font-family:var(--display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.03em;text-align:center;margin-bottom:4px}
+  .rol-sub{font-size:13.5px;color:var(--muted);text-align:center;margin-bottom:22px}
+  .rol-opt{display:flex;align-items:center;gap:15px;width:100%;background:var(--surface);border:1px solid var(--line);padding:15px 18px;margin-bottom:10px;cursor:pointer;font-family:var(--body);text-align:left;transition:all .15s}
+  .rol-opt:hover{border-color:var(--red);background:var(--red-tint)}
+  .rol-opt .ric{width:40px;height:40px;background:var(--mist);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .rol-opt .ric svg{width:21px;height:21px;stroke:var(--ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .rol-opt:hover .ric{background:var(--red)}
+  .rol-opt:hover .ric svg{stroke:#fff}
+  .rol-opt .tit{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
+  .rol-opt .des{font-size:12px;color:var(--muted)}
+  .pass-zone{display:none;margin-top:6px}
+  .pass-zone.on{display:block}
+  .pass-zone input{width:100%;background:var(--mist);border:1px solid var(--line);padding:12px 14px;font-family:var(--body);font-size:14px;margin-bottom:10px;text-align:center;letter-spacing:.08em}
+  .pass-zone input:focus{outline:none;border-color:var(--red)}
+  .pass-zone .mbtn{width:100%;background:var(--red);border:none;padding:12px;font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#fff;cursor:pointer}
+  .pass-zone .mbtn:hover{background:var(--red-dark)}
+  .pass-err{font-size:12px;color:var(--red);font-weight:700;text-align:center;min-height:16px;margin-bottom:4px}
+  .pass-back{background:none;border:none;font-family:var(--body);font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;display:block;margin:8px auto 0}
+
+  /* ── FOOTER: franja de cajetín ── */
+  .footer{background:var(--ink);padding:0}
+  .foot-inner{max-width:980px;margin:0 auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .foot-brand{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.14em;color:#fff;text-transform:uppercase}
+  .foot-brand b{color:var(--red)}
+  .foot-info{font-size:11.5px;letter-spacing:.06em;color:#8A8F98;text-transform:uppercase}
+
+  @media(max-width:640px){
+    .topbar{padding:0 18px}
+    .hero-inner{padding:38px 18px 34px}
+    .hero-title{font-size:38px}
+    .modules-zone{padding:28px 18px 44px}
+    .wm-sub{display:none}
+    .foot-inner{justify-content:center;text-align:center}
+  }
+  @media(prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="wordmark" href="index.html">
+    <img src="logo-masterband.png" alt="Masterband S.A.S. — Montajes Industriales" style="height:44px;width:auto">
+  </a>
+  <div class="rol-wrap" id="rol-wrap" style="display:none">
+    <span class="rol-pill" id="rol-pill"></span>
+    <button class="btn-rol" onclick="cambiarRol()">Cambiar de rol</button>
+  </div>
+</div>
+
+<!-- SELECTOR DE ROL -->
+<div class="overlay" id="rol-gate">
+  <div class="rol-modal">
+    <div id="rol-paso1">
+      <div style="text-align:center;margin-bottom:16px"><img src="logo-masterband.png" alt="Masterband S.A.S." style="height:46px;width:auto"></div>
+      <div class="rol-title">Identifícate</div>
+      <div class="rol-sub">Selecciona tu perfil para acceder a tus módulos</div>
+      <button class="rol-opt" onclick="elegirRol('gerencia')">
+        <span class="ric"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="1"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg></span>
+        <span><span class="tit">Gerencia</span><br><span class="des">Acceso completo · requiere contraseña</span></span>
+      </button>
+      <button class="rol-opt" onclick="elegirRol('ingeniero')">
+        <span class="ric"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 5.6L3 17.6V21h3.4l5.7-5.7a4.5 4.5 0 0 0 5.6-6L14.5 12.5l-3-3z"/></svg></span>
+        <span><span class="tit">Ingeniero</span><br><span class="des">Trabajos y programación · requiere contraseña</span></span>
+      </button>
+      <button class="rol-opt" onclick="elegirRol('supervisor')">
+        <span class="ric"><svg viewBox="0 0 24 24"><path d="M4 15a8 8 0 0 1 16 0"/><path d="M10 7.5V5a2 2 0 0 1 4 0v2.5"/><path d="M2 15h20v2.5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg></span>
+        <span><span class="tit">Supervisor</span><br><span class="des">Programación y frentes de trabajo · requiere contraseña</span></span>
+      </button>
+      <button class="rol-opt" onclick="elegirRol('colaborador')">
+        <span class="ric"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+        <span><span class="tit">Colaborador</span><br><span class="des">Consulta tu programación · sin contraseña</span></span>
+      </button>
+    </div>
+    <div class="pass-zone" id="rol-paso2">
+      <div class="rol-title" id="pass-titulo">Contraseña</div>
+      <div class="rol-sub">Ingresa la contraseña de tu perfil</div>
+      <div class="pass-err" id="pass-err"></div>
+      <input type="password" id="rol-pass" placeholder="Contraseña" autocapitalize="none" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')validarRol()">
+      <button class="mbtn" onclick="validarRol()">Entrar</button>
+      <button class="pass-back" onclick="volverPaso1()">← Elegir otro perfil</button>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="tick"></span><span>Sistema Interno de Gestión</span></div>
+    <h1 class="hero-title">Portal de <em>Gestión</em><br>Masterband</h1>
+    <p class="hero-sub" id="hero-sub">Cotizaciones, ejecución en campo, actas de entrega y programación de personal — en un solo lugar.</p>
+  </div>
+</div>
+
+<div class="modules-zone">
+  <div class="zone-label"><span class="n">Módulos</span><span class="rule"></span></div>
+  <div class="modules">
+
+    <a href="Masterband_OTs.html" class="module-card" data-roles="gerencia,ingeniero">
+      <span class="mod-code">MB-01</span>
+      <div class="mod-icon"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="1"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 10l2 2 4-4"/><path d="M9 16h6"/></svg></div>
+      <div class="mod-title">Órdenes de Trabajo</div>
+      <div class="mod-desc">Cotizaciones, pipeline de proyectos, facturación, actas de entrega y seguimiento de trabajos en campo.</div>
+      <div class="mod-tags"><span class="mod-tag">Gerencia</span><span class="mod-tag">Ingeniero</span></div>
+      <div class="mod-arrow">Abrir módulo</div>
+    </a>
+
+    <a href="Masterband_Programacion.html" class="module-card" data-roles="gerencia,ingeniero,supervisor,colaborador">
+      <span class="mod-code">MB-02</span>
+      <div class="mod-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M8 14h2M14 14h2M8 18h2"/></svg></div>
+      <div class="mod-title">Programación de Personal</div>
+      <div class="mod-desc" id="desc-prog">Asigna equipos a frentes de trabajo, define horarios, SISO y materiales por actividad.</div>
+      <div class="mod-tags"><span class="mod-tag">Ingeniero</span><span class="mod-tag">Supervisor</span><span class="mod-tag">Colaboradores</span></div>
+      <div class="mod-arrow">Abrir módulo</div>
+    </a>
+
+    <a href="Masterband_Evaluacion.html" class="module-card" data-roles="gerencia">
+      <span class="mod-code">MB-03</span>
+      <div class="mod-icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg></div>
+      <div class="mod-title">Evaluación de Desempeño</div>
+      <div class="mod-desc">Indicadores mensuales del equipo calculados automáticamente y registro de evaluaciones 1:1.</div>
+      <div class="mod-tags"><span class="mod-tag">Gerencia</span></div>
+      <div class="mod-arrow">Abrir módulo</div>
+    </a>
+
+  </div>
+</div>
+
+<div class="footer">
+  <div class="foot-inner">
+    <span class="foot-brand">Master<b>band</b> S.A.S.</span>
+    <span class="foot-info">Montajes Industriales · Fontibón, Bogotá D.C. · Sistema interno</span>
+  </div>
+</div>
+
+<script>
+// Si la URL tiene ?acta= redirigir a la página de firma del cliente
+const params = new URLSearchParams(window.location.search);
+if (params.get('acta')) {
+  window.location.href = 'acta-firma.html?acta=' + params.get('acta');
+}
+
+const PASS = { gerencia: 'master2025', ingeniero: 'ing2025', supervisor: 'sup2025' };
+const ROL_ICON = {
+  gerencia:    '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="1"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>',
+  ingeniero:   '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 5.6L3 17.6V21h3.4l5.7-5.7a4.5 4.5 0 0 0 5.6-6L14.5 12.5l-3-3z"/></svg>',
+  supervisor:  '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 15a8 8 0 0 1 16 0"/><path d="M2 15h20v2.5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg>',
+  colaborador: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>'
+};
+const ROL_LABEL = { gerencia: 'Gerencia', ingeniero: 'Ingeniero', supervisor: 'Supervisor', colaborador: 'Colaborador' };
+const HERO_SUB = {
+  gerencia:    'Acceso completo a los módulos de gestión de la compañía.',
+  ingeniero:   'Tus trabajos activos y la programación de tu equipo.',
+  supervisor:  'Programa el personal y gestiona los frentes del día.',
+  colaborador: 'Consulta aquí los días, horas y frentes donde estás programado.'
+};
+let rolPendiente = null;
+
+function aplicarRol(rol){
+  document.querySelectorAll('.module-card').forEach(c => {
+    const roles = (c.dataset.roles || '').split(',');
+    c.classList.toggle('visible', roles.includes(rol));
+  });
+  document.getElementById('rol-pill').innerHTML = ROL_ICON[rol] + ROL_LABEL[rol];
+  document.getElementById('rol-wrap').style.display = 'flex';
+  document.getElementById('hero-sub').textContent = HERO_SUB[rol];
+  if (rol === 'colaborador') {
+    document.getElementById('desc-prog').textContent = 'Busca tu nombre y consulta los días, horas y frentes donde estás programado.';
+  }
+  document.getElementById('rol-gate').classList.remove('on');
+}
+
+function elegirRol(rol){
+  if (rol === 'colaborador') {
+    localStorage.setItem('mb_rol', rol);
+    aplicarRol(rol);
+    return;
+  }
+  rolPendiente = rol;
+  document.getElementById('rol-paso1').style.display = 'none';
+  document.getElementById('rol-paso2').classList.add('on');
+  document.getElementById('pass-titulo').textContent = ROL_LABEL[rol];
+  document.getElementById('pass-err').textContent = '';
+  document.getElementById('rol-pass').value = '';
+  document.getElementById('rol-pass').focus();
+}
+
+function validarRol(){
+  const p = document.getElementById('rol-pass').value.trim().toLowerCase();
+  if (p === PASS[rolPendiente]) {
+    localStorage.setItem('mb_rol', rolPendiente);
+    volverPaso1();
+    aplicarRol(rolPendiente);
+  } else {
+    document.getElementById('pass-err').textContent = 'Contraseña incorrecta';
+  }
+}
+
+function volverPaso1(){
+  document.getElementById('rol-paso2').classList.remove('on');
+  document.getElementById('rol-paso1').style.display = 'block';
+}
+
+function cambiarRol(){
+  localStorage.removeItem('mb_rol');
+  document.getElementById('rol-wrap').style.display = 'none';
+  document.querySelectorAll('.module-card').forEach(c => c.classList.remove('visible'));
+  document.getElementById('rol-gate').classList.add('on');
+}
+
+const rolGuardado = localStorage.getItem('mb_rol');
+if (rolGuardado && ROL_LABEL[rolGuardado]) {
+  aplicarRol(rolGuardado);
+} else {
+  document.getElementById('rol-gate').classList.add('on');
+}
+</script>
+</body>
+</html>
