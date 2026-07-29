@@ -458,6 +458,14 @@
               <canvas class="firma-canvas" id="firma-entrega"></canvas>
               <button class="btn-clear-firma" onclick="limpiarFirma('firma-entrega')">Limpiar</button>
             </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+              <label style="display:inline-flex;align-items:center;gap:7px;border:1px dashed var(--border);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+                Subir firma
+                <input type="file" accept="image/*" onchange="subirFirma(this,'firma-entrega')" style="display:none">
+              </label>
+              <span style="font-size:11.5px;color:var(--muted)">o dibújala arriba</span>
+            </div>
           </div>
         </div>
         <div>
@@ -1589,6 +1597,43 @@ function iniciarFirma(canvasId) {
   canvas.addEventListener('touchstart', start, { passive: false });
   canvas.addEventListener('touchmove',  draw,  { passive: false });
   canvas.addEventListener('touchend',   stop);
+}
+
+// Carga una imagen de firma (foto o escaneo) dentro del canvas, centrada y
+// ajustada. Si la imagen tiene fondo blanco, lo vuelve transparente para que
+// se vea como una firma real sobre el acta.
+function subirFirma(input, canvasId) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext('2d');
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Ajustar manteniendo proporción, con un margen interno
+      const margen = 8;
+      const dispW = canvas.width - margen * 2, dispH = canvas.height - margen * 2;
+      const escala = Math.min(dispW / img.width, dispH / img.height);
+      const w = img.width * escala, hh = img.height * escala;
+      ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - hh) / 2, w, hh);
+      // Quitar el fondo claro para que quede solo el trazo
+      try {
+        const d = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const px = d.data;
+        for (let i = 0; i < px.length; i += 4) {
+          if (px[i] > 205 && px[i+1] > 205 && px[i+2] > 205) px[i+3] = 0;
+        }
+        ctx.putImageData(d, 0, 0);
+      } catch(err) { /* imagen de otro origen: se deja tal cual */ }
+      toast('Firma cargada', 'ok');
+    };
+    img.onerror = () => toast('No se pudo leer la imagen', 'err');
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 function limpiarFirma(canvasId) {
