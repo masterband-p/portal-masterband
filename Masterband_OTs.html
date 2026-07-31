@@ -1470,6 +1470,73 @@ function abrirActa(id) {
     iniciarFirma('firma-entrega');
     iniciarFirma('firma-recibe');
   }, 100);
+
+  // ★ Si el acta ya fue diligenciada antes, recuperar su contenido guardado
+  if (actaOT.acta) {
+    cargarActaGuardada(actaOT.num);
+  }
+}
+
+// Trae del Sheet lo que se guardó de un acta y lo vuelve a pintar en el formulario
+async function cargarActaGuardada(ctz) {
+  try {
+    const res = await fetch(APPS_URL + '?tabla=acta&ctz=' + encodeURIComponent(ctz));
+    const d = await res.json();
+    if (!d || !d.ok) return;
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    set('ac-fecha', d.fecha);
+    set('ac-posicion', d.posicion);
+    set('ac-lugar', d.lugar);
+    set('ac-desc', d.descripcion);
+    set('ac-entrega-nom', d.entregaNombre);
+    set('ac-entrega-cargo', d.entregaCargo);
+    set('ac-recibe-nom', d.recibeNombre);
+    set('ac-recibe-cargo', d.recibeCargo);
+    if (d.correoContacto) set('ac-correo-manual', d.correoContacto);
+    if (d.areaContacto)   set('ac-area-manual', d.areaContacto);
+    if (d.contacto)       set('ac-contacto-search', d.contacto);
+
+    // Fotos guardadas (URLs de Drive)
+    try {
+      const fArr = JSON.parse(d.fotos || '[]');
+      if (fArr.length) { fotos = fArr; renderFotos(); }
+    } catch(e) {}
+
+    // Informes adjuntos guardados
+    try {
+      const aArr = JSON.parse(d.adjuntos || '[]');
+      if (aArr.length) { adjuntos = aArr.map(x => ({ nombre: x.n || x.nombre, u: x.u })); renderAdjuntos(); }
+    } catch(e) {}
+
+    // Firma del ingeniero guardada → pintarla en el canvas
+    if (d.firmaEng) {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.getElementById('firma-entrega');
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      };
+      img.src = d.firmaEng;
+    }
+
+    // Evaluación del cliente (si ya firmó)
+    if (d.satisfaccion) {
+      satVal = d.satisfaccion;
+      document.getElementById('sat-si').classList.toggle('on', satVal === 'SI');
+      document.getElementById('sat-no').classList.toggle('on', satVal === 'NO');
+    }
+    if (d.calificacion) { calVal = parseInt(d.calificacion); if (calVal) setCal(calVal); }
+    if (d.pendientes) set('ac-pendientes', d.pendientes);
+
+    // Aviso del estado
+    if (d.estado === 'FIRMADA') {
+      toast('Acta firmada por el cliente — contenido cargado', 'ok');
+    } else {
+      toast('Acta recuperada — pendiente de firma del cliente', 'ok');
+    }
+  } catch(e) {
+    toast('No se pudo recuperar el contenido guardado', 'err');
+  }
 }
 
 function cerrarActa() {
@@ -1735,55 +1802,12 @@ async function generarPDF() {
     </body></html>
   `;
 
-  // Abrir ventana de impresión
+  // Abrir ventana de impresión — SOLO descarga/imprime, no envía nada al cliente
   const win = window.open('', '_blank', 'width=800,height=900');
   win.document.write(actaHTML);
   win.document.close();
   win.focus();
   setTimeout(() => { win.print(); }, 500);
-
-  // Marcar acta como generada y enviar al cliente
-  if (actaOT) {
-    const contactoNombre = document.getElementById('ac-recibe-nom').value.trim();
-    const contactoPep = correosPep.find(c =>
-      c.nombre.toLowerCase().includes(contactoNombre.toLowerCase().split(' ')[0])
-    );
-    const correoContacto = contactoPep?.correo || '';
-    const areaContacto   = contactoPep?.area   || '';
-
-    const fotosData = fotos.filter(f => f);
-    const payload = {
-      tabla:           'guardar_acta',
-      ctz:             actaOT.num,
-      fecha:           document.getElementById('ac-fecha').value,
-      contacto:        contactoNombre,
-      correoContacto,
-      areaContacto,
-      posicion:        document.getElementById('ac-posicion').value,
-      lugar:           document.getElementById('ac-lugar').value,
-      descripcion:     document.getElementById('ac-desc').value,
-      fotos:           JSON.stringify(fotosData),
-      adjuntos:        JSON.stringify(adjuntos),
-      firmaEng:        document.getElementById('firma-entrega').toDataURL('image/png'),
-      entregaNombre:   document.getElementById('ac-entrega-nom').value,
-      entregaCargo:    document.getElementById('ac-entrega-cargo').value,
-      noOC:            actaOT.noOC || '',
-      cliente:         actaOT.cliente || '',
-      colilla:         actaOT.colilla || ''
-    };
-
-    postJSON(payload)
-      .then(d => {
-        if (d.ok && correoContacto) {
-          toast('✓ Acta enviada al cliente: ' + correoContacto, 'ok');
-        } else if (d.ok) {
-          toast('✓ Acta guardada. Sin correo registrado para este contacto.', 'ok');
-        }
-      })
-      .catch(() => toast('⚠ Acta guardada localmente, no se pudo enviar.', 'err'));
-
-    if (actaOT && !actaOT.acta) marcarActa(actaOT.id);
-  }
 }
 
 // ── INIT ──
