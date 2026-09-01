@@ -513,21 +513,35 @@
     <!-- INFORME TÉCNICO DE ENTREGA -->
     <div class="acta-section">
       <div class="acta-section-title">Informe técnico de entrega</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Genera un informe técnico detallado en PDF. Al generarlo, se adjunta automáticamente al acta para enviarlo al cliente.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Informe detallado en PDF. Al generarlo se adjunta automáticamente al acta. Los datos generales (cliente, OC, fecha, responsable) se toman del acta.</div>
 
+      <!-- 1. Descripción del trabajo -->
       <div class="acta-field">
-        <label class="acta-label">Descripción técnica del trabajo realizado</label>
-        <textarea class="acta-textarea" id="it-descripcion" rows="4" placeholder="Detalla el trabajo ejecutado: procedimiento, criterios técnicos, condiciones encontradas, solución aplicada..."></textarea>
+        <label class="acta-label">1. Descripción del trabajo</label>
+        <textarea class="acta-textarea" id="it-descripcion" rows="4" placeholder="Describe el trabajo ejecutado: qué se hizo, materiales/equipos empleados, cómo se realizó..."></textarea>
+        <div style="margin-top:6px"><label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;background:var(--s2)">+ Fotos de esta sección<input type="file" accept="image/*" multiple onchange="agregarFotoSeccion('descripcion',this)" style="display:none"></label></div>
+        <div id="it-fotos-descripcion" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px"></div>
       </div>
 
+      <!-- 2. Secuencia de montaje -->
       <div class="acta-field">
-        <label class="acta-label">Recomendaciones y observaciones</label>
-        <textarea class="acta-textarea" id="it-recomendaciones" rows="3" placeholder="Sugerencias de mantenimiento futuro, cuidados, próximas revisiones, observaciones para el cliente..."></textarea>
+        <label class="acta-label">2. Secuencia de montaje / ejecución</label>
+        <textarea class="acta-textarea" id="it-secuencia" rows="4" placeholder="Etapas del trabajo en orden: primero..., luego..., finalmente... (opcional)"></textarea>
+        <div style="margin-top:6px"><label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;background:var(--s2)">+ Fotos de esta sección<input type="file" accept="image/*" multiple onchange="agregarFotoSeccion('secuencia',this)" style="display:none"></label></div>
+        <div id="it-fotos-secuencia" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px"></div>
       </div>
 
-      <!-- Materiales y repuestos -->
+      <!-- 3. Observaciones técnicas -->
       <div class="acta-field">
-        <label class="acta-label">Materiales y repuestos utilizados</label>
+        <label class="acta-label">3. Observaciones técnicas</label>
+        <textarea class="acta-textarea" id="it-observaciones" rows="3" placeholder="Puntos técnicos relevantes: cómo quedó anclado, condiciones especiales, detalles a tener en cuenta..."></textarea>
+        <div style="margin-top:6px"><label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;background:var(--s2)">+ Fotos de esta sección<input type="file" accept="image/*" multiple onchange="agregarFotoSeccion('observaciones',this)" style="display:none"></label></div>
+        <div id="it-fotos-observaciones" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px"></div>
+      </div>
+
+      <!-- 4. Materiales y repuestos -->
+      <div class="acta-field">
+        <label class="acta-label">4. Materiales y repuestos utilizados</label>
         <div id="it-materiales-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
         <div style="display:grid;grid-template-columns:2fr 0.7fr 0.8fr auto;gap:8px;align-items:end">
           <div><input class="acta-input" id="it-mat-desc" placeholder="Descripción" style="font-size:12px"></div>
@@ -537,26 +551,10 @@
         </div>
       </div>
 
-      <!-- Registro fotográfico por etapa -->
+      <!-- 5. Recomendaciones finales -->
       <div class="acta-field">
-        <label class="acta-label">Registro fotográfico por etapa</label>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px">
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:6px">Antes</div>
-            <div id="it-fotos-antes" style="display:flex;flex-direction:column;gap:6px"></div>
-            <label style="display:block;border:1px dashed var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2);margin-top:6px">+ Foto<input type="file" accept="image/*" multiple onchange="agregarFotoEtapa('antes',this)" style="display:none"></label>
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:6px">Durante</div>
-            <div id="it-fotos-durante" style="display:flex;flex-direction:column;gap:6px"></div>
-            <label style="display:block;border:1px dashed var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2);margin-top:6px">+ Foto<input type="file" accept="image/*" multiple onchange="agregarFotoEtapa('durante',this)" style="display:none"></label>
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:6px">Después</div>
-            <div id="it-fotos-despues" style="display:flex;flex-direction:column;gap:6px"></div>
-            <label style="display:block;border:1px dashed var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2);margin-top:6px">+ Foto<input type="file" accept="image/*" multiple onchange="agregarFotoEtapa('despues',this)" style="display:none"></label>
-          </div>
-        </div>
+        <label class="acta-label">5. Recomendaciones finales</label>
+        <textarea class="acta-textarea" id="it-recomendaciones" rows="3" placeholder="Conclusión del trabajo, inspecciones periódicas sugeridas, cuidados futuros..."></textarea>
       </div>
 
       <button onclick="generarInformeTecnico()" id="btn-informe" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:6px">Generar informe técnico y adjuntar al acta</button>
@@ -1479,7 +1477,7 @@ let firmaEngData = null; // firma del ingeniero subida como imagen (evita canvas
 let fotos = []; // dinámico — las que se necesiten
 // Estado del informe técnico
 let itMateriales = [];
-let itFotos = { antes: [], durante: [], despues: [] };
+let itFotos = { descripcion: [], secuencia: [], observaciones: [] };
 let adjuntos = []; // informes PDF: [{nombre, data}]
 const firmaCtx = {};
 let correosPep = [];
@@ -1528,10 +1526,12 @@ function abrirActa(id) {
   document.getElementById('firma-entrega').style.backgroundImage = '';
   // Reset informe técnico
   itMateriales = [];
-  itFotos = { antes: [], durante: [], despues: [] };
+  itFotos = { descripcion: [], secuencia: [], observaciones: [] };
   renderMateriales();
-  ['antes','durante','despues'].forEach(renderFotosEtapa);
+  ['descripcion','secuencia','observaciones'].forEach(renderFotosSeccion);
   document.getElementById('it-descripcion').value = '';
+  document.getElementById('it-secuencia').value = '';
+  document.getElementById('it-observaciones').value = '';
   document.getElementById('it-recomendaciones').value = '';
   document.getElementById('btn-informe').disabled = false;
   document.getElementById('btn-informe').textContent = 'Generar informe técnico y adjuntar al acta';
@@ -1754,28 +1754,28 @@ function renderMateriales() {
     </div>`).join('');
 }
 
-async function agregarFotoEtapa(etapa, input) {
+async function agregarFotoSeccion(seccion, input) {
   const files = [...input.files];
   input.value = '';
   for (const file of files) {
-    try { itFotos[etapa].push(await comprimirImagen(file)); }
+    try { itFotos[seccion].push(await comprimirImagen(file)); }
     catch(e) { toast('No se pudo cargar una imagen', 'err'); }
   }
-  renderFotosEtapa(etapa);
+  renderFotosSeccion(seccion);
 }
-function quitarFotoEtapa(etapa, i) { itFotos[etapa].splice(i,1); renderFotosEtapa(etapa); }
-function renderFotosEtapa(etapa) {
-  document.getElementById('it-fotos-'+etapa).innerHTML = itFotos[etapa].map((f,i)=>`
+function quitarFotoSeccion(seccion, i) { itFotos[seccion].splice(i,1); renderFotosSeccion(seccion); }
+function renderFotosSeccion(seccion) {
+  document.getElementById('it-fotos-'+seccion).innerHTML = itFotos[seccion].map((f,i)=>`
     <div style="position:relative">
       <img src="${f}" style="width:100%;border-radius:6px;display:block">
-      <button onclick="quitarFotoEtapa('${etapa}',${i})" style="position:absolute;top:4px;right:4px;background:rgba(20,22,28,.75);color:#fff;border:none;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:11px;font-weight:700">✕</button>
+      <button onclick="quitarFotoSeccion('${seccion}',${i})" style="position:absolute;top:4px;right:4px;background:rgba(20,22,28,.75);color:#fff;border:none;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:11px;font-weight:700">✕</button>
     </div>`).join('');
 }
 
 async function generarInformeTecnico() {
   if (!actaOT) return;
   const desc = document.getElementById('it-descripcion').value.trim();
-  if (!desc) { alert('La descripción técnica del trabajo es obligatoria para el informe.'); return; }
+  if (!desc) { alert('La descripción del trabajo es obligatoria para el informe.'); return; }
 
   const btn = document.getElementById('btn-informe');
   btn.disabled = true; btn.textContent = 'Generando informe...';
@@ -1793,15 +1793,16 @@ async function generarInformeTecnico() {
       responsable:    document.getElementById('ac-entrega-nom').value,
       cargo:          document.getElementById('ac-entrega-cargo').value,
       descripcion:    desc,
+      secuencia:      document.getElementById('it-secuencia').value.trim(),
+      observaciones:  document.getElementById('it-observaciones').value.trim(),
       recomendaciones:document.getElementById('it-recomendaciones').value.trim(),
       materiales:     JSON.stringify(itMateriales),
-      fotosAntes:     JSON.stringify(itFotos.antes),
-      fotosDurante:   JSON.stringify(itFotos.durante),
-      fotosDespues:   JSON.stringify(itFotos.despues)
+      fotosDescripcion:   JSON.stringify(itFotos.descripcion),
+      fotosSecuencia:     JSON.stringify(itFotos.secuencia),
+      fotosObservaciones: JSON.stringify(itFotos.observaciones)
     };
     const data = await postJSON(payload);
     if (data.ok && data.url) {
-      // Adjuntarlo automáticamente a la lista de adjuntos del acta
       adjuntos.push({ nombre: data.nombre || ('Informe técnico CTZ' + actaOT.num + '.pdf'), u: data.url });
       renderAdjuntos();
       toast('✓ Informe técnico generado y adjuntado al acta', 'ok');
