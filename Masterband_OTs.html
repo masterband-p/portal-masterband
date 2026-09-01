@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
 <title>Masterband · Gestión de Trabajos</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
 <style>
   :root {
     --bg:#F5F5F3; --surface:#FFFFFF; --s2:#EFEFED; --border:#E0E0E0;
@@ -1503,7 +1511,17 @@ async function cargarActaGuardada(ctz) {
     if (!d || !d.ok) return;
 
     const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-    set('ac-fecha', d.fecha);
+    // La fecha puede venir en formato largo; el input type=date exige yyyy-MM-dd
+    if (d.fecha) {
+      let fISO = d.fecha;
+      const dm = String(d.fecha).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (dm) fISO = dm[3] + '-' + ('0'+dm[2]).slice(-2) + '-' + ('0'+dm[1]).slice(-2);
+      else if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha)) {
+        const parsed = new Date(d.fecha);
+        if (!isNaN(parsed)) fISO = parsed.toISOString().split('T')[0];
+      }
+      set('ac-fecha', fISO);
+    }
     set('ac-posicion', d.posicion);
     set('ac-lugar', d.lugar);
     set('ac-desc', d.descripcion);
