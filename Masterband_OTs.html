@@ -518,7 +518,7 @@
       <!-- 1. Descripción del trabajo -->
       <div class="acta-field">
         <label class="acta-label">1. Descripción del trabajo</label>
-        <textarea class="acta-textarea" id="it-descripcion" rows="4" placeholder="Describe el trabajo ejecutado: qué se hizo, materiales/equipos empleados, cómo se realizó..."></textarea>
+        <textarea class="acta-textarea" id="it-descripcion" rows="4" oninput="marcarCambioInforme()" placeholder="Describe el trabajo ejecutado: qué se hizo, materiales/equipos empleados, cómo se realizó..."></textarea>
         <div style="margin-top:6px"><label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;background:var(--s2)">+ Fotos de esta sección<input type="file" accept="image/*" multiple onchange="agregarFotoSeccion('descripcion',this)" style="display:none"></label></div>
         <div id="it-fotos-descripcion" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px"></div>
       </div>
@@ -526,7 +526,7 @@
       <!-- 2. Secuencia de montaje -->
       <div class="acta-field">
         <label class="acta-label">2. Secuencia de montaje / ejecución</label>
-        <textarea class="acta-textarea" id="it-secuencia" rows="4" placeholder="Etapas del trabajo en orden: primero..., luego..., finalmente... (opcional)"></textarea>
+        <textarea class="acta-textarea" id="it-secuencia" rows="4" oninput="marcarCambioInforme()" placeholder="Etapas del trabajo en orden: primero..., luego..., finalmente... (opcional)"></textarea>
         <div style="margin-top:6px"><label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;background:var(--s2)">+ Fotos de esta sección<input type="file" accept="image/*" multiple onchange="agregarFotoSeccion('secuencia',this)" style="display:none"></label></div>
         <div id="it-fotos-secuencia" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px"></div>
       </div>
@@ -534,7 +534,7 @@
       <!-- 3. Observaciones técnicas -->
       <div class="acta-field">
         <label class="acta-label">3. Observaciones técnicas</label>
-        <textarea class="acta-textarea" id="it-observaciones" rows="3" placeholder="Puntos técnicos relevantes: cómo quedó anclado, condiciones especiales, detalles a tener en cuenta..."></textarea>
+        <textarea class="acta-textarea" id="it-observaciones" rows="3" oninput="marcarCambioInforme()" placeholder="Puntos técnicos relevantes: cómo quedó anclado, condiciones especiales, detalles a tener en cuenta..."></textarea>
         <div style="margin-top:6px"><label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;background:var(--s2)">+ Fotos de esta sección<input type="file" accept="image/*" multiple onchange="agregarFotoSeccion('observaciones',this)" style="display:none"></label></div>
         <div id="it-fotos-observaciones" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px"></div>
       </div>
@@ -554,9 +554,10 @@
       <!-- 5. Recomendaciones finales -->
       <div class="acta-field">
         <label class="acta-label">5. Recomendaciones finales</label>
-        <textarea class="acta-textarea" id="it-recomendaciones" rows="3" placeholder="Conclusión del trabajo, inspecciones periódicas sugeridas, cuidados futuros..."></textarea>
+        <textarea class="acta-textarea" id="it-recomendaciones" rows="3" oninput="marcarCambioInforme()" placeholder="Conclusión del trabajo, inspecciones periódicas sugeridas, cuidados futuros..."></textarea>
       </div>
 
+      <div id="it-autoguardado" style="font-size:12px;font-weight:600;text-align:right;margin-bottom:8px;min-height:16px"></div>
       <button onclick="generarInformeTecnico()" id="btn-informe" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:6px">Generar informe técnico y adjuntar al acta</button>
     </div>
 
@@ -1547,6 +1548,25 @@ function abrirActa(id) {
   document.getElementById('it-recomendaciones').value = '';
   document.getElementById('btn-informe').disabled = false;
   document.getElementById('btn-informe').textContent = 'Generar informe técnico y adjuntar al acta';
+  document.getElementById('it-autoguardado').textContent = '';
+  // Recuperar respaldo del navegador si quedó de una sesión anterior sin guardar en nube
+  try {
+    const local = localStorage.getItem('mb_informe_' + actaOT.num);
+    if (local) {
+      const inf = JSON.parse(local);
+      if (inf.descripcion || inf.secuencia || inf.observaciones || inf.recomendaciones) {
+        document.getElementById('it-descripcion').value    = inf.descripcion || '';
+        document.getElementById('it-secuencia').value      = inf.secuencia || '';
+        document.getElementById('it-observaciones').value  = inf.observaciones || '';
+        document.getElementById('it-recomendaciones').value= inf.recomendaciones || '';
+        try { itMateriales = JSON.parse(inf.materiales || '[]'); renderMateriales(); } catch(e) {}
+        ['descripcion','secuencia','observaciones'].forEach(sec => {
+          try { itFotos[sec] = JSON.parse(inf['fotos'+sec.charAt(0).toUpperCase()+sec.slice(1)] || '[]').map(x=>({img:x.img||x,desc:x.desc||''})); renderFotosSeccion(sec); } catch(e) {}
+        });
+        mostrarEstadoAutoguardado('local');
+      }
+    }
+  } catch(e) {}
 
   // Reset satisfacción y calificación
   satVal = null; calVal = null;
@@ -1619,6 +1639,26 @@ async function cargarActaGuardada(ctz) {
     try {
       const aArr = JSON.parse(d.adjuntos || '[]');
       if (aArr.length) { adjuntos = aArr.map(x => ({ nombre: x.n || x.nombre, u: x.u })); renderAdjuntos(); }
+    } catch(e) {}
+
+    // ★ Borrador del informe técnico guardado → recargar para editar
+    try {
+      if (d.informe) {
+        const inf = JSON.parse(d.informe);
+        document.getElementById('it-descripcion').value    = inf.descripcion || '';
+        document.getElementById('it-secuencia').value      = inf.secuencia || '';
+        document.getElementById('it-observaciones').value  = inf.observaciones || '';
+        document.getElementById('it-recomendaciones').value= inf.recomendaciones || '';
+        try { itMateriales = JSON.parse(inf.materiales || '[]'); renderMateriales(); } catch(e) {}
+        // Fotos por sección (vienen como {img,desc} con URL de Drive)
+        const cargarFotosSec = (sec, json) => {
+          try { itFotos[sec] = JSON.parse(json || '[]').map(x => ({ img: x.img || x, desc: x.desc || '' })); renderFotosSeccion(sec); } catch(e) {}
+        };
+        cargarFotosSec('descripcion', inf.fotosDescripcion);
+        cargarFotosSec('secuencia',   inf.fotosSecuencia);
+        cargarFotosSec('observaciones', inf.fotosObservaciones);
+        document.getElementById('btn-informe').textContent = 'Regenerar informe técnico';
+      }
     } catch(e) {}
 
     // Firma del ingeniero guardada → guardarla como dato para reenviar,
@@ -1751,12 +1791,13 @@ function agregarMaterial() {
   const uni  = document.getElementById('it-mat-unidad').value.trim();
   if (!desc) { alert('Escribe la descripción del material.'); return; }
   itMateriales.push({ desc, cant: cant || '—', uni: uni || '' });
+  marcarCambioInforme();
   document.getElementById('it-mat-desc').value = '';
   document.getElementById('it-mat-cant').value = '';
   document.getElementById('it-mat-unidad').value = '';
   renderMateriales();
 }
-function quitarMaterial(i) { itMateriales.splice(i,1); renderMateriales(); }
+function quitarMaterial(i) { itMateriales.splice(i,1); renderMateriales(); marcarCambioInforme(); }
 function renderMateriales() {
   document.getElementById('it-materiales-lista').innerHTML = itMateriales.map((m,i)=>`
     <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:6px;padding:7px 12px;background:var(--surface);font-size:13px">
@@ -1774,9 +1815,10 @@ async function agregarFotoSeccion(seccion, input) {
     catch(e) { toast('No se pudo cargar una imagen', 'err'); }
   }
   renderFotosSeccion(seccion);
+  marcarCambioInforme();
 }
-function quitarFotoSeccion(seccion, i) { itFotos[seccion].splice(i,1); renderFotosSeccion(seccion); }
-function setDescFoto(seccion, i, val) { if(itFotos[seccion][i]) itFotos[seccion][i].desc = val; }
+function quitarFotoSeccion(seccion, i) { itFotos[seccion].splice(i,1); renderFotosSeccion(seccion); marcarCambioInforme(); }
+function setDescFoto(seccion, i, val) { if(itFotos[seccion][i]) itFotos[seccion][i].desc = val; marcarCambioInforme(); }
 function renderFotosSeccion(seccion) {
   document.getElementById('it-fotos-'+seccion).innerHTML = itFotos[seccion].map((f,i)=>`
     <div style="position:relative;border:1px solid var(--border);border-radius:8px;padding:6px;background:var(--surface)">
@@ -1817,7 +1859,11 @@ async function generarInformeTecnico() {
     };
     const data = await postJSON(payload);
     if (data.ok && data.url) {
-      adjuntos.push({ nombre: data.nombre || ('Informe técnico CTZ' + actaOT.num + '.pdf'), u: data.url });
+      // Si ya había un informe técnico adjuntado, reemplazarlo (no duplicar)
+      const nombreInf = data.nombre || ('Informe técnico CTZ' + actaOT.num + '.pdf');
+      adjuntos = adjuntos.filter(a => !(a.nombre || '').startsWith('Informe '));
+      adjuntos.push({ nombre: nombreInf, u: data.url });
+      try { localStorage.removeItem('mb_informe_' + actaOT.num); } catch(e) {}
       renderAdjuntos();
       toast('✓ Informe técnico generado y adjuntado al acta', 'ok');
       btn.textContent = '✓ Informe generado — adjuntado abajo';
@@ -1829,6 +1875,78 @@ async function generarInformeTecnico() {
     toast('✕ Error al generar el informe: ' + e.message, 'err');
     btn.disabled = false; btn.textContent = 'Generar informe técnico y adjuntar al acta';
   }
+}
+
+// ── AUTOGUARDADO DEL INFORME ──
+let autoguardarTimer = null;
+let autoguardadoEstado = ''; // '', 'guardando', 'guardado'
+
+function recogerInforme() {
+  return {
+    descripcion:    document.getElementById('it-descripcion').value.trim(),
+    secuencia:      document.getElementById('it-secuencia').value.trim(),
+    observaciones:  document.getElementById('it-observaciones').value.trim(),
+    recomendaciones:document.getElementById('it-recomendaciones').value.trim(),
+    materiales:     JSON.stringify(itMateriales),
+    fotosDescripcion:   JSON.stringify(itFotos.descripcion),
+    fotosSecuencia:     JSON.stringify(itFotos.secuencia),
+    fotosObservaciones: JSON.stringify(itFotos.observaciones)
+  };
+}
+
+function hayContenidoInforme(d) {
+  return d.descripcion || d.secuencia || d.observaciones || d.recomendaciones ||
+    itMateriales.length || itFotos.descripcion.length || itFotos.secuencia.length || itFotos.observaciones.length;
+}
+
+// Se llama en cada cambio; espera 2.5s sin escribir antes de guardar (debounce)
+function marcarCambioInforme() {
+  mostrarEstadoAutoguardado('escribiendo');
+  // Respaldo instantáneo en el navegador (por si se cierra antes del guardado en nube)
+  try { if (actaOT) localStorage.setItem('mb_informe_' + actaOT.num, JSON.stringify(recogerInforme())); } catch(e) {}
+  if (autoguardarTimer) clearTimeout(autoguardarTimer);
+  autoguardarTimer = setTimeout(autoguardarInformeNube, 2500);
+}
+
+async function autoguardarInformeNube() {
+  if (!actaOT) return;
+  const d = recogerInforme();
+  if (!hayContenidoInforme(d)) return; // nada que guardar
+  mostrarEstadoAutoguardado('guardando');
+  try {
+    const res = await postJSON(Object.assign({ tabla: 'autoguardar_informe', ctz: actaOT.num }, d));
+    if (res.ok) {
+      // Actualizar las fotos locales con las URLs de Drive devueltas (evita re-subir)
+      try {
+        if (res.fotosDescripcion)   itFotos.descripcion   = JSON.parse(res.fotosDescripcion);
+        if (res.fotosSecuencia)     itFotos.secuencia     = JSON.parse(res.fotosSecuencia);
+        if (res.fotosObservaciones) itFotos.observaciones = JSON.parse(res.fotosObservaciones);
+      } catch(e) {}
+      mostrarEstadoAutoguardado('guardado');
+    } else if (res.error === 'acta_no_existe') {
+      // El acta aún no se ha enviado: queda el respaldo del navegador
+      mostrarEstadoAutoguardado('local');
+    } else {
+      mostrarEstadoAutoguardado('error');
+    }
+  } catch(e) {
+    mostrarEstadoAutoguardado('local'); // sin conexión: queda el respaldo local
+  }
+}
+
+function mostrarEstadoAutoguardado(estado) {
+  const el = document.getElementById('it-autoguardado');
+  if (!el) return;
+  const textos = {
+    escribiendo: ['✎ Escribiendo...', 'var(--muted)'],
+    guardando:   ['⟳ Guardando...', 'var(--muted)'],
+    guardado:    ['✓ Guardado en la nube', 'var(--green)'],
+    local:       ['✓ Guardado en este dispositivo', 'var(--yellow)'],
+    error:       ['⚠ No se pudo guardar', 'var(--red)']
+  };
+  const [txt, color] = textos[estado] || ['', ''];
+  el.textContent = txt;
+  el.style.color = color;
 }
 
 function renderFotos() {
