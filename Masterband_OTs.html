@@ -688,8 +688,20 @@ const ETAPAS = ['Pendiente','Enviada','Aprobada','OC recibida','En proceso','Fin
 function gc(row, i) { return String(row[i] || '').trim(); }
 
 function rowToOT(row) {
-  const num = gc(row, 0).replace(/\D/g,'');
-  if (!num) return null;
+  // ★ Validación estricta de la columna A (Cotización):
+  // el portal ignora filas con basura (teléfonos, fechas, texto de encabezado,
+  // celdas vacías) para no crear cotizaciones falsas. No modifica el Sheet.
+  const celdaA = gc(row, 0).trim();
+  // Rechazar celdas con texto no numérico pegado (Teléfono:, Contacto:, correo, etc.)
+  if (/[a-zA-Z]/.test(celdaA)) return null;
+  // Rechazar celdas con formato de fecha ISO (ej. 1718-02-01T04:56:16.000Z)
+  if (/\d{4}-\d{2}-\d{2}T/.test(celdaA) || celdaA.includes('T05:00') || celdaA.includes('T04:')) return null;
+  // Rechazar celdas vacías
+  if (!celdaA) return null;
+  // Extraer el número de cotización (solo dígitos y guiones tipo "1773-2")
+  const num = celdaA.replace(/[^0-9]/g, '');
+  // Un CTZ válido tiene entre 3 y 6 dígitos (rechaza teléfonos largos y números gigantes de fechas)
+  if (!num || num.length < 3 || num.length > 6) return null;
   const anio    = gc(row, 1).replace('.0','');
   const noOC    = gc(row, 9);
   const etrab   = gc(row, 10);
