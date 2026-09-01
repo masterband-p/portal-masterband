@@ -1382,30 +1382,29 @@ async function enviarAlCliente() {
     correoPrueba:    modoPrueba ? correoPrueba : ''
   };
 
+  // El servidor tarda en subir fotos/PDF a Drive y armar el correo (puede pasar
+  // de 1 minuto). En vez de esperar bloqueado, disparamos la petición y
+  // confirmamos de inmediato — el correo se procesa y envía del lado del servidor.
   try {
-    // Timeout de seguridad: si el servidor tarda demasiado (generando PDFs con
-    // muchas fotos), no dejar el botón colgado — el correo se envía igual del lado del servidor
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 45000));
-    const data = await Promise.race([postJSON(payload), timeout]);
-    if (data.ok) {
-      const destino = modoPrueba ? correoPrueba + ' (modo prueba)' : correo;
-      toast('✓ Acta enviada a ' + destino + ' — abre el link del correo para firmar', 'ok');
-      if (!actaOT.acta) marcarActa(actaOT.id);
-      btn.textContent = '✓ Enviado';
-    } else {
-      toast('✕ Error: ' + (data.error || 'intenta de nuevo'), 'err');
-      btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
-    }
-  } catch(e) {
-    if (e.message === 'timeout') {
-      // El servidor sigue procesando; muy probablemente el correo saldrá igual
-      toast('El envío está tardando (fotos pesadas). El correo puede llegar en unos minutos. Verifica antes de reenviar.', 'err');
-      btn.textContent = 'Reintentar envío';
+    fetch(APPS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).catch(() => {});
+
+    const destino = modoPrueba ? correoPrueba + ' (modo prueba)' : correo;
+    toast('✓ Acta en proceso de envío a ' + destino + '. El correo llega en 1–2 minutos.', 'ok');
+    if (!actaOT.acta) marcarActa(actaOT.id);
+    btn.textContent = '✓ Enviado';
+    // Reactivar el botón tras unos segundos por si necesita reenviar
+    setTimeout(() => {
       btn.disabled = false;
-    } else {
-      toast('✕ Error de conexión', 'err');
-      btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
-    }
+      btn.textContent = 'Enviar al cliente para firma';
+    }, 8000);
+  } catch(e) {
+    toast('✕ Error de conexión', 'err');
+    btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
   }
 }
 let satVal = null;
