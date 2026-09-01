@@ -510,6 +510,58 @@
       </div>
     </div>
 
+    <!-- INFORME TÉCNICO DE ENTREGA -->
+    <div class="acta-section">
+      <div class="acta-section-title">Informe técnico de entrega</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Genera un informe técnico detallado en PDF. Al generarlo, se adjunta automáticamente al acta para enviarlo al cliente.</div>
+
+      <div class="acta-field">
+        <label class="acta-label">Descripción técnica del trabajo realizado</label>
+        <textarea class="acta-textarea" id="it-descripcion" rows="4" placeholder="Detalla el trabajo ejecutado: procedimiento, criterios técnicos, condiciones encontradas, solución aplicada..."></textarea>
+      </div>
+
+      <div class="acta-field">
+        <label class="acta-label">Recomendaciones y observaciones</label>
+        <textarea class="acta-textarea" id="it-recomendaciones" rows="3" placeholder="Sugerencias de mantenimiento futuro, cuidados, próximas revisiones, observaciones para el cliente..."></textarea>
+      </div>
+
+      <!-- Materiales y repuestos -->
+      <div class="acta-field">
+        <label class="acta-label">Materiales y repuestos utilizados</label>
+        <div id="it-materiales-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+        <div style="display:grid;grid-template-columns:2fr 0.7fr 0.8fr auto;gap:8px;align-items:end">
+          <div><input class="acta-input" id="it-mat-desc" placeholder="Descripción" style="font-size:12px"></div>
+          <div><input class="acta-input" id="it-mat-cant" type="number" placeholder="Cant." style="font-size:12px"></div>
+          <div><input class="acta-input" id="it-mat-unidad" placeholder="Unidad" style="font-size:12px"></div>
+          <button onclick="agregarMaterial()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap">+ Agregar</button>
+        </div>
+      </div>
+
+      <!-- Registro fotográfico por etapa -->
+      <div class="acta-field">
+        <label class="acta-label">Registro fotográfico por etapa</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:6px">Antes</div>
+            <div id="it-fotos-antes" style="display:flex;flex-direction:column;gap:6px"></div>
+            <label style="display:block;border:1px dashed var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2);margin-top:6px">+ Foto<input type="file" accept="image/*" multiple onchange="agregarFotoEtapa('antes',this)" style="display:none"></label>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:6px">Durante</div>
+            <div id="it-fotos-durante" style="display:flex;flex-direction:column;gap:6px"></div>
+            <label style="display:block;border:1px dashed var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2);margin-top:6px">+ Foto<input type="file" accept="image/*" multiple onchange="agregarFotoEtapa('durante',this)" style="display:none"></label>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:6px">Después</div>
+            <div id="it-fotos-despues" style="display:flex;flex-direction:column;gap:6px"></div>
+            <label style="display:block;border:1px dashed var(--border);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2);margin-top:6px">+ Foto<input type="file" accept="image/*" multiple onchange="agregarFotoEtapa('despues',this)" style="display:none"></label>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="generarInformeTecnico()" id="btn-informe" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:6px">Generar informe técnico y adjuntar al acta</button>
+    </div>
+
     <!-- Informes adjuntos en PDF -->
     <div class="acta-section">
       <div class="acta-section-title">Informes adjuntos (PDF)</div>
@@ -1425,6 +1477,9 @@ let satVal = null;
 let calVal = null;
 let firmaEngData = null; // firma del ingeniero subida como imagen (evita canvas contaminado)
 let fotos = []; // dinámico — las que se necesiten
+// Estado del informe técnico
+let itMateriales = [];
+let itFotos = { antes: [], durante: [], despues: [] };
 let adjuntos = []; // informes PDF: [{nombre, data}]
 const firmaCtx = {};
 let correosPep = [];
@@ -1471,6 +1526,15 @@ function abrirActa(id) {
   renderAdjuntos();
   firmaEngData = null;
   document.getElementById('firma-entrega').style.backgroundImage = '';
+  // Reset informe técnico
+  itMateriales = [];
+  itFotos = { antes: [], durante: [], despues: [] };
+  renderMateriales();
+  ['antes','durante','despues'].forEach(renderFotosEtapa);
+  document.getElementById('it-descripcion').value = '';
+  document.getElementById('it-recomendaciones').value = '';
+  document.getElementById('btn-informe').disabled = false;
+  document.getElementById('btn-informe').textContent = 'Generar informe técnico y adjuntar al acta';
 
   // Reset satisfacción y calificación
   satVal = null; calVal = null;
@@ -1666,6 +1730,90 @@ function renderAdjuntos() {
       <span style="flex:1;font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.nombre}</span>
       <button onclick="quitarAdjunto(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;font-weight:700">✕</button>
     </div>`).join('');
+}
+
+// ── INFORME TÉCNICO ──
+function agregarMaterial() {
+  const desc = document.getElementById('it-mat-desc').value.trim();
+  const cant = document.getElementById('it-mat-cant').value.trim();
+  const uni  = document.getElementById('it-mat-unidad').value.trim();
+  if (!desc) { alert('Escribe la descripción del material.'); return; }
+  itMateriales.push({ desc, cant: cant || '—', uni: uni || '' });
+  document.getElementById('it-mat-desc').value = '';
+  document.getElementById('it-mat-cant').value = '';
+  document.getElementById('it-mat-unidad').value = '';
+  renderMateriales();
+}
+function quitarMaterial(i) { itMateriales.splice(i,1); renderMateriales(); }
+function renderMateriales() {
+  document.getElementById('it-materiales-lista').innerHTML = itMateriales.map((m,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:6px;padding:7px 12px;background:var(--surface);font-size:13px">
+      <span style="flex:1">${m.desc}</span>
+      <span style="color:var(--muted)">${m.cant} ${m.uni}</span>
+      <button onclick="quitarMaterial(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-weight:700">✕</button>
+    </div>`).join('');
+}
+
+async function agregarFotoEtapa(etapa, input) {
+  const files = [...input.files];
+  input.value = '';
+  for (const file of files) {
+    try { itFotos[etapa].push(await comprimirImagen(file)); }
+    catch(e) { toast('No se pudo cargar una imagen', 'err'); }
+  }
+  renderFotosEtapa(etapa);
+}
+function quitarFotoEtapa(etapa, i) { itFotos[etapa].splice(i,1); renderFotosEtapa(etapa); }
+function renderFotosEtapa(etapa) {
+  document.getElementById('it-fotos-'+etapa).innerHTML = itFotos[etapa].map((f,i)=>`
+    <div style="position:relative">
+      <img src="${f}" style="width:100%;border-radius:6px;display:block">
+      <button onclick="quitarFotoEtapa('${etapa}',${i})" style="position:absolute;top:4px;right:4px;background:rgba(20,22,28,.75);color:#fff;border:none;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:11px;font-weight:700">✕</button>
+    </div>`).join('');
+}
+
+async function generarInformeTecnico() {
+  if (!actaOT) return;
+  const desc = document.getElementById('it-descripcion').value.trim();
+  if (!desc) { alert('La descripción técnica del trabajo es obligatoria para el informe.'); return; }
+
+  const btn = document.getElementById('btn-informe');
+  btn.disabled = true; btn.textContent = 'Generando informe...';
+
+  try {
+    const payload = {
+      tabla:          'generar_informe',
+      ctz:            actaOT.num,
+      noOC:           actaOT.noOC || '',
+      cliente:        actaOT.cliente || '',
+      colilla:        actaOT.colilla || '',
+      fecha:          document.getElementById('ac-fecha').value,
+      lugar:          document.getElementById('ac-lugar').value,
+      posicion:       document.getElementById('ac-posicion').value,
+      responsable:    document.getElementById('ac-entrega-nom').value,
+      cargo:          document.getElementById('ac-entrega-cargo').value,
+      descripcion:    desc,
+      recomendaciones:document.getElementById('it-recomendaciones').value.trim(),
+      materiales:     JSON.stringify(itMateriales),
+      fotosAntes:     JSON.stringify(itFotos.antes),
+      fotosDurante:   JSON.stringify(itFotos.durante),
+      fotosDespues:   JSON.stringify(itFotos.despues)
+    };
+    const data = await postJSON(payload);
+    if (data.ok && data.url) {
+      // Adjuntarlo automáticamente a la lista de adjuntos del acta
+      adjuntos.push({ nombre: data.nombre || ('Informe técnico CTZ' + actaOT.num + '.pdf'), u: data.url });
+      renderAdjuntos();
+      toast('✓ Informe técnico generado y adjuntado al acta', 'ok');
+      btn.textContent = '✓ Informe generado — adjuntado abajo';
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'Regenerar informe técnico'; }, 4000);
+    } else {
+      throw new Error(data.error || 'No se pudo generar');
+    }
+  } catch(e) {
+    toast('✕ Error al generar el informe: ' + e.message, 'err');
+    btn.disabled = false; btn.textContent = 'Generar informe técnico y adjuntar al acta';
+  }
 }
 
 function renderFotos() {
