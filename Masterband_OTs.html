@@ -1383,7 +1383,10 @@ async function enviarAlCliente() {
   };
 
   try {
-    const data = await postJSON(payload);
+    // Timeout de seguridad: si el servidor tarda demasiado (generando PDFs con
+    // muchas fotos), no dejar el botón colgado — el correo se envía igual del lado del servidor
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 45000));
+    const data = await Promise.race([postJSON(payload), timeout]);
     if (data.ok) {
       const destino = modoPrueba ? correoPrueba + ' (modo prueba)' : correo;
       toast('✓ Acta enviada a ' + destino + ' — abre el link del correo para firmar', 'ok');
@@ -1394,8 +1397,15 @@ async function enviarAlCliente() {
       btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
     }
   } catch(e) {
-    toast('✕ Error de conexión', 'err');
-    btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
+    if (e.message === 'timeout') {
+      // El servidor sigue procesando; muy probablemente el correo saldrá igual
+      toast('El envío está tardando (fotos pesadas). El correo puede llegar en unos minutos. Verifica antes de reenviar.', 'err');
+      btn.textContent = 'Reintentar envío';
+      btn.disabled = false;
+    } else {
+      toast('✕ Error de conexión', 'err');
+      btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
+    }
   }
 }
 let satVal = null;
