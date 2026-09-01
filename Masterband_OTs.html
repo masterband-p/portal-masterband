@@ -1758,17 +1758,19 @@ async function agregarFotoSeccion(seccion, input) {
   const files = [...input.files];
   input.value = '';
   for (const file of files) {
-    try { itFotos[seccion].push(await comprimirImagen(file)); }
+    try { itFotos[seccion].push({ img: await comprimirImagen(file), desc: '' }); }
     catch(e) { toast('No se pudo cargar una imagen', 'err'); }
   }
   renderFotosSeccion(seccion);
 }
 function quitarFotoSeccion(seccion, i) { itFotos[seccion].splice(i,1); renderFotosSeccion(seccion); }
+function setDescFoto(seccion, i, val) { if(itFotos[seccion][i]) itFotos[seccion][i].desc = val; }
 function renderFotosSeccion(seccion) {
   document.getElementById('it-fotos-'+seccion).innerHTML = itFotos[seccion].map((f,i)=>`
-    <div style="position:relative">
-      <img src="${f}" style="width:100%;border-radius:6px;display:block">
-      <button onclick="quitarFotoSeccion('${seccion}',${i})" style="position:absolute;top:4px;right:4px;background:rgba(20,22,28,.75);color:#fff;border:none;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:11px;font-weight:700">✕</button>
+    <div style="position:relative;border:1px solid var(--border);border-radius:8px;padding:6px;background:var(--surface)">
+      <img src="${f.img}" style="width:100%;border-radius:6px;display:block">
+      <button onclick="quitarFotoSeccion('${seccion}',${i})" style="position:absolute;top:9px;right:9px;background:rgba(20,22,28,.75);color:#fff;border:none;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:11px;font-weight:700">✕</button>
+      <input value="${(f.desc||'').replace(/"/g,'&quot;')}" oninput="setDescFoto('${seccion}',${i},this.value)" placeholder="Descripción de la figura (opcional)" style="width:100%;margin-top:5px;border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:11px;font-family:var(--font)">
     </div>`).join('');
 }
 
