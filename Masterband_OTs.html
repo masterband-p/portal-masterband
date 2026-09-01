@@ -1358,7 +1358,13 @@ async function enviarAlCliente() {
   btn.disabled = true; btn.textContent = '⏳ Enviando...';
 
   const fotosData = fotos.filter(f => f);
-  const firmaEng  = document.getElementById('firma-entrega').toDataURL('image/png');
+  // Firma: usar la imagen subida si existe; si no, exportar el canvas dibujado.
+  // El try evita el error de "canvas contaminado" cuando se recuperó una firma de Drive.
+  let firmaEng = firmaEngData || '';
+  if (!firmaEng) {
+    try { firmaEng = document.getElementById('firma-entrega').toDataURL('image/png'); }
+    catch(e) { firmaEng = ''; }
+  }
 
   const payload = {
     tabla:           'guardar_acta',
@@ -1409,6 +1415,7 @@ async function enviarAlCliente() {
 }
 let satVal = null;
 let calVal = null;
+let firmaEngData = null; // firma del ingeniero subida como imagen (evita canvas contaminado)
 let fotos = []; // dinámico — las que se necesiten
 let adjuntos = []; // informes PDF: [{nombre, data}]
 const firmaCtx = {};
@@ -1454,6 +1461,8 @@ function abrirActa(id) {
   renderFotos();
   adjuntos = [];
   renderAdjuntos();
+  firmaEngData = null;
+  document.getElementById('firma-entrega').style.backgroundImage = '';
 
   // Reset satisfacción y calificación
   satVal = null; calVal = null;
@@ -1518,14 +1527,17 @@ async function cargarActaGuardada(ctz) {
       if (aArr.length) { adjuntos = aArr.map(x => ({ nombre: x.n || x.nombre, u: x.u })); renderAdjuntos(); }
     } catch(e) {}
 
-    // Firma del ingeniero guardada → pintarla en el canvas
+    // Firma del ingeniero guardada → guardarla como dato para reenviar,
+    // y pintarla como fondo del canvas (sin exportarlo, para no contaminarlo)
     if (d.firmaEng) {
-      const img = new Image();
-      img.onload = () => {
-        const c = document.getElementById('firma-entrega');
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      };
-      img.src = d.firmaEng;
+      firmaEngData = d.firmaEng; // ya es URL de Drive; el backend la respeta sin re-subir
+      const c = document.getElementById('firma-entrega');
+      if (c) {
+        c.style.backgroundImage = 'url("' + d.firmaEng + '")';
+        c.style.backgroundSize = 'contain';
+        c.style.backgroundRepeat = 'no-repeat';
+        c.style.backgroundPosition = 'center';
+      }
     }
 
     // Evaluación del cliente (si ya firmó)
@@ -1663,7 +1675,7 @@ function iniciarFirma(canvasId) {
     const src  = e.touches ? e.touches[0] : e;
     return { x: src.clientX - rect.left, y: src.clientY - rect.top };
   }
-  function start(e) { e.preventDefault(); const p = getPos(e); firmaCtx[canvasId].drawing = true; firmaCtx[canvasId].lastX = p.x; firmaCtx[canvasId].lastY = p.y; }
+  function start(e) { e.preventDefault(); if(canvasId==='firma-entrega'){ firmaEngData=null; canvas.style.backgroundImage=''; } const p = getPos(e); firmaCtx[canvasId].drawing = true; firmaCtx[canvasId].lastX = p.x; firmaCtx[canvasId].lastY = p.y; }
   function draw(e)  { e.preventDefault(); if (!firmaCtx[canvasId].drawing) return; const p = getPos(e); ctx.beginPath(); ctx.moveTo(firmaCtx[canvasId].lastX, firmaCtx[canvasId].lastY); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaCtx[canvasId].lastX = p.x; firmaCtx[canvasId].lastY = p.y; }
   function stop()   { firmaCtx[canvasId].drawing = false; }
 
@@ -1695,15 +1707,9 @@ function subirFirma(input, canvasId) {
       const escala = Math.min(dispW / img.width, dispH / img.height);
       const w = img.width * escala, hh = img.height * escala;
       ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - hh) / 2, w, hh);
-      // Quitar el fondo claro para que quede solo el trazo
-      try {
-        const d = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const px = d.data;
-        for (let i = 0; i < px.length; i += 4) {
-          if (px[i] > 205 && px[i+1] > 205 && px[i+2] > 205) px[i+3] = 0;
-        }
-        ctx.putImageData(d, 0, 0);
-      } catch(err) { /* imagen de otro origen: se deja tal cual */ }
+      // Guardar la firma como imagen aparte (evita el error de canvas contaminado
+      // al exportar). Se usa esta variable al enviar en vez de toDataURL del canvas.
+      if (canvasId === 'firma-entrega') firmaEngData = e.target.result;
       toast('Firma cargada', 'ok');
     };
     img.onerror = () => toast('No se pudo leer la imagen', 'err');
@@ -1716,6 +1722,8 @@ function limpiarFirma(canvasId) {
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  canvas.style.backgroundImage = '';
+  if (canvasId === 'firma-entrega') firmaEngData = null;
 }
 
 // ── GENERAR PDF ──
