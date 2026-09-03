@@ -196,13 +196,13 @@
     <div class="eval-title">✍️ Tu evaluación — Por favor completa estos campos</div>
 
     <div style="margin-bottom:14px">
-      <label class="pend-label">Nombre de quien recibe <span class="req-mark">*</span></label>
+      <label class="pend-label">Nombre del técnico que recibe en sitio <span class="req-mark">*</span></label>
       <input class="pend-input" id="recibe-nombre" placeholder="Nombre completo" style="min-height:auto;height:44px;resize:none">
     </div>
 
     <div style="margin-bottom:14px">
-      <label class="pend-label">Cargo de quien recibe <span class="req-mark">*</span></label>
-      <input class="pend-input" id="recibe-cargo" placeholder="Ej: Coordinador de Mantenimiento" style="min-height:auto;height:44px;resize:none">
+      <label class="pend-label">Cargo del técnico <span class="req-mark">*</span></label>
+      <input class="pend-input" id="recibe-cargo" placeholder="Ej: Técnico de Mantenimiento" style="min-height:auto;height:44px;resize:none">
     </div>
 
     <div style="margin-bottom:14px">
@@ -251,6 +251,39 @@
     </div>
   </div>
 
+  <!-- LÍDER EN SITIO (opcional) -->
+  <div class="eval-section" id="lider-section" style="border:2px dashed var(--border)">
+    <label style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--dim);cursor:pointer">
+      <input type="checkbox" id="lider-presente" onchange="toggleLider()" style="width:18px;height:18px;accent-color:var(--accent)">
+      El líder del área está presente y valida ahora
+    </label>
+    <div style="font-size:12px;color:var(--muted);margin-top:6px">Si no está, deja esto sin marcar: al líder le llegará el acta por correo para validar después.</div>
+
+    <div id="lider-campos" style="display:none;margin-top:16px">
+      <div style="margin-bottom:14px">
+        <label class="pend-label">Nombre del líder <span class="req-mark">*</span></label>
+        <input class="pend-input" id="lider-nombre" placeholder="Nombre completo" style="min-height:auto;height:44px;resize:none">
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="pend-label">Cargo del líder <span class="req-mark">*</span></label>
+        <input class="pend-input" id="lider-cargo" placeholder="Ej: Líder de Mantenimiento" style="min-height:auto;height:44px;resize:none">
+      </div>
+      <label class="pend-label">Firma del líder <span class="req-mark">*</span></label>
+      <div class="firma-canvas-wrap">
+        <canvas class="firma-canvas" id="firma-lider"></canvas>
+        <button class="btn-clear" onclick="limpiarFirmaLider()">Limpiar</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:2px">
+        <label style="display:inline-flex;align-items:center;gap:7px;border:1px dashed var(--border);border-radius:8px;padding:8px 15px;cursor:pointer;font-size:13px;font-weight:700;color:var(--dim);background:var(--s2)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+          Subir imagen de firma
+          <input type="file" accept="image/*" onchange="subirFirmaLider(this)" style="display:none">
+        </label>
+        <span class="firma-hint" style="margin:0">o firma con el dedo arriba</span>
+      </div>
+    </div>
+  </div>
+
   <button class="btn-firmar" onclick="enviarFirma()" id="btn-firmar">
     ✅ Firmar y devolver acta
   </button>
@@ -269,7 +302,12 @@ let firmaLastX = 0, firmaLastY = 0;
 // ── Leer CTZ de la URL ──
 function getCtzFromURL() {
   const params = new URLSearchParams(window.location.search);
-  return params.get('acta') || params.get('ctz');
+  return params.get('acta') || params.get('ctz') || params.get('val');
+}
+
+// ¿La URL trae ?val= ? Entonces es el líder validando (no el técnico recibiendo)
+function esModoLider() {
+  return new URLSearchParams(window.location.search).has('val');
 }
 
 function showScreen(id) {
@@ -289,7 +327,16 @@ async function cargarActa() {
     if (!data.ok) { showScreen('screen-error'); return; }
     actaData = data;
 
-    if (data.estado === 'FIRMADA') {
+    // ★ Modo líder: valida a satisfacción DESPUÉS de que el técnico ya recibió
+    if (esModoLider()) {
+      if (data.estado === 'FIRMADA') { mostrarFirmada(data); return; } // el líder ya validó
+      mostrarActa(data);
+      adaptarPantallaLider(data);
+      return;
+    }
+
+    // Modo técnico (recibe en sitio)
+    if (data.estado === 'FIRMADA' || data.estado === 'FIRMADA TECNICO') {
       mostrarFirmada(data);
       return;
     }
@@ -453,46 +500,133 @@ function firmaVacia() {
 }
 
 // ── Enviar firma ──
+// ── Firma del líder (canvas aparte) ──
+let firmaLiderCtx = null, firmaLiderDrawing = false, firmaLiderLastX = 0, firmaLiderLastY = 0, firmaLiderCargada = false;
+
+function toggleLider() {
+  const on = document.getElementById('lider-presente').checked;
+  document.getElementById('lider-campos').style.display = on ? 'block' : 'none';
+  if (on) setTimeout(initFirmaLider, 50);
+}
+
+function initFirmaLider() {
+  const canvas = document.getElementById('firma-lider');
+  if (!canvas || firmaLiderCtx) return;
+  canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+  firmaLiderCtx = canvas.getContext('2d');
+  firmaLiderCtx.strokeStyle = '#1A1A1A'; firmaLiderCtx.lineWidth = 2; firmaLiderCtx.lineCap = 'round';
+  const pos = e => { const r = canvas.getBoundingClientRect(); const s = e.touches?e.touches[0]:e; return {x:s.clientX-r.left, y:s.clientY-r.top}; };
+  const start = e => { e.preventDefault(); const p = pos(e); firmaLiderDrawing = true; firmaLiderLastX = p.x; firmaLiderLastY = p.y; };
+  const draw = e => { e.preventDefault(); if(!firmaLiderDrawing) return; const p = pos(e); firmaLiderCtx.beginPath(); firmaLiderCtx.moveTo(firmaLiderLastX,firmaLiderLastY); firmaLiderCtx.lineTo(p.x,p.y); firmaLiderCtx.stroke(); firmaLiderLastX=p.x; firmaLiderLastY=p.y; };
+  const stop = () => firmaLiderDrawing = false;
+  canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',draw); canvas.addEventListener('mouseup',stop);
+  canvas.addEventListener('touchstart',start,{passive:false}); canvas.addEventListener('touchmove',draw,{passive:false}); canvas.addEventListener('touchend',stop);
+}
+
+function limpiarFirmaLider() {
+  const c = document.getElementById('firma-lider');
+  if (firmaLiderCtx) firmaLiderCtx.clearRect(0,0,c.width,c.height);
+  c.style.backgroundImage = ''; firmaLiderCargada = false;
+}
+
+function subirFirmaLider(input) {
+  const file = input.files[0]; input.value = ''; if (!file) return;
+  const c = document.getElementById('firma-lider'); initFirmaLider();
+  const ctx = c.getContext('2d');
+  const reader = new FileReader();
+  reader.onload = e => { const img = new Image(); img.onload = () => {
+    ctx.clearRect(0,0,c.width,c.height);
+    const esc = Math.min((c.width-16)/img.width,(c.height-16)/img.height);
+    const w = img.width*esc, h = img.height*esc;
+    ctx.drawImage(img,(c.width-w)/2,(c.height-h)/2,w,h);
+    try { const d = ctx.getImageData(0,0,c.width,c.height); const px = d.data; for(let i=0;i<px.length;i+=4){ if(px[i]>205&&px[i+1]>205&&px[i+2]>205) px[i+3]=0; } ctx.putImageData(d,0,0); } catch(err){}
+    firmaLiderCargada = true;
+  }; img.src = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function firmaLiderVacia() {
+  if (firmaLiderCargada) return false;
+  const c = document.getElementById('firma-lider');
+  if (!firmaLiderCtx) return true;
+  return !c.getContext('2d').getImageData(0,0,c.width,c.height).data.some(v => v !== 0);
+}
+
+// Cuando el LÍDER abre el link /?val= : personalizar la pantalla para su validación
+function adaptarPantallaLider(d) {
+  document.querySelector('.eval-title').innerHTML = '✅ Validación del líder — Confirma la entrega a satisfacción';
+  // Ocultar campos del técnico (ya firmó) y mostrar lo que ya registró
+  const infoTecnico = '<div style="background:var(--gdim);border:1px solid var(--green);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px">' +
+    '<b>Ya recibido en sitio por:</b> ' + (d.recibeNombre || '—') + (d.recibeCargo ? ' · ' + d.recibeCargo : '') +
+    '<br><b>Calificación del técnico:</b> ' + (d.calificacion || '—') + '/10 · <b>Satisfacción:</b> ' + (d.satisfaccion || '—') + '</div>';
+  document.getElementById('recibe-nombre').closest('.eval-section') ?
+    (document.getElementById('recibe-nombre').parentElement.insertAdjacentHTML('beforebegin', infoTecnico)) :
+    document.getElementById('recibe-nombre').parentElement.insertAdjacentHTML('beforebegin', infoTecnico);
+  // Relabelar los campos para el líder
+  document.querySelector('label[for]') ; // no-op seguro
+  const setLabel = (id, txt) => { const inp=document.getElementById(id); if(inp){ const lbl=inp.previousElementSibling; if(lbl&&lbl.classList.contains('pend-label')) lbl.innerHTML = txt + ' <span class="req-mark">*</span>'; } };
+  setLabel('recibe-nombre', 'Nombre del líder que valida');
+  setLabel('recibe-cargo', 'Cargo del líder');
+  document.getElementById('recibe-nombre').placeholder = 'Nombre del líder del área';
+  document.getElementById('recibe-cargo').placeholder = 'Ej: Líder de Mantenimiento';
+  // La sección de líder-en-sitio no aplica aquí (él ES el líder)
+  const ls = document.getElementById('lider-section'); if (ls) ls.style.display = 'none';
+  document.getElementById('btn-firmar').innerHTML = '✅ Validar y cerrar acta';
+  window._modoLider = true;
+}
+
 async function enviarFirma() {
-  const recibeNombre = document.getElementById('recibe-nombre').value.trim();
-  const recibeCargo  = document.getElementById('recibe-cargo').value.trim();
-  if (!recibeNombre) { alert('Por favor escribe el nombre de quien recibe.'); return; }
-  if (!recibeCargo)  { alert('Por favor escribe el cargo de quien recibe.'); return; }
-  if (!satVal)   { alert('Por favor indica si recibes el servicio a satisfacción.'); return; }
-  if (!calVal)   { alert('Por favor selecciona una calificación del 1 al 10.'); return; }
+  const nombre = document.getElementById('recibe-nombre').value.trim();
+  const cargo  = document.getElementById('recibe-cargo').value.trim();
+  const quien  = window._modoLider ? 'del líder' : 'del técnico que recibe';
+  if (!nombre) { alert('Por favor escribe el nombre ' + quien + '.'); return; }
+  if (!cargo)  { alert('Por favor escribe el cargo ' + quien + '.'); return; }
+  if (!satVal) { alert('Por favor indica si recibes el servicio a satisfacción.'); return; }
+  if (!calVal) { alert('Por favor selecciona una calificación del 1 al 10.'); return; }
   if (firmaVacia()) { alert('Por favor firma antes de enviar: dibújala con el dedo o sube una imagen de tu firma.'); return; }
 
   const btn = document.getElementById('btn-firmar');
   btn.disabled = true; btn.textContent = 'Enviando...';
-
-  const firmaCliente = document.getElementById('firma-cliente').toDataURL('image/png');
-  const pendientes   = document.getElementById('pend-input').value.trim();
+  const firma = document.getElementById('firma-cliente').toDataURL('image/png');
+  const pendientes = document.getElementById('pend-input').value.trim();
 
   try {
-    const res  = await fetch(APPS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        tabla:         'firmar_acta',
-        ctz:           actaData.ctz,
-        firmaCliente,
-        calificacion:  calVal,
-        satisfaccion:  satVal,
-        pendientes,
-        recibeNombre,
-        recibeCargo
-      })
-    });
+    let payload;
+    if (window._modoLider) {
+      // El líder valida a satisfacción
+      payload = {
+        tabla: 'firmar_lider', ctz: actaData.ctz,
+        firmaLider: firma, liderNombre: nombre, liderCargo: cargo,
+        calificacionLider: calVal, satisfaccionLider: satVal, pendientesLider: pendientes
+      };
+    } else {
+      // El técnico recibe en sitio; puede traer al líder si está presente
+      payload = {
+        tabla: 'firmar_acta', ctz: actaData.ctz,
+        firmaCliente: firma, calificacion: calVal, satisfaccion: satVal, pendientes,
+        recibeNombre: nombre, recibeCargo: cargo
+      };
+      if (document.getElementById('lider-presente').checked) {
+        const ln = document.getElementById('lider-nombre').value.trim();
+        const lc = document.getElementById('lider-cargo').value.trim();
+        if (!ln || !lc) { alert('Completa el nombre y cargo del líder, o desmarca "el líder está presente".'); btn.disabled=false; btn.textContent='✅ Firmar y devolver acta'; return; }
+        if (firmaLiderVacia()) { alert('Falta la firma del líder, o desmarca "el líder está presente".'); btn.disabled=false; btn.textContent='✅ Firmar y devolver acta'; return; }
+        payload.firmaLider  = document.getElementById('firma-lider').toDataURL('image/png');
+        payload.liderNombre = ln;
+        payload.liderCargo  = lc;
+      }
+    }
+    const res  = await fetch(APPS_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
     const data = await res.json();
     if (data.ok) {
       mostrarFirmada({ ...actaData, calificacion: calVal, satisfaccion: satVal });
     } else {
       alert('Error al enviar: ' + (data.error || 'intenta de nuevo'));
-      btn.disabled = false; btn.textContent = '✅ Firmar y devolver acta';
+      btn.disabled = false; btn.textContent = window._modoLider ? '✅ Validar y cerrar acta' : '✅ Firmar y devolver acta';
     }
   } catch(e) {
     alert('Error de conexión. Intenta de nuevo.');
-    btn.disabled = false; btn.textContent = '✅ Firmar y devolver acta';
+    btn.disabled = false; btn.textContent = window._modoLider ? '✅ Validar y cerrar acta' : '✅ Firmar y devolver acta';
   }
 }
 
