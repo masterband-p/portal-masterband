@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Masterband · Firma de recibido</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<style>
+  :root{--bg:#F5F5F3;--surface:#FFFFFF;--s2:#EFEFED;--border:#E0E0E0;--text:#1A1A1A;--dim:#4A4A4A;--muted:#888;--accent:#C0001A;--ah:#8A0012;--green:#1E7A3E;--gdim:#E8F5EE;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+  .topbar{background:#fff;border-bottom:3px solid var(--accent);height:60px;padding:0 20px;display:flex;align-items:center}
+  .topbar img{height:40px}
+  .wrap{max-width:520px;margin:0 auto;padding:22px 16px 60px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .hdr{background:#14161C;margin:-22px -22px 18px;padding:16px 22px;border-radius:12px 12px 0 0}
+  .hdr .t{color:#fff;font-size:15px;font-weight:800;letter-spacing:1px}
+  .hdr .s{color:#8A8F98;font-size:12px;margin-top:2px}
+  .hdr .ctz{color:var(--accent);font-weight:800;font-size:14px;margin-top:6px}
+  .info{background:var(--s2);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--dim);margin-bottom:18px;line-height:1.5}
+  .lbl{font-size:13px;font-weight:700;color:var(--dim);margin-bottom:6px;display:block}
+  .req{color:var(--accent)}
+  .inp{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:var(--font);font-size:14px;margin-bottom:16px}
+  .inp:focus{outline:none;border-color:var(--accent)}
+  .firma-wrap{position:relative;margin-bottom:8px}
+  .firma-canvas{width:100%;height:170px;background:#fff;border:1px solid var(--border);border-radius:8px;cursor:crosshair;touch-action:none;display:block}
+  .btn-clear{position:absolute;top:8px;right:8px;background:var(--s2);border:1px solid var(--border);color:var(--muted);font-size:11px;padding:3px 9px;border-radius:5px;cursor:pointer}
+  .subir{display:inline-flex;align-items:center;gap:7px;border:1px dashed var(--border);border-radius:8px;padding:8px 15px;cursor:pointer;font-size:13px;font-weight:700;color:var(--dim);background:var(--s2);margin-bottom:18px}
+  .hint{font-size:12px;color:var(--muted)}
+  .btn-firmar{width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:15px;font-size:16px;font-weight:800;cursor:pointer;margin-top:6px}
+  .btn-firmar:hover{background:var(--ah)}
+  .btn-firmar:disabled{opacity:.6}
+  .ok-screen,.err-screen{display:none;text-align:center;padding:50px 20px}
+  .ok-screen .ic{font-size:52px;margin-bottom:14px}
+  .ok-screen h2{font-size:20px;color:var(--green);margin-bottom:8px}
+  .ok-screen p,.err-screen p{color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="topbar"><img src="logo-masterband.png" alt="Masterband S.A.S."></div>
+
+<div class="wrap">
+  <div class="card" id="form-card">
+    <div class="hdr">
+      <div class="t">FIRMA DE RECIBIDO EN SITIO</div>
+      <div class="s">Confirmación de trabajo terminado</div>
+      <div class="ctz" id="ctz-label"></div>
+    </div>
+    <div class="info">
+      Confirma que el trabajo de Masterband fue <b>recibido en sitio</b>. Tu líder de área validará la satisfacción posteriormente.
+    </div>
+
+    <label class="lbl">Tu nombre <span class="req">*</span></label>
+    <input class="inp" id="nombre" placeholder="Nombre completo" autocapitalize="words">
+
+    <label class="lbl">Tu cargo <span class="req">*</span></label>
+    <input class="inp" id="cargo" placeholder="Ej: Técnico de Mantenimiento">
+
+    <label class="lbl">Tu firma <span class="req">*</span></label>
+    <div class="firma-wrap">
+      <canvas class="firma-canvas" id="firma"></canvas>
+      <button class="btn-clear" onclick="limpiar()">Limpiar</button>
+    </div>
+    <label class="subir">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+      Subir imagen de firma
+      <input type="file" accept="image/*" onchange="subir(this)" style="display:none">
+    </label>
+    <span class="hint" style="display:block;margin:-10px 0 16px">o firma con el dedo arriba</span>
+
+    <button class="btn-firmar" onclick="enviar()" id="btn">✓ Confirmar recibido</button>
+  </div>
+
+  <div class="ok-screen" id="ok">
+    <div class="ic">✓</div>
+    <h2>¡Recibido confirmado!</h2>
+    <p>Tu firma quedó registrada. Gracias.<br>Ya puedes cerrar esta página.</p>
+  </div>
+  <div class="err-screen" id="err">
+    <div style="font-size:48px;margin-bottom:12px">⚠</div>
+    <p id="err-msg">No se pudo cargar. Verifica el enlace.</p>
+  </div>
+</div>
+
+<script>
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbyusd8Kpfrib2ueepZSBMkvXhQ-j8eVDcKs8i9Izi9PmQ8XpwxGIA3VtDb6eUdSkYq4/exec';
+const ctz = new URLSearchParams(location.search).get('ctz') || '';
+let ctx=null, drawing=false, lx=0, ly=0, cargada=false;
+
+if (!ctz) {
+  document.getElementById('form-card').style.display='none';
+  document.getElementById('err').style.display='block';
+} else {
+  document.getElementById('ctz-label').textContent = 'CTZ' + ctz;
+  initFirma();
+}
+
+function initFirma(){
+  const c=document.getElementById('firma');
+  c.width=c.offsetWidth; c.height=c.offsetHeight;
+  ctx=c.getContext('2d'); ctx.strokeStyle='#1A1A1A'; ctx.lineWidth=2; ctx.lineCap='round';
+  const pos=e=>{const r=c.getBoundingClientRect();const s=e.touches?e.touches[0]:e;return{x:s.clientX-r.left,y:s.clientY-r.top};};
+  const st=e=>{e.preventDefault();cargada=false;c.style.backgroundImage='';const p=pos(e);drawing=true;lx=p.x;ly=p.y;};
+  const dr=e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;};
+  const sp=()=>drawing=false;
+  c.addEventListener('mousedown',st);c.addEventListener('mousemove',dr);c.addEventListener('mouseup',sp);
+  c.addEventListener('touchstart',st,{passive:false});c.addEventListener('touchmove',dr,{passive:false});c.addEventListener('touchend',sp);
+}
+function limpiar(){const c=document.getElementById('firma');ctx.clearRect(0,0,c.width,c.height);c.style.backgroundImage='';cargada=false;}
+function subir(input){
+  const f=input.files[0];input.value='';if(!f)return;
+  const c=document.getElementById('firma');const r=new FileReader();
+  r.onload=e=>{const im=new Image();im.onload=()=>{ctx.clearRect(0,0,c.width,c.height);const es=Math.min((c.width-16)/im.width,(c.height-16)/im.height);const w=im.width*es,h=im.height*es;ctx.drawImage(im,(c.width-w)/2,(c.height-h)/2,w,h);try{const d=ctx.getImageData(0,0,c.width,c.height);const px=d.data;for(let i=0;i<px.length;i+=4){if(px[i]>205&&px[i+1]>205&&px[i+2]>205)px[i+3]=0;}ctx.putImageData(d,0,0);}catch(err){}cargada=true;};im.src=e.target.result;};
+  r.readAsDataURL(f);
+}
+function firmaVacia(){if(cargada)return false;const c=document.getElementById('firma');return !ctx.getImageData(0,0,c.width,c.height).data.some(v=>v!==0);}
+
+async function enviar(){
+  const nombre=document.getElementById('nombre').value.trim();
+  const cargo=document.getElementById('cargo').value.trim();
+  if(!nombre){alert('Escribe tu nombre.');return;}
+  if(!cargo){alert('Escribe tu cargo.');return;}
+  if(firmaVacia()){alert('Por favor firma: con el dedo o sube una imagen.');return;}
+  const btn=document.getElementById('btn');btn.disabled=true;btn.textContent='Enviando...';
+  const firma=document.getElementById('firma').toDataURL('image/png');
+  try{
+    const res=await fetch(APPS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({tabla:'firma_rapida',ctz,nombre,cargo,firma})});
+    const data=await res.json();
+    if(data.ok){document.getElementById('form-card').style.display='none';document.getElementById('ok').style.display='block';}
+    else{alert('Error: '+(data.error||'intenta de nuevo'));btn.disabled=false;btn.textContent='✓ Confirmar recibido';}
+  }catch(e){alert('Error de conexión. Intenta de nuevo.');btn.disabled=false;btn.textContent='✓ Confirmar recibido';}
+}
+</script>
+</body>
+</html>

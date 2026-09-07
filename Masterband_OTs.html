@@ -318,6 +318,33 @@
 </div>
 
 <!-- MODAL RAZÓN DE DEMORA -->
+<div class="overlay" id="mod-firma-tecnico">
+  <div class="modal" style="max-width:460px">
+    <div class="mhdr">
+      <div>
+        <div class="mtitle">Firma del técnico en sitio</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:3px">Comparte este link con el técnico del área para que confirme el recibido</div>
+      </div>
+      <button class="mclose" onclick="closeModal('mod-firma-tecnico')">✕</button>
+    </div>
+    <div style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px">
+      <input id="ft-link" readonly style="width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;padding:9px 12px;font-size:12px;color:var(--dim);font-family:var(--mono)">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="mbtn-p" style="flex:1" onclick="copiarLinkFirmaTecnico()">📋 Copiar link</button>
+      <button class="mbtn-p" style="flex:1;background:var(--green)" id="ft-abrir">📱 Abrir ahora</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5">
+      <b>Copiar link:</b> pégalo en WhatsApp y el técnico firma desde su celular.<br>
+      <b>Abrir ahora:</b> pásale tu celular al técnico para que firme al momento.<br>
+      La firma se guarda y se incorpora sola cuando crees el acta oficial.
+    </div>
+    <div style="margin-top:14px;text-align:center">
+      <button class="mbtn-s" onclick="closeModal('mod-firma-tecnico')">Omitir por ahora</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="mod-demora">
   <div class="modal" style="max-width:500px">
     <div class="mhdr">
@@ -674,7 +701,12 @@ function mapEtapa(estado, apro, noOC, etrab, facturado, nfact) {
   const a = (apro    ||'').toLowerCase().trim();
   const t = (etrab   ||'').toLowerCase().trim();
   const f = (facturado||'').toLowerCase().trim();
-  if (f === 'si' || f === 'sí' || (nfact||'').trim()) return 6; // Facturado
+  // ★ CORREGIDO: "Facturado" solo si la columna Facturado dice SI, o si N° Factura
+  // tiene un número real. Antes, textos como "PDTE N.E", "validar" o notas se
+  // contaban como facturadas por error, ocultando trabajos del ingeniero.
+  const nf = (nfact||'').trim();
+  const tieneFacturaReal = /\d{3,}/.test(nf) && !/pdte|pend|validar|revisar|no\.?\s*e|falta/i.test(nf);
+  if (f === 'si' || f === 'sí' || tieneFacturaReal)   return 6; // Facturado
   if (t === 'finalizado')                              return 5; // Finalizado
   if (t === 'en proceso' && (noOC||'').trim())        return 4; // En proceso
   if ((noOC||'').trim())                              return 3; // OC recibida
@@ -1041,6 +1073,26 @@ function confirmarFinalizado() {
   enviarCambio('finalizado', o.num, razonFinal)
     .then(() => toast('✓ Trabajo finalizado — Sheet actualizado', 'ok'))
     .catch(() => toast('⚠ Marcado localmente. No se pudo actualizar el Sheet.', 'err'));
+  // ★ Ofrecer la firma rápida del técnico en campo
+  mostrarLinkFirmaTecnico(o.num);
+}
+
+// Modal con el link de firma rápida para el técnico (copiar o abrir)
+function mostrarLinkFirmaTecnico(ctzNum) {
+  const base = location.origin + location.pathname.replace(/[^/]*$/, '');
+  const link = base + 'firma-tecnico.html?ctz=' + encodeURIComponent(ctzNum);
+  document.getElementById('ft-link').value = link;
+  document.getElementById('ft-abrir').onclick = () => window.open(link, '_blank');
+  openModal('mod-firma-tecnico');
+}
+
+function copiarLinkFirmaTecnico() {
+  const inp = document.getElementById('ft-link');
+  inp.select(); inp.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(inp.value).then(
+    () => toast('✓ Link copiado — pégalo en WhatsApp para el técnico', 'ok'),
+    () => { document.execCommand('copy'); toast('✓ Link copiado', 'ok'); }
+  );
 }
 
 function marcarActa(id) {
