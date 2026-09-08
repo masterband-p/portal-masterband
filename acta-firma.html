@@ -195,8 +195,13 @@
   <div class="eval-section">
     <div class="eval-title">✍️ Tu evaluación — Por favor completa estos campos</div>
 
+    <label id="soy-lider-wrap" style="display:flex;align-items:center;gap:10px;background:var(--gdim);border:1px solid var(--green);border-radius:8px;padding:12px 14px;margin-bottom:16px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--dim)">
+      <input type="checkbox" id="soy-lider" onchange="toggleSoyLider()" style="width:18px;height:18px;accent-color:var(--green);flex-shrink:0">
+      Soy el líder del área — mi firma valida y cierra el acta directamente
+    </label>
+
     <div style="margin-bottom:14px">
-      <label class="pend-label">Nombre del técnico que recibe en sitio <span class="req-mark">*</span></label>
+      <label class="pend-label" id="lbl-recibe-nombre">Nombre del técnico que recibe en sitio <span class="req-mark">*</span></label>
       <input class="pend-input" id="recibe-nombre" placeholder="Nombre completo" style="min-height:auto;height:44px;resize:none">
     </div>
 
@@ -503,6 +508,26 @@ function firmaVacia() {
 // ── Firma del líder (canvas aparte) ──
 let firmaLiderCtx = null, firmaLiderDrawing = false, firmaLiderLastX = 0, firmaLiderLastY = 0, firmaLiderCargada = false;
 
+// El líder recibe directamente (no hay técnico): su firma valida y cierra el acta,
+// sin enviar correo de validación posterior.
+let soyLider = false;
+function toggleSoyLider() {
+  soyLider = document.getElementById('soy-lider').checked;
+  // Relabelar los campos hacia el líder
+  document.getElementById('lbl-recibe-nombre').innerHTML = soyLider
+    ? 'Nombre del líder que recibe y valida <span class="req-mark">*</span>'
+    : 'Nombre del técnico que recibe en sitio <span class="req-mark">*</span>';
+  document.getElementById('recibe-nombre').placeholder = soyLider ? 'Nombre del líder' : 'Nombre completo';
+  const cargoInp = document.getElementById('recibe-cargo');
+  cargoInp.placeholder = soyLider ? 'Ej: Líder de Mantenimiento' : 'Ej: Técnico de Mantenimiento';
+  cargoInp.previousElementSibling.innerHTML = (soyLider ? 'Cargo del líder' : 'Cargo del técnico') + ' <span class="req-mark">*</span>';
+  // Si es el líder, no aplica la sub-sección de "el líder está presente"
+  const ls = document.getElementById('lider-section');
+  if (ls) ls.style.display = soyLider ? 'none' : 'block';
+  const btn = document.getElementById('btn-firmar');
+  if (btn) btn.innerHTML = soyLider ? '✅ Validar y cerrar acta' : '✅ Firmar y devolver acta';
+}
+
 function toggleLider() {
   const on = document.getElementById('lider-presente').checked;
   document.getElementById('lider-campos').style.display = on ? 'block' : 'none';
@@ -599,13 +624,18 @@ async function enviarFirma() {
         firmaLider: firma, liderNombre: nombre, liderCargo: cargo,
         calificacionLider: calVal, satisfaccionLider: satVal, pendientesLider: pendientes
       };
-    } else {
-      // El técnico recibe en sitio; puede traer al líder si está presente
+    } else if (soyLider) {
+      // El líder recibe directamente: su firma valida y cierra el acta.
+      // Va como firmar_lider para que el backend NO envíe correo de validación.
       payload = {
-        tabla: 'firmar_acta', ctz: actaData.ctz,
-        firmaCliente: firma, calificacion: calVal, satisfaccion: satVal, pendientes,
-        recibeNombre: nombre, recibeCargo: cargo
+        tabla: 'firmar_lider', ctz: actaData.ctz,
+        firmaLider: firma, liderNombre: nombre, liderCargo: cargo,
+        calificacionLider: calVal, satisfaccionLider: satVal, pendientesLider: pendientes,
+        // También registrar como "recibido" (el líder es quien recibe en este caso)
+        recibeNombre: nombre, recibeCargo: cargo, firmaCliente: firma,
+        calificacion: calVal, satisfaccion: satVal, esRecepcionDirecta: '1'
       };
+    } else {
       if (document.getElementById('lider-presente').checked) {
         const ln = document.getElementById('lider-nombre').value.trim();
         const lc = document.getElementById('lider-cargo').value.trim();
