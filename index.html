@@ -215,10 +215,12 @@
 </div>
 
 <script>
-// Si la URL tiene ?acta= redirigir a la página de firma del cliente
+// Si la URL tiene ?acta= o ?val= redirigir a la página de firma
 const params = new URLSearchParams(window.location.search);
 if (params.get('acta')) {
   window.location.href = 'acta-firma.html?acta=' + params.get('acta');
+} else if (params.get('val')) {
+  window.location.href = 'acta-firma.html?val=' + params.get('val');
 }
 
 const PASS = { gerencia: 'master2025', ingeniero: 'ing2025', supervisor: 'sup2025' };
