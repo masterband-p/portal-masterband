@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<title>Masterband · Mi Desempeño</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root{--bg:#F5F5F3;--surface:#FFFFFF;--s2:#EFEFED;--border:#E0E0E0;--text:#1A1A1A;--dim:#4A4A4A;--muted:#888;--accent:#C0001A;--ah:#8A0012;--green:#1E7A3E;--gdim:#E8F5EE;--amber:#B45309;--adim:#FEF3C7;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+  .topbar{background:#fff;border-bottom:1px solid var(--border);height:60px;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+  .topbar img{height:38px}
+  .btn-back{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--dim);cursor:pointer;text-decoration:none}
+  .wrap{max-width:920px;margin:0 auto;padding:24px 20px 60px}
+  .hero{margin-bottom:8px}
+  .hero h1{font-size:24px;font-weight:800;margin-bottom:4px}
+  .hero .sub{font-size:14px;color:var(--muted)}
+  .aviso{background:var(--adim);border:1px solid #F0C040;border-radius:10px;padding:12px 16px;font-size:13px;color:#7A5C00;margin:16px 0 22px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .kpi .val{font-size:30px;font-weight:800;line-height:1}
+  .kpi .val.ok{color:var(--green)}.kpi .val.warn{color:var(--amber)}.kpi .val.bad{color:var(--accent)}.kpi .val.na{color:var(--muted);font-size:18px}
+  .kpi .nm{font-size:12px;font-weight:700;color:var(--dim);margin-top:6px}
+  .kpi .mt{font-size:11px;color:var(--muted);margin-top:2px}
+  .kpi .trend{font-size:12px;font-weight:700;margin-top:6px}
+  .kpi .trend.up{color:var(--green)}.kpi .trend.down{color:var(--accent)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:22px}
+  .card h2{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
+  .nota{background:var(--gdim);border:1px solid #A7D7BC;border-radius:10px;padding:14px 18px;font-size:13.5px;color:var(--dim);line-height:1.6}
+  .nota b{color:var(--green)}
+  /* Registro de entregas (dibujante) */
+  .tabla{width:100%;border-collapse:collapse;font-size:13px}
+  .tabla th{background:var(--s2);padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
+  .tabla td{padding:8px 10px;border-bottom:1px solid var(--border)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+  @media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+  .inp,.sel{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font);font-size:13px}
+  .lbl{font-size:11px;font-weight:700;color:var(--dim);margin-bottom:4px;display:block}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer}
+  .btn:hover{background:var(--ah)}
+  /* Login */
+  .overlay{position:fixed;inset:0;background:rgba(20,22,28,.6);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+  .overlay.off{display:none}
+  .modal{background:var(--surface);max-width:400px;width:100%;border-top:3px solid var(--accent);padding:30px;text-align:center}
+  .modal img{height:44px;margin-bottom:14px}
+  .modal h3{font-size:19px;font-weight:800;margin-bottom:4px}
+  .modal p{font-size:13px;color:var(--muted);margin-bottom:18px}
+  .modal select,.modal input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:var(--font);font-size:14px;margin-bottom:12px}
+  .modal .mbtn{width:100%;background:var(--accent);border:none;border-radius:8px;padding:12px;color:#fff;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer}
+  .perr{font-size:12px;color:var(--accent);font-weight:700;min-height:16px;margin-bottom:6px}
+  .loading{text-align:center;padding:50px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <img src="logo-masterband.png" alt="Masterband S.A.S.">
+  <a class="btn-back" href="index.html">← Portal</a>
+</div>
+
+<!-- LOGIN -->
+<div class="overlay" id="login">
+  <div class="modal">
+    <img src="logo-masterband.png" alt="Masterband">
+    <h3>Mi Desempeño</h3>
+    <p>Consulta tus indicadores del mes</p>
+    <div class="perr" id="perr"></div>
+    <select id="rol-sel">
+      <option value="">¿Quién eres?</option>
+      <option value="ingeniero">Ingeniero</option>
+      <option value="supervisor">Supervisor</option>
+      <option value="dibujante">Dibujante</option>
+    </select>
+    <input type="password" id="pass" placeholder="Contraseña" autocapitalize="none" onkeydown="if(event.key==='Enter')entrar()">
+    <button class="mbtn" onclick="entrar()">Entrar</button>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <div class="hero">
+    <h1 id="saludo">Mi Desempeño</h1>
+    <div class="sub" id="rol-label"></div>
+  </div>
+  <div class="aviso">Estos son tus indicadores. Tu evaluación formal la realiza gerencia — aquí puedes ver cómo vas y tu evolución mes a mes.</div>
+  <div id="contenido"><div class="loading">Cargando tus indicadores...</div></div>
+</div>
+
+<script>
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbyusd8Kpfrib2ueepZSBMkvXhQ-j8eVDcKs8i9Izi9PmQ8XpwxGIA3VtDb6eUdSkYq4/exec';
+const PASS = { ingeniero:'ing2025', supervisor:'sup2025', dibujante:'dib2025' };
+const LABEL = { ingeniero:'Ingeniero de Proyectos', supervisor:'Supervisor de Campo', dibujante:'Dibujante / Diseño' };
+let rolActual = '';
+
+function entrar(){
+  const rol = document.getElementById('rol-sel').value;
+  const p = document.getElementById('pass').value.trim().toLowerCase();
+  if(!rol){ document.getElementById('perr').textContent='Selecciona quién eres'; return; }
+  if(p !== PASS[rol]){ document.getElementById('perr').textContent='Contraseña incorrecta'; return; }
+  rolActual = rol;
+  document.getElementById('login').classList.add('off');
+  document.getElementById('app').style.display='block';
+  document.getElementById('rol-label').textContent = LABEL[rol];
+  cargar();
+}
+
+async function cargar(){
+  try{
+    const res = await fetch(APPS_URL + '?tabla=mi_desempeno&rol=' + rolActual + '&meses=6');
+    const d = await res.json();
+    if(!d.ok) throw new Error(d.error||'Error');
+    render(d);
+  }catch(e){
+    document.getElementById('contenido').innerHTML = '<div class="aviso">No se pudieron cargar los datos: '+e.message+'</div>';
+  }
+}
+
+function cls(v,meta,inv){ if(v==null||isNaN(v)) return 'na'; if(inv) return v<=meta?'ok':'bad'; return v>=meta?'ok':(v>=meta*0.85?'warn':'bad'); }
+function kpiBox(nm,val,clase,meta,trend){
+  return '<div class="kpi"><div class="val '+clase+'">'+val+'</div><div class="nm">'+nm+'</div>'+
+    (meta?'<div class="mt">Meta: '+meta+'</div>':'')+
+    (trend?'<div class="trend '+(trend.dir)+'">'+(trend.dir==='up'?'▲':'▼')+' '+trend.txt+'</div>':'')+'</div>';
+}
+
+function render(d){
+  const serie = d.serie || [];
+  const ult = serie[serie.length-1] || {};
+  const prev = serie[serie.length-2] || {};
+  let html = '';
+
+  if(rolActual==='ingeniero'){
+    const t=(a,b)=> (a!=null&&b!=null)?{dir:a>=b?'up':'down',txt:(a>=b?'+':'')+(a-b)+' vs mes ant.'}:null;
+    html += '<div class="kpis">'+
+      kpiBox('Trabajos finalizados', ult.finalizados??'—','na','',null)+
+      kpiBox('% en tiempo (≤15 días)', ult.pctEnTiempo!=null?ult.pctEnTiempo+'%':'—', cls(ult.pctEnTiempo,80),'≥80%', t(ult.pctEnTiempo,prev.pctEnTiempo))+
+      kpiBox('Calificación del cliente', ult.calificacion!=null?ult.calificacion+'/10':'—', cls(ult.calificacion,9),'≥9,0', null)+
+      kpiBox('Actas cerradas', ult.pctActas!=null?ult.pctActas+'%':'—', cls(ult.pctActas,90),'≥90%', t(ult.pctActas,prev.pctActas))+
+      '</div>';
+    html += graficoCard('Tu evolución', serie.map(x=>x.mes), [
+      {label:'% en tiempo', data:serie.map(x=>x.pctEnTiempo), color:'#1D6FA4'},
+      {label:'% actas', data:serie.map(x=>x.pctActas), color:'#1E7A3E'}
+    ]);
+    html += graficoCard('Calificación del cliente', serie.map(x=>x.mes), [
+      {label:'Calificación /10', data:serie.map(x=>x.calificacion), color:'#C0001A'}
+    ]);
+  } else if(rolActual==='supervisor'){
+    html += '<div class="kpis">'+
+      kpiBox('Frentes programados', ult.frentes??'—','na','',null)+
+      kpiBox('Días con programación', ult.diasProgramados??'—','na','',null)+
+      kpiBox('Inasistencias registradas', ult.inasistencias??'—','na','gestión activa',null)+
+      '</div>';
+    html += graficoCard('Tu evolución', serie.map(x=>x.mes), [
+      {label:'Frentes', data:serie.map(x=>x.frentes), color:'#1E7A3E'},
+      {label:'Inasistencias', data:serie.map(x=>x.inasistencias), color:'#C0001A'}
+    ]);
+  } else if(rolActual==='dibujante'){
+    html += '<div class="kpis">'+
+      kpiBox('Planos del mes', ult.entregas??'—','na','',null)+
+      kpiBox('Entregas a tiempo', ult.pctATiempo!=null?ult.pctATiempo+'%':'—', cls(ult.pctATiempo,90),'≥90%', null)+
+      kpiBox('Revisiones promedio', ult.revProm!=null?ult.revProm:'—', cls(ult.revProm,1,true),'≤1', null)+
+      kpiBox('Errores en campo', ult.erroresCampo??'—', ult.erroresCampo===0?'ok':'bad','0', null)+
+      '</div>';
+    html += graficoCard('Tu evolución', serie.map(x=>x.mes), [
+      {label:'% a tiempo', data:serie.map(x=>x.pctATiempo), color:'#1D6FA4'}
+    ]);
+    html += registroEntregas();
+  }
+
+  if(d.notaCompartida){
+    html += '<div class="card"><h2>Comentario de gerencia</h2><div class="nota"><b>Gerencia:</b> '+d.notaCompartida+'</div></div>';
+  }
+
+  document.getElementById('contenido').innerHTML = html;
+  // Dibujar gráficos
+  setTimeout(()=>{ (window._charts||[]).forEach(c=>c()); }, 50);
+  if(rolActual==='dibujante') cargarEntregas();
+}
+
+let _charts=[];
+function graficoCard(titulo, labels, datasets){
+  const id = 'chart_'+Math.random().toString(36).slice(2,8);
+  _charts.push(()=>{
+    const ctx = document.getElementById(id); if(!ctx) return;
+    new Chart(ctx, { type:'line', data:{ labels:labels.map(m=>m.slice(5)+'/'+m.slice(2,4)), datasets:datasets.map(ds=>({label:ds.label,data:ds.data,borderColor:ds.color,backgroundColor:ds.color+'22',tension:.3,spanGaps:true,pointRadius:4})) },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:datasets.length>1}}, scales:{y:{beginAtZero:true}} } });
+  });
+  return '<div class="card"><h2>'+titulo+'</h2><div style="height:240px"><canvas id="'+id+'"></canvas></div></div>';
+}
+
+// ── Registro de entregas (solo dibujante) ──
+function registroEntregas(){
+  const mesActual = new Date().toISOString().slice(0,7);
+  return '<div class="card"><h2>Registrar entrega de plano</h2>'+
+    '<div class="form-grid">'+
+      '<div><label class="lbl">Plano / Proyecto</label><input class="inp" id="e-plano" placeholder="Nombre del plano"></div>'+
+      '<div><label class="lbl">Fecha compromiso</label><input class="inp" type="date" id="e-comp"></div>'+
+      '<div><label class="lbl">Fecha entrega real</label><input class="inp" type="date" id="e-ent"></div>'+
+    '</div>'+
+    '<div class="form-grid">'+
+      '<div><label class="lbl">Revisiones internas</label><input class="inp" type="number" id="e-rev" value="0" min="0"></div>'+
+      '<div><label class="lbl">¿Error en campo?</label><select class="sel" id="e-err"><option value="NO">No</option><option value="SI">Sí</option></select></div>'+
+      '<div><label class="lbl">Notas (opcional)</label><input class="inp" id="e-notas" placeholder="Observación"></div>'+
+    '</div>'+
+    '<button class="btn" onclick="guardarEntrega()">+ Registrar entrega</button>'+
+    '<div style="margin-top:20px"><h2>Mis entregas de este mes</h2><table class="tabla"><thead><tr><th>Plano</th><th>Compromiso</th><th>Entrega</th><th>Rev.</th><th>A tiempo</th></tr></thead><tbody id="entregas-tbody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:16px">Cargando...</td></tr></tbody></table></div>'+
+    '</div>';
+}
+
+async function guardarEntrega(){
+  const plano = document.getElementById('e-plano').value.trim();
+  const comp = document.getElementById('e-comp').value;
+  const ent = document.getElementById('e-ent').value;
+  if(!plano){ alert('Escribe el nombre del plano'); return; }
+  if(!comp){ alert('Indica la fecha de compromiso'); return; }
+  try{
+    const res = await fetch(APPS_URL, {method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({
+      tabla:'guardar_entrega', plano, fechaCompromiso:comp, fechaEntrega:ent,
+      revisiones:document.getElementById('e-rev').value, errorCampo:document.getElementById('e-err').value,
+      notas:document.getElementById('e-notas').value.trim()
+    })});
+    const d = await res.json();
+    if(d.ok){
+      document.getElementById('e-plano').value=''; document.getElementById('e-ent').value=''; document.getElementById('e-notas').value=''; document.getElementById('e-rev').value='0';
+      cargarEntregas(); cargar();
+    } else alert('Error: '+(d.error||'intenta de nuevo'));
+  }catch(e){ alert('Error de conexión'); }
+}
+
+async function cargarEntregas(){
+  const mes = new Date().toISOString().slice(0,7);
+  try{
+    const res = await fetch(APPS_URL + '?tabla=get_entregas&mes=' + mes);
+    const d = await res.json();
+    const tb = document.getElementById('entregas-tbody');
+    if(!tb) return;
+    if(!d.ok || !d.entregas.length){ tb.innerHTML='<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:16px">Sin entregas registradas este mes</td></tr>'; return; }
+    tb.innerHTML = d.entregas.map(e=>{
+      const aTiempo = e.fechaEntrega && e.fechaEntrega <= e.fechaCompromiso;
+      const badge = !e.fechaEntrega ? '<span style="color:var(--muted)">Pendiente</span>' : (aTiempo?'<span style="color:var(--green);font-weight:700">✓ Sí</span>':'<span style="color:var(--accent);font-weight:700">✕ No</span>');
+      return '<tr><td>'+e.plano+'</td><td>'+e.fechaCompromiso+'</td><td>'+(e.fechaEntrega||'—')+'</td><td>'+e.revisiones+'</td><td>'+badge+'</td></tr>';
+    }).join('');
+  }catch(e){}
+}
+</script>
+</body>
+</html>
