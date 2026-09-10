@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<title>Masterband · Órdenes Abiertas</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<style>
+  :root{--bg:#F5F5F3;--surface:#FFFFFF;--s2:#EFEFED;--border:#E0E0E0;--text:#1A1A1A;--dim:#4A4A4A;--muted:#888;--accent:#C0001A;--ah:#8A0012;--green:#1E7A3E;--gdim:#E8F5EE;--amber:#B45309;--adim:#FEF3C7;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+  .topbar{background:#fff;border-bottom:1px solid var(--border);height:60px;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+  .topbar img{height:38px}
+  .btn-back{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--dim);cursor:pointer;text-decoration:none}
+  .wrap{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+  h1{font-size:24px;font-weight:800;margin-bottom:4px}
+  .sub{font-size:14px;color:var(--muted);margin-bottom:22px}
+  .madre{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:18px;overflow:hidden}
+  .madre-top{padding:18px 22px;border-bottom:1px solid var(--border)}
+  .madre-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+  .madre-ctz{font-size:12px;font-weight:800;color:var(--accent);font-family:monospace}
+  .madre-title{font-size:16px;font-weight:700;margin-top:2px}
+  .madre-oc{font-size:12px;color:var(--muted);margin-top:2px}
+  .madre-area{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;color:var(--dim);white-space:nowrap}
+  .saldo-box{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-top:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .saldo-cell{padding:14px 16px;text-align:center;border-right:1px solid var(--border)}
+  .saldo-cell:last-child{border-right:none}
+  .saldo-cell .lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+  .saldo-cell .val{font-size:19px;font-weight:800}
+  .saldo-cell .val.monto{color:var(--text)}.saldo-cell .val.usado{color:var(--amber)}.saldo-cell .val.saldo{color:var(--green)}
+  .saldo-cell.agotado .val.saldo{color:var(--accent)}
+  .barra{height:10px;background:var(--s2);border-radius:5px;overflow:hidden;margin-top:14px}
+  .barra-fill{height:100%;border-radius:5px;transition:width .5s}
+  .pct-txt{font-size:12px;color:var(--muted);margin-top:6px;text-align:right}
+  .alerta{background:var(--adim);border:1px solid #F0C040;border-radius:8px;padding:10px 14px;font-size:13px;color:#7A5C00;margin-top:12px;font-weight:600}
+  .alerta.roja{background:#FDECEA;border-color:#E57373;color:var(--accent)}
+  .hijas{padding:0 22px}
+  .hijas-toggle{padding:12px 0;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;user-select:none}
+  .hijas-list{display:none;padding-bottom:12px}
+  .hijas-list.on{display:block}
+  .hija{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--s2);font-size:13px}
+  .hija:last-child{border-bottom:none}
+  .hija .h-ctz{font-family:monospace;color:var(--muted);font-size:11px}
+  .filtros{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+  .fbtn{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer}
+  .fbtn.on{background:var(--gdim);border-color:var(--green);color:var(--green)}
+  .loading{text-align:center;padding:50px;color:var(--muted)}
+  .overlay{position:fixed;inset:0;background:rgba(20,22,28,.6);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+  .overlay.off{display:none}
+  .modal{background:var(--surface);max-width:380px;width:100%;border-top:3px solid var(--accent);padding:30px;text-align:center}
+  .modal img{height:44px;margin-bottom:14px}.modal h3{font-size:19px;font-weight:800;margin-bottom:14px}
+  .modal input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:14px;margin-bottom:12px;text-align:center}
+  .modal .mbtn{width:100%;background:var(--accent);border:none;border-radius:8px;padding:12px;color:#fff;font-size:14px;font-weight:800;cursor:pointer}
+  .perr{font-size:12px;color:var(--accent);font-weight:700;min-height:16px;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="topbar"><img src="logo-masterband.png" alt="Masterband S.A.S."><a class="btn-back" href="index.html">← Portal</a></div>
+
+<div class="overlay" id="login">
+  <div class="modal">
+    <img src="logo-masterband.png" alt="Masterband"><h3>Órdenes Abiertas</h3>
+    <div class="perr" id="perr"></div>
+    <input type="password" id="pass" placeholder="Contraseña" autocapitalize="none" onkeydown="if(event.key==='Enter')entrar()">
+    <button class="mbtn" onclick="entrar()">Entrar</button>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <h1>Órdenes abiertas · Saldos</h1>
+  <div class="sub">Cotizaciones madre con monto máximo y su saldo disponible</div>
+  <div class="filtros" id="filtros"></div>
+  <div id="contenido"><div class="loading">Cargando saldos...</div></div>
+</div>
+
+<script>
+const APPS_URL = 'https://script.google.com/macros/s/AKfycbyusd8Kpfrib2ueepZSBMkvXhQ-j8eVDcKs8i9Izi9PmQ8XpwxGIA3VtDb6eUdSkYq4/exec';
+let todas = [], filtroArea = 'todas';
+
+function entrar(){
+  const p = document.getElementById('pass').value.trim().toLowerCase();
+  if(p !== 'master2025'){ document.getElementById('perr').textContent='Contraseña incorrecta'; return; }
+  document.getElementById('login').classList.add('off');
+  document.getElementById('app').style.display='block';
+  cargar();
+}
+
+function fmt(n){ return '$' + Math.round(n).toLocaleString('es-CO'); }
+
+async function cargar(){
+  try{
+    const res = await fetch(APPS_URL + '?tabla=cotizaciones_madre');
+    const d = await res.json();
+    if(!d.ok) throw new Error(d.error||'Error');
+    todas = d.madres || [];
+    render();
+  }catch(e){
+    document.getElementById('contenido').innerHTML = '<div class="alerta roja">No se pudieron cargar: '+e.message+'</div>';
+  }
+}
+
+function render(){
+  // Filtros de área
+  const areas = ['todas', ...new Set(todas.map(m=>m.area).filter(Boolean))];
+  document.getElementById('filtros').innerHTML = areas.map(a=>
+    '<button class="fbtn '+(filtroArea===a?'on':'')+'" onclick="setArea(\''+a+'\')">'+(a==='todas'?'Todas las áreas':a)+'</button>').join('');
+
+  let lista = filtroArea==='todas' ? todas : todas.filter(m=>m.area===filtroArea);
+  if(!lista.length){ document.getElementById('contenido').innerHTML='<div class="loading">No hay órdenes abiertas en esta vista.</div>'; return; }
+
+  document.getElementById('contenido').innerHTML = lista.map((m,idx)=>{
+    const pct = Math.min(100, m.pctUsado);
+    const color = pct>=90?'#C0001A':pct>=70?'#F59E0B':'#1E7A3E';
+    const agotado = m.saldo<=0;
+    const casiAgotado = pct>=85 && !agotado;
+    let alerta = '';
+    if(agotado) alerta='<div class="alerta roja">⚠ Orden agotada — se necesita una nueva cotización madre</div>';
+    else if(casiAgotado) alerta='<div class="alerta">⚠ Queda poco saldo ('+ (100-pct) +'%) — considera enviar otra cotización madre pronto</div>';
+    return '<div class="madre">'+
+      '<div class="madre-top">'+
+        '<div class="madre-head">'+
+          '<div><div class="madre-ctz">CTZ'+m.ctz+'</div><div class="madre-title">'+m.colilla+'</div>'+
+          '<div class="madre-oc">OC: '+(m.oc||'—')+'</div></div>'+
+          (m.area?'<span class="madre-area">'+m.area+'</span>':'')+
+        '</div>'+
+        '<div class="saldo-box">'+
+          '<div class="saldo-cell"><div class="lbl">Monto máximo</div><div class="val monto">'+fmt(m.monto)+'</div></div>'+
+          '<div class="saldo-cell"><div class="lbl">Consumido</div><div class="val usado">'+fmt(m.usado)+'</div></div>'+
+          '<div class="saldo-cell '+(agotado?'agotado':'')+'"><div class="lbl">Saldo disponible</div><div class="val saldo">'+fmt(m.saldo)+'</div></div>'+
+        '</div>'+
+        '<div class="barra"><div class="barra-fill" style="width:'+pct+'%;background:'+color+'"></div></div>'+
+        '<div class="pct-txt">'+pct+'% consumido · '+m.hijas.length+' trabajo'+(m.hijas.length!==1?'s':'')+'</div>'+
+        alerta+
+      '</div>'+
+      '<div class="hijas">'+
+        '<div class="hijas-toggle" onclick="toggleHijas('+idx+')">▸ Ver los '+m.hijas.length+' trabajos de esta orden</div>'+
+        '<div class="hijas-list" id="hijas-'+idx+'">'+
+          m.hijas.map(h=>'<div class="hija"><span><span class="h-ctz">CTZ'+h.ctz+'</span> '+h.colilla+'</span><span style="font-weight:700">'+fmt(h.costo)+'</span></div>').join('')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function setArea(a){ filtroArea=a; render(); }
+function toggleHijas(idx){
+  const el=document.getElementById('hijas-'+idx);
+  el.classList.toggle('on');
+  const t=el.previousElementSibling;
+  t.textContent = (el.classList.contains('on')?'▾ Ocultar':'▸ Ver los '+el.children.length+' trabajos de esta orden');
+}
+</script>
+</body>
+</html>
