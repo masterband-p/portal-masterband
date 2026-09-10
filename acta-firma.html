@@ -580,21 +580,18 @@ function firmaLiderVacia() {
 // Cuando el LÍDER abre el link /?val= : personalizar la pantalla para su validación
 function adaptarPantallaLider(d) {
   document.querySelector('.eval-title').innerHTML = '✅ Validación del líder — Confirma la entrega a satisfacción';
-  // Ocultar campos del técnico (ya firmó) y mostrar lo que ya registró
+  // Mostrar lo que el técnico ya registró, incluida su firma
+  const firmaTecImg = d.firmaCliente ? '<div style="margin-top:8px"><img src="'+d.firmaCliente+'" style="max-height:70px;max-width:180px;border:1px solid #ccc;border-radius:6px;background:#fff"></div>' : '';
   const infoTecnico = '<div style="background:var(--gdim);border:1px solid var(--green);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px">' +
-    '<b>Ya recibido en sitio por:</b> ' + (d.recibeNombre || '—') + (d.recibeCargo ? ' · ' + d.recibeCargo : '') +
-    '<br><b>Calificación del técnico:</b> ' + (d.calificacion || '—') + '/10 · <b>Satisfacción:</b> ' + (d.satisfaccion || '—') + '</div>';
-  document.getElementById('recibe-nombre').closest('.eval-section') ?
-    (document.getElementById('recibe-nombre').parentElement.insertAdjacentHTML('beforebegin', infoTecnico)) :
-    document.getElementById('recibe-nombre').parentElement.insertAdjacentHTML('beforebegin', infoTecnico);
+    '<b>✓ Recibido en sitio por:</b> ' + (d.recibeNombre || '—') + (d.recibeCargo ? ' · ' + d.recibeCargo : '') +
+    firmaTecImg + '</div>';
+  document.getElementById('recibe-nombre').parentElement.insertAdjacentHTML('beforebegin', infoTecnico);
   // Relabelar los campos para el líder
-  document.querySelector('label[for]') ; // no-op seguro
   const setLabel = (id, txt) => { const inp=document.getElementById(id); if(inp){ const lbl=inp.previousElementSibling; if(lbl&&lbl.classList.contains('pend-label')) lbl.innerHTML = txt + ' <span class="req-mark">*</span>'; } };
   setLabel('recibe-nombre', 'Nombre del líder que valida');
   setLabel('recibe-cargo', 'Cargo del líder');
   document.getElementById('recibe-nombre').placeholder = 'Nombre del líder del área';
   document.getElementById('recibe-cargo').placeholder = 'Ej: Líder de Mantenimiento';
-  // La sección de líder-en-sitio no aplica aquí (él ES el líder)
   const ls = document.getElementById('lider-section'); if (ls) ls.style.display = 'none';
   document.getElementById('btn-firmar').innerHTML = '✅ Validar y cerrar acta';
   window._modoLider = true;
