@@ -720,6 +720,22 @@ const ETAPAS = ['Pendiente','Enviada','Aprobada','OC recibida','En proceso','Fin
 // ── ROW → OT ──
 function gc(row, i) { return String(row[i] || '').trim(); }
 
+// Convierte un monto respetando formato colombiano, número puro JS, enteros con miles y decimales
+function parseMonto(v){
+  if (typeof v === 'number') return isNaN(v) ? 0 : v;
+  let s = String(v||'').replace(/[^0-9.,]/g,'');
+  if (!s) return 0;
+  const tienePunto = s.indexOf('.') >= 0, tieneComa = s.indexOf(',') >= 0;
+  if (tienePunto && tieneComa) { s = s.replace(/\./g,'').replace(',','.'); }
+  else if (tieneComa) { s = s.replace(',','.'); }
+  else if (tienePunto) {
+    const partes = s.split('.'), ultimo = partes[partes.length-1];
+    if (partes.length > 2 || ultimo.length === 3) s = s.replace(/\./g,'');
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
 function rowToOT(row) {
   // ★ Validación estricta de la columna A (Cotización):
   // el portal ignora filas con basura (teléfonos, fechas, texto de encabezado,
@@ -742,7 +758,7 @@ function rowToOT(row) {
   const nfact   = gc(row, 14);
   const apro    = gc(row, 8);
   const estado  = gc(row, 7);
-  const costoRaw = gc(row, 11).replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.');
+  const costoRaw = parseMonto(row[11]);
   const fechaIni = gc(row, 16); // Col Q
   const fechaFin = gc(row, 17); // Col R
   const razonDemora = gc(row, 18); // Col S
@@ -766,7 +782,7 @@ function rowToOT(row) {
     apro,
     noOC,
     etrab,
-    costo:    parseFloat(costoRaw) || 0,
+    costo:    costoRaw || 0,
     facturado: fact,
     acta:     (() => { const v = gc(row, 13).toUpperCase(); return v === 'SI' || v === 'SÍ'; })(),
     nfact,
@@ -1511,10 +1527,11 @@ async function enviarAlCliente() {
     correoPrueba:    modoPrueba ? correoPrueba : ''
   };
 
-  // El servidor tarda en subir fotos/PDF a Drive y armar el correo (puede pasar
-  // de 1 minuto). En vez de esperar bloqueado, disparamos la petición y
-  // confirmamos de inmediato — el correo se procesa y envía del lado del servidor.
+  // Envío confiable: dispara la petición y LUEGO verifica que el acta quedó
+  // guardada. Si no, avisa para reintentar (antes con no-cors no se verificaba
+  // y un fallo del servidor pasaba desapercibido).
   try {
+    // Disparar el guardado/envío (no-cors por si el servidor tarda con fotos)
     fetch(APPS_URL, {
       method: 'POST',
       mode: 'no-cors',
@@ -1523,14 +1540,30 @@ async function enviarAlCliente() {
     }).catch(() => {});
 
     const destino = modoPrueba ? correoPrueba + ' (modo prueba)' : correo;
-    toast('✓ Acta en proceso de envío a ' + destino + '. El correo llega en 1–2 minutos.', 'ok');
-    if (!actaOT.acta) marcarActa(actaOT.id);
-    btn.textContent = '✓ Enviado';
-    // Reactivar el botón tras unos segundos por si necesita reenviar
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = 'Enviar al cliente para firma';
-    }, 8000);
+    btn.textContent = '⟳ Verificando envío...';
+
+    // Verificar a los 6 segundos que el acta realmente se guardó
+    setTimeout(async () => {
+      try {
+        const chk = await fetch(APPS_URL + '?tabla=acta&ctz=' + encodeURIComponent(actaOT.num));
+        const d = await chk.json();
+        if (d && d.ok) {
+          toast('✓ Acta enviada a ' + destino + ' — el correo llega en 1-2 minutos', 'ok');
+          if (!actaOT.acta) marcarActa(actaOT.id);
+          btn.textContent = '✓ Enviado';
+          setTimeout(() => { btn.disabled = false; btn.textContent = 'Enviar al cliente para firma'; }, 6000);
+        } else {
+          // No se guardó: reintentar una vez esperando (por si tardó)
+          toast('⚠ Verificando... el acta tardó en guardarse, reintenta si no llega el correo', 'err');
+          btn.disabled = false; btn.textContent = '↻ Reintentar envío';
+        }
+      } catch(e) {
+        // No se pudo verificar (sin conexión) — dejar reintentar por si acaso
+        toast('El envío se procesó pero no se pudo confirmar. Verifica que llegue el correo o reintenta.', 'err');
+        btn.disabled = false; btn.textContent = '↻ Reintentar envío';
+      }
+    }, 6000);
+
   } catch(e) {
     toast('✕ Error de conexión', 'err');
     btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
