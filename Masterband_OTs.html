@@ -584,6 +584,26 @@
         <textarea class="acta-textarea" id="it-recomendaciones" rows="3" oninput="marcarCambioInforme()" placeholder="Conclusión del trabajo, inspecciones periódicas sugeridas, cuidados futuros..."></textarea>
       </div>
 
+      <!-- Firma del informe (ingeniero, supervisor u otro de Masterband) -->
+      <div class="acta-field">
+        <label class="acta-label">Firma del informe</label>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Quien elabora o respalda el informe (ingeniero, supervisor u otro de Masterband).</div>
+        <div class="acta-row">
+          <div class="acta-field"><label class="acta-label">Nombre</label><input class="acta-input" id="it-firma-nombre" oninput="marcarCambioInforme()" placeholder="Nombre completo"></div>
+          <div class="acta-field"><label class="acta-label">Cargo</label><input class="acta-input" id="it-firma-cargo" oninput="marcarCambioInforme()" placeholder="Ej: Ingeniero de Proyectos"></div>
+        </div>
+        <div class="firma-wrap" style="margin-top:8px">
+          <canvas class="firma-canvas" id="firma-informe"></canvas>
+          <button class="btn-clear-firma" onclick="limpiarFirmaInforme()">Limpiar</button>
+        </div>
+        <label style="display:inline-flex;align-items:center;gap:7px;border:1px dashed var(--border);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2);margin-top:8px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+          Subir firma
+          <input type="file" accept="image/*" onchange="subirFirmaInforme(this)" style="display:none">
+        </label>
+        <span style="font-size:11.5px;color:var(--muted);margin-left:8px">o dibújala arriba</span>
+      </div>
+
       <div id="it-autoguardado" style="font-size:12px;font-weight:600;text-align:right;margin-bottom:8px;min-height:16px"></div>
       <button onclick="generarInformeTecnico()" id="btn-informe" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:6px">Generar informe técnico y adjuntar al acta</button>
     </div>
@@ -1688,6 +1708,7 @@ function abrirActa(id) {
   // Inicializar canvas de firmas
   setTimeout(() => {
     iniciarFirma('firma-entrega');
+    initFirmaInforme();
     iniciarFirma('firma-recibe');
   }, 100);
 
@@ -1926,6 +1947,48 @@ function renderFotosSeccion(seccion) {
     </div>`).join('');
 }
 
+// ── Firma del informe técnico ──
+let firmaInformeData = null, firmaInformeCtx = null, firmaInformeDraw = false, fiLastX = 0, fiLastY = 0;
+function initFirmaInforme() {
+  const c = document.getElementById('firma-informe');
+  if (!c || firmaInformeCtx) return;
+  c.width = c.offsetWidth; c.height = c.offsetHeight;
+  firmaInformeCtx = c.getContext('2d');
+  firmaInformeCtx.strokeStyle = '#1A1A1A'; firmaInformeCtx.lineWidth = 2; firmaInformeCtx.lineCap = 'round';
+  const pos = e => { const r = c.getBoundingClientRect(); const s = e.touches?e.touches[0]:e; return {x:s.clientX-r.left,y:s.clientY-r.top}; };
+  const st = e => { e.preventDefault(); firmaInformeData=null; c.style.backgroundImage=''; const p=pos(e); firmaInformeDraw=true; fiLastX=p.x; fiLastY=p.y; };
+  const dr = e => { e.preventDefault(); if(!firmaInformeDraw) return; const p=pos(e); firmaInformeCtx.beginPath(); firmaInformeCtx.moveTo(fiLastX,fiLastY); firmaInformeCtx.lineTo(p.x,p.y); firmaInformeCtx.stroke(); fiLastX=p.x; fiLastY=p.y; marcarCambioInforme(); };
+  const sp = () => firmaInformeDraw=false;
+  c.addEventListener('mousedown',st); c.addEventListener('mousemove',dr); c.addEventListener('mouseup',sp);
+  c.addEventListener('touchstart',st,{passive:false}); c.addEventListener('touchmove',dr,{passive:false}); c.addEventListener('touchend',sp);
+}
+function limpiarFirmaInforme() {
+  const c = document.getElementById('firma-informe');
+  if (firmaInformeCtx) firmaInformeCtx.clearRect(0,0,c.width,c.height);
+  c.style.backgroundImage=''; firmaInformeData=null;
+}
+function subirFirmaInforme(input) {
+  const f = input.files[0]; input.value=''; if(!f) return;
+  const c = document.getElementById('firma-informe'); initFirmaInforme();
+  const ctx = c.getContext('2d'); const r = new FileReader();
+  r.onload = e => { const im = new Image(); im.onload = () => {
+    ctx.clearRect(0,0,c.width,c.height);
+    const es = Math.min((c.width-16)/im.width,(c.height-16)/im.height);
+    const w = im.width*es, h = im.height*es;
+    ctx.drawImage(im,(c.width-w)/2,(c.height-h)/2,w,h);
+    try { const d=ctx.getImageData(0,0,c.width,c.height); const px=d.data; for(let i=0;i<px.length;i+=4){if(px[i]>205&&px[i+1]>205&&px[i+2]>205)px[i+3]=0;} ctx.putImageData(d,0,0); } catch(err){}
+    firmaInformeData = e.target.result; marcarCambioInforme();
+  }; im.src = e.target.result; };
+  r.readAsDataURL(f);
+}
+function obtenerFirmaInformeCanvas() {
+  const c = document.getElementById('firma-informe');
+  if (!firmaInformeCtx) return '';
+  const vacio = !firmaInformeCtx.getImageData(0,0,c.width,c.height).data.some(v=>v!==0);
+  if (vacio) return '';
+  try { return c.toDataURL('image/png'); } catch(e){ return ''; }
+}
+
 async function generarInformeTecnico() {
   if (!actaOT) return;
   const desc = document.getElementById('it-descripcion').value.trim();
@@ -1946,6 +2009,9 @@ async function generarInformeTecnico() {
       posicion:       document.getElementById('ac-posicion').value,
       responsable:    document.getElementById('ac-entrega-nom').value,
       cargo:          document.getElementById('ac-entrega-cargo').value,
+      firmaNombre:    document.getElementById('it-firma-nombre').value.trim(),
+      firmaCargo:     document.getElementById('it-firma-cargo').value.trim(),
+      firmaInforme:   firmaInformeData || obtenerFirmaInformeCanvas(),
       descripcion:    desc,
       secuencia:      document.getElementById('it-secuencia').value.trim(),
       observaciones:  document.getElementById('it-observaciones').value.trim(),
