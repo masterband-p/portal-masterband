@@ -579,12 +579,14 @@ function firmaLiderVacia() {
 // Cuando el LÍDER abre el link /?val= : personalizar la pantalla para su validación
 function adaptarPantallaLider(d) {
   document.querySelector('.eval-title').innerHTML = '✅ Validación del líder — Confirma la entrega a satisfacción';
-  // Mostrar lo que el técnico ya registró, incluida su firma
-  const firmaTecImg = d.firmaCliente ? '<div style="margin-top:8px"><img src="'+d.firmaCliente+'" style="max-height:70px;max-width:180px;border:1px solid #ccc;border-radius:6px;background:#fff"></div>' : '';
-  const infoTecnico = '<div style="background:var(--gdim);border:1px solid var(--green);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px">' +
-    '<b>✓ Recibido en sitio por:</b> ' + (d.recibeNombre || '—') + (d.recibeCargo ? ' · ' + d.recibeCargo : '') +
-    firmaTecImg + '</div>';
-  document.getElementById('recibe-nombre').parentElement.insertAdjacentHTML('beforebegin', infoTecnico);
+  // Mostrar la firma del técnico SOLO si existe (en actas directas al líder no hay técnico)
+  if (d.firmaCliente || d.recibeNombre) {
+    const firmaTecImg = d.firmaCliente ? '<div style="margin-top:8px"><img src="'+d.firmaCliente+'" style="max-height:70px;max-width:180px;border:1px solid #ccc;border-radius:6px;background:#fff"></div>' : '';
+    const infoTecnico = '<div style="background:var(--gdim);border:1px solid var(--green);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px">' +
+      '<b>✓ Recibido en sitio por:</b> ' + (d.recibeNombre || '—') + (d.recibeCargo ? ' · ' + d.recibeCargo : '') +
+      firmaTecImg + '</div>';
+    document.getElementById('recibe-nombre').parentElement.insertAdjacentHTML('beforebegin', infoTecnico);
+  }
   // Relabelar los campos para el líder
   const setLabel = (id, txt) => { const inp=document.getElementById(id); if(inp){ const lbl=inp.previousElementSibling; if(lbl&&lbl.classList.contains('pend-label')) lbl.innerHTML = txt + ' <span class="req-mark">*</span>'; } };
   setLabel('recibe-nombre', 'Nombre del líder que valida');
