@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Cotizador de Servicios — Masterband</title>
+<style>
+  :root{
+    --rojo:#C0001A; --rojo-d:#8f0013; --rojo-l:#F5E6E9;
+    --text:#1A1A1A; --dim:#666; --bg:#F5F5F3; --surface:#FFFFFF;
+    --border:#E2E2DF; --verde:#1E7A3E; --verde-l:#E7F3EC;
+    --amber:#B45309; --amber-l:#FEF3C7;
+    --font:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;padding:16px}
+  .wrap{max-width:1080px;margin:0 auto}
+
+  /* Header */
+  .top{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:16px}
+  .bmark{width:42px;height:42px;background:linear-gradient(135deg,#1A1A1A,#444);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .bmark b{color:#fff;font-size:20px;font-weight:800;letter-spacing:-1px}
+  .bmark b span{color:var(--rojo)}
+  .top h1{font-size:18px;font-weight:700;line-height:1.2}
+  .top p{font-size:12.5px;color:var(--dim)}
+  .top .area{margin-left:auto;background:var(--rojo-l);color:var(--rojo);font-weight:700;font-size:12px;padding:6px 14px;border-radius:999px;white-space:nowrap}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+  .card h2{font-size:14px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .card h2 .n{background:var(--rojo);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+  .card .hint{font-size:12px;color:var(--dim);margin-bottom:14px}
+
+  label{display:block;font-size:12px;font-weight:600;color:var(--dim);margin:12px 0 5px;text-transform:uppercase;letter-spacing:.3px}
+  input,select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--font);font-size:14px;outline:none;transition:border .15s}
+  input:focus,select:focus{border-color:var(--rojo)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+  .dias{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .dia{flex:1;min-width:52px;text-align:center;border:1px solid var(--border);border-radius:8px;padding:9px 4px;cursor:pointer;font-weight:600;font-size:12.5px;color:var(--dim);user-select:none;transition:all .15s}
+  .dia.on{background:var(--rojo);border-color:var(--rojo);color:#fff}
+  .dia.fin.on{background:var(--amber);border-color:var(--amber)}
+
+  .chk{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;margin-top:8px;transition:all .15s}
+  .chk.on{border-color:var(--rojo);background:var(--rojo-l)}
+  .chk input{width:auto;margin:0;accent-color:var(--rojo)}
+  .chk .t{font-weight:600;font-size:13px}
+  .chk .d{font-size:11.5px;color:var(--dim)}
+
+  /* Results */
+  .tbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px}
+  .tbl th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--dim);padding:7px 8px;border-bottom:2px solid var(--border)}
+  .tbl td{padding:8px;border-bottom:1px solid var(--border)}
+  .tbl td.r,.tbl th.r{text-align:right;font-variant-numeric:tabular-nums}
+  .tbl tr.zero{display:none}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px}
+  .t-ord{background:#eef2f7;color:#334} .t-ext{background:#FEF3C7;color:#92400E}
+  .t-dom{background:var(--rojo-l);color:var(--rojo)} .t-noc{background:#E8EAF6;color:#3949AB}
+
+  .totals{margin-top:16px;border-top:2px solid var(--border);padding-top:14px}
+  .trow{display:flex;justify-content:space-between;padding:5px 0;font-size:14px}
+  .trow.big{font-size:20px;font-weight:800;color:var(--verde);border-top:1px dashed var(--border);margin-top:8px;padding-top:12px}
+  .trow .mut{color:var(--dim);font-weight:400;font-size:12px}
+
+  .pills{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .pill{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:12px;flex:1;min-width:90px}
+  .pill b{display:block;font-size:17px;color:var(--text);font-variant-numeric:tabular-nums}
+  .pill span{color:var(--dim)}
+
+  .warn{background:var(--amber-l);border:1px solid #F3D38A;border-radius:10px;padding:11px 14px;font-size:12.5px;color:var(--amber);margin-top:12px;display:flex;gap:9px;align-items:flex-start}
+  .note{font-size:11.5px;color:var(--dim);margin-top:10px;line-height:1.5}
+  .empty{text-align:center;color:var(--dim);padding:40px 20px;font-size:13px}
+
+  .btn{width:100%;background:var(--rojo);color:#fff;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;margin-top:16px;transition:background .15s;font-family:var(--font)}
+  .btn:hover{background:var(--rojo-d)}
+  .btn:disabled{background:#ccc;cursor:not-allowed}
+  .btn.sec{background:var(--surface);color:var(--text);border:1px solid var(--border);margin-top:10px}
+
+  dialog{border:none;border-radius:14px;padding:0;max-width:460px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  .modal{padding:24px}
+  .modal h3{font-size:16px;margin-bottom:12px}
+  .ok-ico{width:52px;height:52px;background:var(--verde-l);color:var(--verde);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px}
+  .foot{text-align:center;color:var(--dim);font-size:11px;margin:20px 0 8px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="bmark"><b>M<span>B</span></b></div>
+    <div>
+      <h1>Cotizador de Servicios</h1>
+      <p>Estime el costo de su servicio y solicite una cotización formal</p>
+    </div>
+    <div class="area">ÁREA DE SERVICIO</div>
+  </div>
+
+  <div id="ordenBanner" class="warn" style="display:none;margin-bottom:16px">
+    <span>📋</span>
+    <div>Está estimando para la <b>orden abierta N° <span id="ordenNum"></span></b>. Lo que solicite queda <b>pendiente de aprobación</b> por Masterband antes de descontarse del saldo.</div>
+  </div>
+
+  <div class="grid">
+    <!-- ============ IZQUIERDA: ENTRADAS ============ -->
+    <div>
+      <div class="card">
+        <h2><span class="n">1</span>Personal requerido</h2>
+        <p class="hint">Agregue uno o varios perfiles. El costo de todos se suma automáticamente.</p>
+        <div id="perfiles"></div>
+        <button class="btn sec" style="margin-top:12px" onclick="addPerfil()">➕ Agregar otro perfil</button>
+      </div>
+
+      <div class="card">
+        <h2><span class="n">2</span>Horario de trabajo</h2>
+        <p class="hint">El sistema calcula automáticamente horas extra, nocturnas, sábados, domingos y festivos.</p>
+        <div class="row2">
+          <div><label>Fecha de inicio</label><input type="date" id="fIni"></div>
+          <div><label>Fecha de fin</label><input type="date" id="fFin"></div>
+        </div>
+        <label>Días de la semana a trabajar</label>
+        <div class="dias" id="dias">
+          <div class="dia" data-d="1">Lun</div>
+          <div class="dia" data-d="2">Mar</div>
+          <div class="dia" data-d="3">Mié</div>
+          <div class="dia" data-d="4">Jue</div>
+          <div class="dia" data-d="5">Vie</div>
+          <div class="dia fin" data-d="6">Sáb</div>
+          <div class="dia fin" data-d="0">Dom</div>
+        </div>
+        <div class="row2">
+          <div><label>Hora de ingreso</label><input type="time" id="hIni" value="07:00"></div>
+          <div><label>Hora de salida</label><input type="time" id="hFin" value="17:00"></div>
+        </div>
+        <div class="row2">
+          <div><label>Almuerzo no pagado (h)</label><input type="number" id="alm" value="1" min="0" max="3" step="0.5"></div>
+          <div><label>Jornada ordinaria diaria (h)</label><input type="number" id="jOrd" value="8" min="4" max="10" step="0.5"></div>
+        </div>
+        <p class="note">La jornada ordinaria es el límite diario antes de contar horas extra. Por ley, las horas más allá de ese límite son extra (tope legal: 2 h/día, 12 h/semana).</p>
+      </div>
+
+      <div class="card">
+        <h2><span class="n">3</span>Requisitos especiales</h2>
+        <p class="hint">Marque si el trabajo requiere estas condiciones.</p>
+        <label class="chk" id="chkAlt">
+          <input type="checkbox" id="alturas">
+          <div><div class="t">🪢 Trabajo en alturas</div><div class="d">Personal con certificación de alturas vigente (Res. 4272/2021)</div></div>
+        </label>
+        <label class="chk" id="chkConf">
+          <input type="checkbox" id="confinados">
+          <div><div class="t">🕳️ Trabajo en espacios confinados</div><div class="d">Personal certificado y protocolo de ingreso (Res. 0491/2020)</div></div>
+        </label>
+        <label class="chk" id="chkPlat">
+          <input type="checkbox" id="plataforma">
+          <div><div class="t">🛗 Uso de plataforma / equipo de elevación</div><div class="d">Alquiler de plataforma elevadora — se cotiza aparte</div></div>
+        </label>
+        <div id="platBox" style="display:none">
+          <label>Días de alquiler de plataforma</label>
+          <input type="number" id="platDias" value="0" min="0">
+          <p class="note">El valor del alquiler lo confirma Masterband según el tipo de plataforma. Esta solicitud queda registrada para que se incluya en la cotización formal.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DERECHA: RESULTADO ============ -->
+    <div>
+      <div class="card" id="resultCard">
+        <h2><span class="n">$</span>Estimación del costo</h2>
+        <div id="result"><div class="empty">Complete el horario para ver la estimación.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">
+    Valores estimados según el Tarifario de Mano de Obra 2026 y la legislación laboral colombiana vigente (jornada de 42 h, recargo dominical 90 %, Ley 2101/2021 y Ley 2466/2025).<br>
+    Esta estimación es de referencia; la cotización formal la emite Montajes Industriales Masterband S.A.S.
+  </p>
+</div>
+
+<dialog id="dlg"><div class="modal" id="dlgBody"></div></dialog>
+
+<script>
+/* ===================== CONFIG ===================== */
+const BACKEND = "https://script.google.com/macros/s/AKfycbx2E77kukvlK87QSSLSZX8500hUUM17wViI0aC9qiVmaaG4-p-QVCmrfoBvLpSaWuM/exec";
+const IVA = 0.19;
+/* Si se abre desde una orden abierta: ...CotizadorServicio.html?orden=2825 */
+const ORDEN = new URLSearchParams(location.search).get("orden") || "";
+
+/* Tarifas por cargo (promedio por cargo, Tarifario 2026, antes de IVA). 8 tipos de hora. */
+const TARIFAS = {
+  "Soldador":                      {ord:39931, extD:41472, ordN:50389, extN:56412, domD:60894, domExtD:68364, domN:71352, domExtN:83305},
+  "Auxiliar de producción básico": {ord:28047, extD:28890, ordN:34940, extN:38737, domD:41691, domExtD:46615, domN:48584, domExtN:56462},
+  "Auxiliar de producción avanzado":{ord:28983,extD:29887, ordN:36195, extN:40191, domD:43282, domExtD:48434, domN:50494, domExtN:58737},
+  "Supervisor de planta":          {ord:36153, extD:37377, ordN:45169, extN:50256, domD:54120, domExtD:60560, domN:63136, domExtN:73439},
+  "Ingeniero residente":           {ord:44179, extD:45850, ordN:55719, extN:62335, domD:67281, domExtD:75524, domN:78821, domExtN:92010},
+  "Líder de proyectos":            {ord:42998, extD:44604, ordN:54177, extN:60575, domD:65366, domExtD:73351, domN:76545, domExtN:89322},
+  "Inspector SST (SISO)":          {ord:34654, extD:35814, ordN:43309, extN:48178, domD:51887, domExtD:58070, domN:60542, domExtN:70434}
+};
+
+/* Festivos Colombia 2026 (Ley Emiliani) */
+const FESTIVOS = new Set(["2026-01-01","2026-01-12","2026-03-23","2026-04-02","2026-04-03","2026-05-01","2026-05-18","2026-06-08","2026-06-15","2026-06-29","2026-07-20","2026-08-07","2026-08-17","2026-10-12","2026-11-02","2026-11-16","2026-12-08","2026-12-25"]);
+
+/* Metadatos de los 8 tipos de hora: etiqueta, campo de tarifa, clase visual */
+const TIPOS = [
+  {k:"ord",     lab:"Ordinaria diurna (L-Sáb)",      tag:"ordinaria", cls:"t-ord"},
+  {k:"extD",    lab:"Extra diurna",                  tag:"extra",     cls:"t-ext"},
+  {k:"ordN",    lab:"Ordinaria nocturna",            tag:"nocturna",  cls:"t-noc"},
+  {k:"extN",    lab:"Extra nocturna",                tag:"extra noct",cls:"t-ext"},
+  {k:"domD",    lab:"Dominical/festiva diurna",      tag:"dom/fest",  cls:"t-dom"},
+  {k:"domExtD", lab:"Dominical/festiva extra diurna",tag:"dom extra", cls:"t-dom"},
+  {k:"domN",    lab:"Dominical/festiva nocturna",    tag:"dom noct",  cls:"t-dom"},
+  {k:"domExtN", lab:"Dominical/festiva extra noct.", tag:"dom ex noc",cls:"t-dom"}
+];
+
+/* ===================== UTILIDADES ===================== */
+const COP = n => "$" + Math.round(n).toLocaleString("es-CO");
+const fISO = d => d.toISOString().slice(0,10);
+const esFestivo = d => FESTIVOS.has(fISO(d));
+function parseTime(s){ const [h,m]=s.split(":").map(Number); return h + (m||0)/60; }
+
+/* ===================== MOTOR DE CLASIFICACIÓN ===================== */
+/* Clasifica un día de trabajo en los 8 tipos de hora. Devuelve {buckets, paid, extraDia} */
+function clasificarDia(fecha, hIniStr, hFinStr, almuerzo, jornadaOrd){
+  let hIni = parseTime(hIniStr), hFin = parseTime(hFinStr);
+  if (hFin <= hIni) hFin += 24;                 // turno que cruza medianoche
+  const span = hFin - hIni;
+  const paid = Math.max(0, span - almuerzo);
+  const buckets = {ord:0,extD:0,ordN:0,extN:0,domD:0,domExtD:0,domN:0,domExtN:0};
+  if (paid <= 0) return {buckets, paid:0, extraDia:0};
+
+  // Ventana de almuerzo (no pagado). Por defecto 12:00; si el turno no cubre el mediodía, al centro del turno.
+  let lunchStart = (hIni <= 12 && hFin >= 12 + almuerzo) ? 12 : hIni + span/2 - almuerzo/2;
+  const lunchEnd = lunchStart + almuerzo;
+
+  const step = 0.25;
+  let worked = 0;                               // horas pagadas acumuladas (para ordinaria/extra)
+  let extraDia = 0;
+  for (let t = hIni; t < hFin - 1e-9; t += step){
+    if (almuerzo > 0 && t >= lunchStart - 1e-9 && t < lunchEnd - 1e-9) continue; // salta almuerzo
+    const clock = ((t % 24) + 24) % 24;
+    const esNoche = (clock < 6 || clock >= 19);
+    // fecha real de ese instante (puede pasar al día siguiente)
+    const dOff = Math.floor(t / 24);
+    const fReal = new Date(fecha); fReal.setDate(fReal.getDate() + dOff);
+    const esDom = (fReal.getDay() === 0) || esFestivo(fReal);
+    const esExtra = (worked >= jornadaOrd - 1e-9);
+    if (esExtra) extraDia += step;
+
+    let k;
+    if (esDom){
+      if (esExtra) k = esNoche ? "domExtN" : "domExtD";
+      else         k = esNoche ? "domN"    : "domD";
+    } else {
+      if (esExtra) k = esNoche ? "extN" : "extD";
+      else         k = esNoche ? "ordN" : "ord";
+    }
+    buckets[k] += step;
+    worked += step;
+  }
+  return {buckets, paid, extraDia};
+}
+
+/* ===================== CÁLCULO TOTAL ===================== */
+function leerPerfiles(){
+  const out=[];
+  document.querySelectorAll("#perfiles .perfil").forEach(row=>{
+    const cargo=row.querySelector(".p-cargo").value;
+    const cant=Math.max(1,parseInt(row.querySelector(".p-cant").value)||1);
+    if(cargo) out.push({cargo,cant});
+  });
+  return out;
+}
+
+function calcular(){
+  const perfiles = leerPerfiles();
+  const fIni  = document.getElementById("fIni").value;
+  const fFin  = document.getElementById("fFin").value;
+  const hIni  = document.getElementById("hIni").value;
+  const hFin  = document.getElementById("hFin").value;
+  const alm   = parseFloat(document.getElementById("alm").value)||0;
+  const jOrd  = parseFloat(document.getElementById("jOrd").value)||8;
+  const dias  = [...document.querySelectorAll(".dia.on")].map(e=>+e.dataset.d);
+
+  const out = document.getElementById("result");
+  if (!perfiles.length){ out.innerHTML='<div class="empty">Agregue al menos un perfil de personal.</div>'; return; }
+  if (!fIni || !fFin || !dias.length || !hIni || !hFin){
+    out.innerHTML = '<div class="empty">Complete fechas, días y horario para ver la estimación.</div>';
+    return;
+  }
+  const dI = new Date(fIni+"T00:00:00"), dF = new Date(fFin+"T00:00:00");
+  if (dF < dI){ out.innerHTML='<div class="empty">La fecha de fin debe ser posterior a la de inicio.</div>'; return; }
+
+  // Acumular por todos los días del rango que sean día laborado
+  const tot = {ord:0,extD:0,ordN:0,extN:0,domD:0,domExtD:0,domN:0,domExtN:0};
+  let diasTrab=0, paidDia=0, maxExtraDia=0;
+  const semana = {}; // horas extra por semana ISO
+  for (let d=new Date(dI); d<=dF; d.setDate(d.getDate()+1)){
+    if (!dias.includes(d.getDay())) continue;
+    const r = clasificarDia(new Date(d), hIni, hFin, alm, jOrd);
+    for (const k in tot) tot[k] += r.buckets[k];
+    diasTrab++; paidDia = r.paid;
+    maxExtraDia = Math.max(maxExtraDia, r.extraDia);
+    const wk = semanaISO(d); semana[wk]=(semana[wk]||0)+r.extraDia;
+  }
+  if (!diasTrab){ out.innerHTML='<div class="empty">No hay días laborados en el rango seleccionado.</div>'; return; }
+
+  // tot = horas por tipo POR PERSONA (el horario es el mismo para todos los perfiles)
+  const horasPersona = Object.values(tot).reduce((a,b)=>a+b,0);
+  let totPersonas=0;
+  perfiles.forEach(p=> totPersonas += p.cant);
+  const totalHoras = horasPersona*totPersonas;
+
+  // Costo por perfil
+  let subtotal=0;
+  const perfilCalc = perfiles.map(p=>{
+    const tar=TARIFAS[p.cargo]; let sub=0;
+    TIPOS.forEach(ti=> sub += tot[ti.k]*p.cant*tar[ti.k]);
+    subtotal += sub;
+    return {cargo:p.cargo, cant:p.cant, sub};
+  });
+
+  // Desglose de horas por tipo (por persona) para mostrar la composición del horario
+  const filasHoras = TIPOS.map(ti=>({...ti, h:tot[ti.k]})).filter(f=>f.h>=0.01);
+
+  const iva = subtotal*IVA;
+  const total = subtotal+iva;
+
+  // Avisos legales
+  const maxSemExtra = Math.max(0,...Object.values(semana));
+  let warns=[];
+  if (maxExtraDia > 2.001) warns.push(`El horario genera <b>${maxExtraDia.toFixed(1)} h extra por día</b>. El tope legal es 2 h/día; el excedente requiere autorización del Ministerio de Trabajo.`);
+  if (maxSemExtra > 12.001) warns.push(`El horario genera hasta <b>${maxSemExtra.toFixed(1)} h extra por semana</b>. El tope legal es 12 h/semana.`);
+
+  // Render
+  let html = `
+    <div class="pills">
+      <div class="pill"><span>Días laborados</span><b>${diasTrab}</b></div>
+      <div class="pill"><span>Horas/persona-día</span><b>${paidDia.toFixed(1)}</b></div>
+      <div class="pill"><span>Personas</span><b>${totPersonas}</b></div>
+      <div class="pill"><span>Horas totales</span><b>${totalHoras.toFixed(0)}</b></div>
+    </div>
+
+    <table class="tbl">
+      <thead><tr><th>Perfil</th><th class="r">Cant.</th><th class="r">Subtotal</th></tr></thead>
+      <tbody>`;
+  perfilCalc.forEach(p=>{
+    html += `<tr><td>${p.cargo}</td><td class="r">${p.cant}</td><td class="r">${COP(p.sub)}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // Composición del horario (por persona) — muestra automáticamente extras, nocturnas, dominicales
+  html += `<p class="note" style="margin-top:14px"><b>Composición del horario</b> (horas por persona en todo el periodo):</p>
+    <table class="tbl">
+      <thead><tr><th>Tipo de hora</th><th class="r">Horas/persona</th></tr></thead>
+      <tbody>`;
+  filasHoras.forEach(f=>{
+    html += `<tr><td><span class="tag ${f.cls}">${f.tag}</span> ${f.lab}</td><td class="r">${f.h.toFixed(1)}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+
+  warns.forEach(w=> html += `<div class="warn"><span>⚠️</span><div>${w}</div></div>`);
+
+  const alturas = document.getElementById("alturas").checked;
+  const confinados = document.getElementById("confinados").checked;
+  const plat = document.getElementById("plataforma").checked;
+  const platDias = parseInt(document.getElementById("platDias").value)||0;
+  let extras=[];
+  if (alturas) extras.push("Trabajo en alturas: personal certificado (sin recargo adicional en tarifa; certificación ya incluida en el costo).");
+  if (confinados) extras.push("Trabajo en espacios confinados: personal certificado y protocolo de ingreso seguro (sin recargo adicional en tarifa).");
+  if (plat) extras.push(`Uso de plataforma de elevación${platDias?` (${platDias} día(s))`:""}: el alquiler del equipo se cotiza por separado.`);
+
+  html += `
+    <div class="totals">
+      <div class="trow"><span>Subtotal mano de obra</span><b>${COP(subtotal)}</b></div>
+      <div class="trow"><span class="mut">IVA (19 %)</span><span class="mut">${COP(iva)}</span></div>
+      <div class="trow big"><span>Total estimado</span><span>${COP(total)}</span></div>
+    </div>`;
+
+  if (extras.length) html += `<div class="note"><b>Requisitos marcados:</b><br>• ${extras.join("<br>• ")}</div>`;
+  html += `<div class="note">Estimación de mano de obra con base en el Tarifario 2026. No incluye materiales, transporte especial ni alquiler de equipos, salvo que se indique. El valor final se confirma en la cotización formal.</div>`;
+
+  const lblBtn = ORDEN ? `➕ Solicitar añadir a la orden abierta N° ${ORDEN}` : "📩 Solicitar cotización formal";
+  html += `<button class="btn" onclick="solicitar()">${lblBtn}</button>
+           <button class="btn sec" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>`;
+
+  out.innerHTML = html;
+  // guarda el estado para el envío
+  window._ultima = {perfilCalc,totPersonas,fIni,fFin,hIni,hFin,alm,jOrd,dias,diasTrab,filasHoras,subtotal,iva,total,alturas,confinados,plat,platDias,warns};
+}
+
+function semanaISO(d){
+  const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=(t.getUTCDay()+6)%7; t.setUTCDate(t.getUTCDate()-day+3);
+  const y1=new Date(Date.UTC(t.getUTCFullYear(),0,4));
+  return t.getUTCFullYear()+"-"+Math.ceil(((t-y1)/86400000+1)/7);
+}
+function btnDisabled(){ /* el botón se crea con el resultado */ }
+
+/* ===================== SOLICITAR COTIZACIÓN ===================== */
+function solicitar(){
+  const u = window._ultima; if(!u) return;
+  const dlg = document.getElementById("dlg");
+  const titulo = ORDEN ? `Añadir a la orden abierta N° ${ORDEN}` : "Solicitar cotización formal";
+  const avisoOrden = ORDEN ? `<div class="warn" style="margin:0 0 4px"><span>ℹ️</span><div>Esta solicitud queda <b>pendiente de aprobación</b>. Masterband la revisa y puede ajustar material, alquiler de equipos o transporte antes de aprobarla. El saldo de la orden solo se descuenta cuando se apruebe.</div></div>` : "";
+  document.getElementById("dlgBody").innerHTML = `
+    <h3>${titulo}</h3>
+    ${avisoOrden}
+    <label>Empresa / Cliente</label><input id="cEmp" placeholder="Ej: PepsiCo Planta Funza">
+    <label>Nombre de contacto</label><input id="cNom" placeholder="Su nombre">
+    <label>Correo</label><input id="cMail" type="email" placeholder="correo@empresa.com">
+    <label>Teléfono</label><input id="cTel" placeholder="Opcional">
+    <label>Descripción del trabajo</label><input id="cDesc" placeholder="Ej: Cambio de rodillos línea 3">
+    <button class="btn" onclick="enviar()">${ORDEN?"Solicitar":"Enviar solicitud"}</button>
+    <button class="btn sec" onclick="document.getElementById('dlg').close()">Cancelar</button>`;
+  dlg.showModal();
+}
+
+function resumenTexto(u,cli){
+  let L=[];
+  L.push(ORDEN ? ("SOLICITUD PARA ORDEN ABIERTA N° "+ORDEN+" — ÁREA DE SERVICIO (PENDIENTE DE APROBACIÓN)") : "SOLICITUD DE COTIZACIÓN — ÁREA DE SERVICIO");
+  L.push("Cliente: "+cli.emp+" | Contacto: "+cli.nom+" | "+cli.mail+(cli.tel?" | "+cli.tel:""));
+  if(cli.desc) L.push("Trabajo: "+cli.desc);
+  L.push("");
+  L.push("PERSONAL:");
+  u.perfilCalc.forEach(p=> L.push("  "+p.cant+" × "+p.cargo+" = "+COP(p.sub)));
+  L.push("Periodo: "+u.fIni+" a "+u.fFin+" | Horario: "+u.hIni+"–"+u.hFin+" | "+u.diasTrab+" día(s) | "+u.totPersonas+" persona(s)");
+  const reqs=[u.alturas?"Alturas":"",u.confinados?"Espacios confinados":"",u.plat?("Plataforma"+(u.platDias?" "+u.platDias+"d":"")):""].filter(Boolean);
+  L.push("Requisitos: "+(reqs.join(", ")||"Ninguno"));
+  L.push("");
+  L.push("COMPOSICIÓN DEL HORARIO (horas/persona):");
+  u.filasHoras.forEach(f=> L.push("  "+f.lab+": "+f.h.toFixed(1)+" h"));
+  L.push("");
+  L.push("Subtotal: "+COP(u.subtotal)+" | IVA: "+COP(u.iva)+" | TOTAL ESTIMADO: "+COP(u.total));
+  if(u.warns.length) L.push("AVISOS: "+u.warns.map(w=>w.replace(/<[^>]+>/g,"")).join(" / "));
+  return L.join("\n");
+}
+
+function enviar(){
+  const u = window._ultima;
+  const cli = {
+    emp:  (document.getElementById("cEmp").value||"").trim(),
+    nom:  (document.getElementById("cNom").value||"").trim(),
+    mail: (document.getElementById("cMail").value||"").trim(),
+    tel:  (document.getElementById("cTel").value||"").trim(),
+    desc: (document.getElementById("cDesc").value||"").trim()
+  };
+  if(!cli.emp || !cli.nom || !cli.mail){ alert("Complete empresa, contacto y correo."); return; }
+
+  const resumen = resumenTexto(u,cli);
+  const tabla = ORDEN ? "solicitudOrden" : "solicitudCotizacion";
+  const payload = JSON.stringify({tabla, area:"servicio", orden:ORDEN, estado:"SOLICITADA", cliente:cli, cotizacion:u, resumen});
+
+  // Envío al backend (fire-and-forget) + fallback por correo
+  try{
+    fetch(BACKEND, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:payload});
+  }catch(e){}
+
+  const asunto = (ORDEN?"Solicitud orden N° "+ORDEN+" — ":"Solicitud de cotización — ")+cli.emp+" ("+u.totPersonas+" persona(s))";
+  const mailto = "mailto:acastillo@masterband.com.co?cc="+encodeURIComponent(cli.mail)+"&subject="+encodeURIComponent(asunto)+"&body="+encodeURIComponent(resumen);
+
+  const msg = ORDEN
+    ? `Su solicitud quedó registrada en la orden abierta <b>N° ${ORDEN}</b> como <b>PENDIENTE</b>. Masterband la revisará (material, equipos, transporte) y le confirmará al correo <b>${cli.mail}</b>. El saldo se descuenta solo al aprobarse.`
+    : `Masterband recibió su solicitud y le enviará la cotización formal al correo <b>${cli.mail}</b>.`;
+
+  document.getElementById("dlgBody").innerHTML = `
+    <div class="ok-ico">✓</div>
+    <h3 style="text-align:center">${ORDEN?"Solicitud enviada":"Solicitud registrada"}</h3>
+    <p style="text-align:center;color:var(--dim);font-size:13px;margin-bottom:16px">${msg}</p>
+    <a class="btn" href="${mailto}" style="display:block;text-align:center;text-decoration:none">✉️ Enviar también una copia por correo</a>
+    <button class="btn sec" onclick="document.getElementById('dlg').close()">Cerrar</button>`;
+}
+
+/* ===================== PERFILES DINÁMICOS ===================== */
+const OPCIONES = Object.keys(TARIFAS).map(c=>`<option value="${c}">${c}</option>`).join("");
+function addPerfil(cargo,cant){
+  const cont=document.getElementById("perfiles");
+  const row=document.createElement("div");
+  row.className="perfil";
+  row.style.cssText="display:grid;grid-template-columns:1fr 78px 38px;gap:8px;align-items:end;margin-bottom:8px";
+  row.innerHTML=`
+    <div><label>Tipo de personal</label><select class="p-cargo">${OPCIONES}</select></div>
+    <div><label>Cantidad</label><input type="number" class="p-cant" value="${cant||1}" min="1" max="50"></div>
+    <button class="p-del" title="Quitar" style="height:40px;border:1px solid var(--border);background:var(--surface);border-radius:8px;cursor:pointer;color:var(--rojo);font-size:16px">✕</button>`;
+  cont.appendChild(row);
+  if(cargo) row.querySelector(".p-cargo").value=cargo;
+  row.querySelector(".p-cargo").addEventListener("change",calcular);
+  row.querySelector(".p-cant").addEventListener("input",calcular);
+  row.querySelector(".p-del").addEventListener("click",()=>{
+    if(document.querySelectorAll("#perfiles .perfil").length>1){ row.remove(); calcular(); }
+  });
+  calcular();
+}
+
+/* ===================== INIT ===================== */
+(function init(){
+  if(ORDEN){ document.getElementById("ordenNum").textContent=ORDEN; document.getElementById("ordenBanner").style.display="flex"; }
+  addPerfil("Soldador",1);                       // primer perfil por defecto
+  // Lun-Vie activos por defecto
+  document.querySelectorAll('.dia').forEach(e=>{ if(+e.dataset.d>=1 && +e.dataset.d<=5) e.classList.add('on'); });
+  document.querySelectorAll('.dia').forEach(e=> e.addEventListener('click',()=>{ e.classList.toggle('on'); calcular(); }));
+  // fechas por defecto: hoy y +4 días
+  const hoy=new Date(); const fin=new Date(); fin.setDate(fin.getDate()+4);
+  document.getElementById("fIni").value=fISO(hoy);
+  document.getElementById("fFin").value=fISO(fin);
+  // listeners
+  ["fIni","fFin","hIni","hFin","alm","jOrd","alturas","confinados","plataforma","platDias"].forEach(id=>{
+    document.getElementById(id).addEventListener("input",calcular);
+    document.getElementById(id).addEventListener("change",calcular);
+  });
+  document.getElementById("chkAlt").addEventListener("change",()=> document.getElementById("chkAlt").classList.toggle("on",document.getElementById("alturas").checked));
+  document.getElementById("chkConf").addEventListener("change",()=> document.getElementById("chkConf").classList.toggle("on",document.getElementById("confinados").checked));
+  document.getElementById("chkPlat").addEventListener("change",()=>{
+    const on=document.getElementById("plataforma").checked;
+    document.getElementById("chkPlat").classList.toggle("on",on);
+    document.getElementById("platBox").style.display=on?"block":"none";
+    calcular();
+  });
+  calcular();
+})();
+</script>
+</body>
+</html>

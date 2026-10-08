@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Solicitudes de Órdenes Abiertas — Masterband</title>
+<style>
+  :root{
+    --rojo:#C0001A; --rojo-d:#8f0013; --rojo-l:#F5E6E9;
+    --text:#1A1A1A; --dim:#666; --bg:#F5F5F3; --surface:#FFFFFF;
+    --border:#E2E2DF; --verde:#1E7A3E; --verde-l:#E7F3EC;
+    --amber:#B45309; --amber-l:#FEF3C7;
+    --font:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;padding:16px}
+  .wrap{max-width:960px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:16px}
+  .bmark{width:42px;height:42px;background:linear-gradient(135deg,#1A1A1A,#444);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .bmark b{color:#fff;font-size:20px;font-weight:800;letter-spacing:-1px}
+  .bmark b span{color:var(--rojo)}
+  .top h1{font-size:18px;font-weight:700;line-height:1.2}
+  .top p{font-size:12.5px;color:var(--dim)}
+  .top .area{margin-left:auto;background:#1A1A1A;color:#fff;font-weight:700;font-size:12px;padding:6px 14px;border-radius:999px}
+
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:8px 16px;cursor:pointer;font-weight:600;font-size:13px;color:var(--dim)}
+  .tab.on{background:var(--rojo);border-color:var(--rojo);color:#fff}
+  .tab .c{background:rgba(0,0,0,.1);border-radius:999px;padding:1px 7px;margin-left:5px;font-size:11px}
+  .tab.on .c{background:rgba(255,255,255,.25)}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px}
+  .hrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .hrow h3{font-size:15px;font-weight:700}
+  .hrow .meta{font-size:12px;color:var(--dim);margin-top:2px}
+  .badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+  .b-pend{background:var(--amber-l);color:var(--amber)}
+  .b-apr{background:var(--verde-l);color:var(--verde)}
+  .b-rec{background:#FBE4E4;color:#B91C1C}
+
+  .det{margin:12px 0;padding:12px;background:var(--bg);border-radius:10px;font-size:12.5px;white-space:pre-wrap;line-height:1.55;color:#333}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+  @media(max-width:620px){.grid3{grid-template-columns:1fr}}
+  label{display:block;font-size:11px;font-weight:600;color:var(--dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
+  input{width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-family:var(--font);font-size:14px;outline:none}
+  input:focus{border-color:var(--rojo)}
+
+  .tot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:2px solid var(--border)}
+  .tot .mo{font-size:12px;color:var(--dim)}
+  .tot b{font-size:19px;color:var(--verde)}
+  .acts{display:flex;gap:10px;margin-top:14px}
+  .btn{flex:1;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)}
+  .btn-apr{background:var(--verde);color:#fff}
+  .btn-rec{background:var(--surface);color:#B91C1C;border:1px solid #F3C0C0}
+  .btn:hover{opacity:.9}
+
+  .empty{text-align:center;color:var(--dim);padding:50px 20px}
+  .gate{max-width:360px;margin:60px auto;text-align:center}
+  .gate input{margin:14px 0;text-align:center}
+  .gate .btn{background:var(--rojo);color:#fff;width:100%}
+  .load{text-align:center;color:var(--dim);padding:40px}
+  .foot{text-align:center;color:var(--dim);font-size:11px;margin:20px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="bmark"><b>M<span>B</span></b></div>
+    <div>
+      <h1>Solicitudes de Órdenes Abiertas</h1>
+      <p>Revisión y aprobación — uso interno Masterband</p>
+    </div>
+    <div class="area">MASTERBAND</div>
+  </div>
+
+  <!-- Puerta de acceso -->
+  <div id="gate" class="gate card">
+    <h3>Acceso interno</h3>
+    <p style="color:var(--dim);font-size:13px">Ingrese la clave de gerencia</p>
+    <input type="password" id="pass" placeholder="Clave" onkeydown="if(event.key==='Enter')entrar()">
+    <button class="btn" onclick="entrar()">Entrar</button>
+    <p id="gateErr" style="color:var(--rojo);font-size:12px;margin-top:8px"></p>
+  </div>
+
+  <!-- Panel -->
+  <div id="panel" style="display:none">
+    <div class="tabs" id="tabs">
+      <div class="tab on" data-e="SOLICITADA">Pendientes <span class="c" id="cPend">0</span></div>
+      <div class="tab" data-e="APROBADA">Aprobadas <span class="c" id="cApr">0</span></div>
+      <div class="tab" data-e="RECHAZADA">Rechazadas <span class="c" id="cRec">0</span></div>
+      <div class="tab" data-e="TODAS">Todas</div>
+    </div>
+    <div id="lista"><div class="load">Cargando solicitudes…</div></div>
+    <button class="btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text);width:auto;padding:10px 18px" onclick="cargar()">🔄 Actualizar</button>
+  </div>
+
+  <p class="foot">Montajes Industriales Masterband S.A.S. — Modelo supervisado de órdenes abiertas</p>
+</div>
+
+<script>
+const BACKEND = "https://script.google.com/macros/s/AKfycbx2E77kukvlK87QSSLSZX8500hUUM17wViI0aC9qiVmaaG4-p-QVCmrfoBvLpSaWuM/exec";
+const CLAVE = "master2025";
+let TODAS = [], filtro = "SOLICITADA";
+const COP = n => "$" + Math.round(+n||0).toLocaleString("es-CO");
+
+function entrar(){
+  if(document.getElementById("pass").value === CLAVE){
+    document.getElementById("gate").style.display="none";
+    document.getElementById("panel").style.display="block";
+    cargar();
+  } else { document.getElementById("gateErr").textContent="Clave incorrecta."; }
+}
+
+async function cargar(){
+  document.getElementById("lista").innerHTML='<div class="load">Cargando solicitudes…</div>';
+  try{
+    const r = await fetch(BACKEND+"?tabla=getSolicitudes&t="+Date.now());
+    const j = await r.json();
+    TODAS = (j.ok && j.datos) ? j.datos : [];
+  }catch(e){ TODAS=[]; }
+  contar(); render();
+}
+
+function contar(){
+  const c=e=>TODAS.filter(s=>s.estado===e).length;
+  document.getElementById("cPend").textContent=c("SOLICITADA");
+  document.getElementById("cApr").textContent=c("APROBADA");
+  document.getElementById("cRec").textContent=c("RECHAZADA");
+}
+
+function render(){
+  const cont=document.getElementById("lista");
+  const items = filtro==="TODAS" ? TODAS : TODAS.filter(s=>s.estado===filtro);
+  if(!items.length){ cont.innerHTML='<div class="empty">No hay solicitudes en esta categoría.</div>'; return; }
+  cont.innerHTML = items.map(fila).join("");
+}
+
+function badge(e){
+  if(e==="APROBADA") return '<span class="badge b-apr">✓ Aprobada</span>';
+  if(e==="RECHAZADA") return '<span class="badge b-rec">✕ Rechazada</span>';
+  return '<span class="badge b-pend">⏳ Pendiente</span>';
+}
+
+function fila(s){
+  const pend = s.estado==="SOLICITADA";
+  const mo = +s.valorMO||0;
+  let extras = pend ? `
+    <div class="grid3">
+      <div><label>Material ($)</label><input type="number" id="mat_${s.id}" value="${s.material||0}" min="0"></div>
+      <div><label>Alquiler equipos ($)</label><input type="number" id="alq_${s.id}" value="${s.alquiler||0}" min="0"></div>
+      <div><label>Transporte ($)</label><input type="number" id="tra_${s.id}" value="${s.transporte||0}" min="0"></div>
+    </div>
+    <div class="tot">
+      <span class="mo">Mano de obra estimada: <b style="color:var(--text)">${COP(mo)}</b> + extras</span>
+      <div style="text-align:right"><div class="mo">Valor a aprobar</div><b id="vap_${s.id}">${COP(mo)}</b></div>
+    </div>
+    <div class="acts">
+      <button class="btn btn-apr" onclick="decidir('${s.id}','APROBADA')">✓ Aprobar y descontar</button>
+      <button class="btn btn-rec" onclick="decidir('${s.id}','RECHAZADA')">✕ Rechazar</button>
+    </div>` : `
+    <div class="tot">
+      <span class="mo">MO ${COP(mo)} · Material ${COP(s.material)} · Equipos ${COP(s.alquiler)} · Transporte ${COP(s.transporte)}</span>
+      <div style="text-align:right"><div class="mo">Valor ${s.estado==="APROBADA"?"aprobado":"final"}</div><b style="color:${s.estado==="APROBADA"?"var(--verde)":"var(--dim)"}">${COP(s.valorAprobado||mo)}</b></div>
+    </div>
+    ${s.motivo?`<div class="det" style="background:#FBE4E4;color:#991B1B"><b>Motivo:</b> ${s.motivo}</div>`:""}
+    ${s.revisadoPor?`<p class="mo" style="margin-top:8px;font-size:11px">Revisado por ${s.revisadoPor} · ${s.fechaDecision||""}</p>`:""}`;
+
+  return `<div class="card" id="card_${s.id}">
+    <div class="hrow">
+      <div>
+        <h3>Orden N° ${s.orden||"—"} · ${s.empresa||"Cliente"}</h3>
+        <div class="meta">${s.contacto||""} · ${s.correo||""} · ${s.fecha||""}</div>
+      </div>
+      ${badge(s.estado)}
+    </div>
+    <div class="det">${(s.resumen||"").replace(/</g,"&lt;")}</div>
+    ${extras}
+  </div>`;
+}
+
+/* recalcular valor a aprobar en vivo */
+document.addEventListener("input", e=>{
+  const m = e.target.id.match(/^(mat|alq|tra)_(.+)$/);
+  if(!m) return;
+  const id=m[2];
+  const s=TODAS.find(x=>x.id==id); if(!s) return;
+  const mo=+s.valorMO||0;
+  const v = mo + (+val("mat_"+id)) + (+val("alq_"+id)) + (+val("tra_"+id));
+  const el=document.getElementById("vap_"+id); if(el) el.textContent=COP(v);
+});
+const val = id => { const e=document.getElementById(id); return e?(+e.value||0):0; };
+
+async function decidir(id, estado){
+  const s=TODAS.find(x=>x.id==id); if(!s) return;
+  let motivo="";
+  if(estado==="RECHAZADA"){ motivo=prompt("Motivo del rechazo:")||""; if(!motivo) return; }
+  const material=val("mat_"+id), alquiler=val("alq_"+id), transporte=val("tra_"+id);
+  const valorAprobado = (+s.valorMO||0)+material+alquiler+transporte;
+  const revisadoPor = prompt("Su nombre (quien revisa):")||"Masterband";
+  if(estado==="APROBADA" && !confirm(`Aprobar y descontar ${COP(valorAprobado)} de la orden N° ${s.orden}?`)) return;
+
+  const payload = JSON.stringify({tabla:"decidirSolicitud", id, estado, material, alquiler, transporte, valorAprobado, motivo, revisadoPor});
+  const card=document.getElementById("card_"+id);
+  if(card) card.style.opacity=".5";
+  try{
+    await fetch(BACKEND,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:payload});
+  }catch(e){}
+  setTimeout(cargar, 1600);
+}
+
+document.getElementById("tabs").addEventListener("click", e=>{
+  const t=e.target.closest(".tab"); if(!t) return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  t.classList.add("on"); filtro=t.dataset.e; render();
+});
+</script>
+</body>
+</html>

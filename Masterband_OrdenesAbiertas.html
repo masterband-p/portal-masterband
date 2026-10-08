@@ -5,156 +5,165 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<title>Masterband · Órdenes Abiertas</title>
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="favicon-32.png">
+<title>Órdenes Abiertas — Masterband</title>
 <style>
-  :root{--bg:#F5F5F3;--surface:#FFFFFF;--s2:#EFEFED;--border:#E0E0E0;--text:#1A1A1A;--dim:#4A4A4A;--muted:#888;--accent:#C0001A;--ah:#8A0012;--green:#1E7A3E;--gdim:#E8F5EE;--amber:#B45309;--adim:#FEF3C7;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+  :root{
+    --rojo:#C0001A; --rojo-d:#8f0013; --rojo-l:#F5E6E9;
+    --text:#1A1A1A; --dim:#666; --bg:#F5F5F3; --surface:#FFFFFF;
+    --border:#E2E2DF; --verde:#1E7A3E; --verde-l:#E7F3EC;
+    --amber:#B45309; --amber-l:#FEF3C7;
+    --font:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
-  .topbar{background:#fff;border-bottom:1px solid var(--border);height:60px;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
-  .topbar img{height:38px}
-  .btn-back{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--dim);cursor:pointer;text-decoration:none}
-  .wrap{max-width:980px;margin:0 auto;padding:24px 20px 60px}
-  h1{font-size:24px;font-weight:800;margin-bottom:4px}
-  .sub{font-size:14px;color:var(--muted);margin-bottom:20px}
-  .areas{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
-  .abtn{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:700;color:var(--dim);cursor:pointer}
-  .abtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .orden{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:18px;overflow:hidden}
-  .orden-top{padding:18px 22px;border-bottom:1px solid var(--border)}
-  .orden-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
-  .orden-ctz{font-size:12px;font-weight:800;color:var(--accent);font-family:monospace}
-  .orden-oc{font-size:12px;color:var(--muted);margin-top:2px}
-  .corte-badge{background:var(--s2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;color:var(--dim)}
-  .saldo-box{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-top:14px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
-  .saldo-cell{padding:12px 14px;text-align:center;border-right:1px solid var(--border)}
-  .saldo-cell:last-child{border-right:none}
-  .saldo-cell .lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
-  .saldo-cell .val{font-size:17px;font-weight:800}
-  .saldo-cell .val.monto{color:var(--text)}.saldo-cell .val.usado{color:var(--amber)}.saldo-cell .val.saldo{color:var(--green)}
-  .saldo-cell.agotado .val.saldo{color:var(--accent)}
-  .acum{font-size:12px;color:var(--muted);margin-top:8px}
-  .barra{height:10px;background:var(--s2);border-radius:5px;overflow:hidden;margin-top:12px}
-  .barra-fill{height:100%;border-radius:5px}
-  .pct-txt{font-size:12px;color:var(--muted);margin-top:6px;text-align:right}
-  .alerta{border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px;font-weight:600}
-  .alerta.amber{background:var(--adim);border:1px solid #F0C040;color:#7A5C00}
-  .alerta.roja{background:#FDECEA;border:1px solid #E57373;color:var(--accent)}
-  .hijas-toggle{padding:12px 22px;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer;user-select:none}
-  .hijas-list{display:none;padding:0 22px 12px}
-  .hijas-list.on{display:block}
-  .hija{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--s2);font-size:13px}
-  .hija:last-child{border-bottom:none}
-  .hija .hi{flex:1}
-  .hija .h-ctz{font-family:monospace;color:var(--muted);font-size:11px}
-  .hija .h-obs{font-size:11px;color:var(--muted)}
-  .hija .h-costo{font-weight:700;white-space:nowrap}
-  .loading{text-align:center;padding:50px;color:var(--muted)}
-  .overlay{position:fixed;inset:0;background:rgba(20,22,28,.6);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
-  .overlay.off{display:none}
-  .modal{background:var(--surface);max-width:380px;width:100%;border-top:3px solid var(--accent);padding:30px;text-align:center}
-  .modal img{height:44px;margin-bottom:14px}.modal h3{font-size:19px;font-weight:800;margin-bottom:14px}
-  .modal input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:14px;margin-bottom:12px;text-align:center}
-  .modal .mbtn{width:100%;background:var(--accent);border:none;border-radius:8px;padding:12px;color:#fff;font-size:14px;font-weight:800;cursor:pointer}
-  .perr{font-size:12px;color:var(--accent);font-weight:700;min-height:16px;margin-bottom:6px}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;padding:16px}
+  .wrap{max-width:1000px;margin:0 auto}
+  .top{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:16px}
+  .bmark{width:42px;height:42px;background:linear-gradient(135deg,#1A1A1A,#444);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .bmark b{color:#fff;font-size:20px;font-weight:800;letter-spacing:-1px}
+  .bmark b span{color:var(--rojo)}
+  .top h1{font-size:18px;font-weight:700;line-height:1.2}
+  .top p{font-size:12.5px;color:var(--dim)}
+
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .tab{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;color:var(--dim)}
+  .tab.on{background:var(--rojo);border-color:var(--rojo);color:#fff}
+
+  .sumbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .sb{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .sb span{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.3px}
+  .sb b{display:block;font-size:20px;font-variant-numeric:tabular-nums;margin-top:2px}
+
+  .orden{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px}
+  .ohead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .ohead h3{font-size:15px;font-weight:700}
+  .ohead .meta{font-size:12px;color:var(--dim);margin-top:3px}
+  .saldo{text-align:right}
+  .saldo span{font-size:11px;color:var(--dim);text-transform:uppercase}
+  .saldo b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+  .saldo b.ok{color:var(--verde)} .saldo b.low{color:var(--amber)} .saldo b.neg{color:var(--rojo)}
+
+  .barra{height:7px;border-radius:999px;background:#eee;margin:12px 0 6px;overflow:hidden}
+  .barra > i{display:block;height:100%;background:var(--rojo)}
+  .mini{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim)}
+
+  .hijas{margin-top:12px;border-top:1px dashed var(--border);padding-top:10px}
+  .hijas table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .hijas td{padding:6px 4px;border-bottom:1px solid #f0f0ee}
+  .hijas td.r{text-align:right;font-variant-numeric:tabular-nums}
+  .bcli{display:inline-block;font-size:10px;font-weight:700;background:var(--verde-l);color:var(--verde);padding:1px 7px;border-radius:5px;margin-left:6px}
+
+  .acc{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .btn{border:none;border-radius:9px;padding:11px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+  .btn-calc{background:var(--rojo);color:#fff}
+  .btn-calc:hover{background:var(--rojo-d)}
+  .toggle{background:var(--surface);color:var(--dim);border:1px solid var(--border)}
+
+  .load,.empty{text-align:center;color:var(--dim);padding:40px 20px}
+  .foot{text-align:center;color:var(--dim);font-size:11px;margin:20px 0}
 </style>
 </head>
 <body>
-<div class="topbar"><img src="logo-masterband.png" alt="Masterband S.A.S."><a class="btn-back" href="index.html">← Portal</a></div>
+<div class="wrap">
 
-<div class="overlay" id="login">
-  <div class="modal">
-    <img src="logo-masterband.png" alt="Masterband"><h3>Órdenes Abiertas</h3>
-    <div class="perr" id="perr"></div>
-    <input type="password" id="pass" placeholder="Contraseña" autocapitalize="none" onkeydown="if(event.key==='Enter')entrar()">
-    <button class="mbtn" onclick="entrar()">Entrar</button>
+  <div class="top">
+    <div class="bmark"><b>M<span>B</span></b></div>
+    <div>
+      <h1>Órdenes Abiertas</h1>
+      <p>Saldo disponible por orden · estime y solicite nuevos trabajos</p>
+    </div>
   </div>
-</div>
 
-<div class="wrap" id="app" style="display:none">
-  <h1>Órdenes abiertas · Saldos por área</h1>
-  <div class="sub">Cotizaciones madre con sus cortes y saldo disponible</div>
-  <div class="areas" id="areas"></div>
-  <div id="contenido"><div class="loading">Selecciona un área</div></div>
+  <div class="tabs" id="tabs">
+    <div class="tab on" data-a="servicio">Servicio</div>
+    <div class="tab" data-a="empaque">Empaque</div>
+    <div class="tab" data-a="proceso">Proceso</div>
+    <div class="tab" data-a="ingenieria">Ingeniería</div>
+  </div>
+
+  <div class="sumbar" id="sumbar"></div>
+  <div id="lista"><div class="load">Cargando órdenes…</div></div>
+
+  <p class="foot">Montajes Industriales Masterband S.A.S. · Los saldos se actualizan al aprobarse cada solicitud.</p>
 </div>
 
 <script>
-const APPS_URL = 'https://script.google.com/macros/s/AKfycbw8rE7Wemj-RU-jfu9BqVb_i0FyeMvfVZtDtJHdyEwyz-JsPWNbXatPf13AHG_vG7OS/exec';
-const AREAS = [{k:'servicio',n:'Servicio'},{k:'empaque',n:'Empaque'},{k:'proceso',n:'Proceso'},{k:'ingenieria',n:'Ingeniería'}];
-let areaActual = 'servicio';
+const BACKEND = "https://script.google.com/macros/s/AKfycbx2E77kukvlK87QSSLSZX8500hUUM17wViI0aC9qiVmaaG4-p-QVCmrfoBvLpSaWuM/exec";
+const CALC = "Masterband_CotizadorServicio.html";   // misma carpeta
+let AREA = "servicio";
+const COP = n => "$" + Math.round(+n||0).toLocaleString("es-CO");
 
-function entrar(){
-  const p = document.getElementById('pass').value.trim().toLowerCase();
-  if(p !== 'master2025'){ document.getElementById('perr').textContent='Contraseña incorrecta'; return; }
-  document.getElementById('login').classList.add('off');
-  document.getElementById('app').style.display='block';
-  document.getElementById('areas').innerHTML = AREAS.map(a=>'<button class="abtn'+(a.k===areaActual?' on':'')+'" data-k="'+a.k+'" onclick="setArea(\''+a.k+'\')">'+a.n+'</button>').join('');
-  cargar();
-}
-function fmt(n){ return '$' + Math.round(n||0).toLocaleString('es-CO'); }
-function setArea(k){
-  areaActual = k;
-  document.querySelectorAll('.abtn').forEach(b=>b.classList.toggle('on', b.dataset.k===k));
-  cargar();
-}
 async function cargar(){
-  document.getElementById('contenido').innerHTML = '<div class="loading">Cargando saldos...</div>';
+  document.getElementById("lista").innerHTML='<div class="load">Cargando órdenes…</div>';
+  document.getElementById("sumbar").innerHTML="";
+  let cortes=[];
   try{
-    const res = await fetch(APPS_URL + '?tabla=ordenes_area&area=' + areaActual);
-    const d = await res.json();
-    if(!d.ok) throw new Error(d.error||'Error');
-    render(d);
-  }catch(e){
-    document.getElementById('contenido').innerHTML = '<div class="alerta roja">No se pudo cargar: '+e.message+'</div>';
-  }
+    const r = await fetch(BACKEND+"?tabla=ordenes_area&area="+AREA+"&t="+Date.now());
+    const j = await r.json();
+    if(j.ok) cortes = j.cortes||[];
+    else { document.getElementById("lista").innerHTML='<div class="empty">'+(j.error||j.aviso||"No se pudo cargar")+'</div>'; return; }
+  }catch(e){ document.getElementById("lista").innerHTML='<div class="empty">Error de conexión. Intente de nuevo.</div>'; return; }
+
+  if(!cortes.length){ document.getElementById("lista").innerHTML='<div class="empty">No hay órdenes abiertas en esta área.</div>'; return; }
+  render(cortes);
 }
-function render(d){
-  if(d.aviso){ document.getElementById('contenido').innerHTML = '<div class="alerta amber">'+d.aviso+'</div>'; return; }
-  const cortes = d.cortes || [];
-  if(!cortes.length){ document.getElementById('contenido').innerHTML = '<div class="loading">No hay órdenes abiertas en esta área.</div>'; return; }
-  document.getElementById('contenido').innerHTML = cortes.map((c,idx)=>{
-    const usado = c.usado || 0;
-    const base = c.acumulado || c.monto || 0;
-    const pct = base>0 ? Math.min(100, Math.round(usado/base*100)) : 0;
-    const color = pct>=90?'#C0001A':pct>=70?'#F59E0B':'#1E7A3E';
-    const saldo = c.saldo!=null ? c.saldo : (base - usado);
-    const agotado = saldo<=0;
-    const casi = pct>=85 && !agotado;
-    let alerta='';
-    if(agotado) alerta='<div class="alerta roja">⚠ Orden agotada — se necesita un nuevo corte / cotización madre</div>';
-    else if(casi) alerta='<div class="alerta amber">⚠ Queda poco saldo — considera abrir el siguiente corte pronto</div>';
-    const esCorte = idx>0;
-    return '<div class="orden">'+
-      '<div class="orden-top">'+
-        '<div class="orden-head">'+
-          '<div><div class="orden-ctz">CTZ'+c.ctz+'</div>'+
-          '<div class="orden-oc">'+(c.observacion||'')+'</div>'+
-          '<div class="orden-oc">Solicitó: '+(c.solicito||'—')+(c.fecha?' · '+c.fecha:'')+'</div></div>'+
-          (esCorte?'<span class="corte-badge">Corte '+idx+'</span>':'<span class="corte-badge">Orden inicial</span>')+
-        '</div>'+
-        (c.acumulado?'<div class="acum">Incluye saldo acumulado del corte anterior → base: '+fmt(c.acumulado)+'</div>':'')+
-        '<div class="saldo-box">'+
-          '<div class="saldo-cell"><div class="lbl">'+(c.acumulado?'Monto + acumulado':'Monto máximo')+'</div><div class="val monto">'+fmt(base)+'</div></div>'+
-          '<div class="saldo-cell"><div class="lbl">Consumido</div><div class="val usado">'+fmt(usado)+'</div></div>'+
-          '<div class="saldo-cell '+(agotado?'agotado':'')+'"><div class="lbl">Saldo disponible</div><div class="val saldo">'+fmt(saldo)+'</div></div>'+
-        '</div>'+
-        '<div class="barra"><div class="barra-fill" style="width:'+pct+'%;background:'+color+'"></div></div>'+
-        '<div class="pct-txt">'+pct+'% consumido · '+c.hijas.length+' trabajo'+(c.hijas.length!==1?'s':'')+'</div>'+
-        alerta+
-      '</div>'+
-      '<div class="hijas-toggle" onclick="toggleH('+idx+')">▸ Ver los '+c.hijas.length+' trabajos</div>'+
-      '<div class="hijas-list" id="h-'+idx+'">'+
-        c.hijas.map(h=>'<div class="hija"><span class="hi"><span class="h-ctz">CTZ'+h.ctz+'</span> <span class="h-obs">'+(h.observacion||'')+'</span></span><span class="h-costo">'+fmt(h.costo)+'</span></div>').join('')+
-      '</div>'+
-    '</div>';
-  }).join('');
+
+function render(cortes){
+  // Resumen
+  let saldoTotal=0, usadoTotal=0, montoTotal=0;
+  cortes.forEach(c=>{ saldoTotal += (c.saldo!=null?c.saldo:0); usadoTotal += (c.usado||0); montoTotal += (c.monto||0); });
+  document.getElementById("sumbar").innerHTML = `
+    <div class="sb"><span>Órdenes</span><b>${cortes.length}</b></div>
+    <div class="sb"><span>Contratado</span><b>${COP(montoTotal)}</b></div>
+    <div class="sb"><span>Consumido</span><b style="color:var(--amber)">${COP(usadoTotal)}</b></div>
+    <div class="sb"><span>Saldo disponible</span><b style="color:var(--verde)">${COP(saldoTotal)}</b></div>`;
+
+  document.getElementById("lista").innerHTML = cortes.map((c,i)=>orden(c,i)).join("");
 }
-function toggleH(idx){
-  const el=document.getElementById('h-'+idx);
-  el.classList.toggle('on');
-  el.previousElementSibling.textContent = (el.classList.contains('on')?'▾ Ocultar trabajos':'▸ Ver los '+el.children.length+' trabajos');
+
+function orden(c,i){
+  const saldo = c.saldo!=null ? c.saldo : (c.monto - (c.usado||0));
+  const monto = c.monto||0;
+  const pct = monto>0 ? Math.min(100, Math.round((c.usado||0)/monto*100)) : 0;
+  let cls = "ok"; if(saldo<=0) cls="neg"; else if(monto>0 && saldo/monto<0.15) cls="low";
+
+  const hijas = (c.hijas||[]).map(h=>`
+    <tr><td>${(h.observacion||h.ctz||"").toString().replace(/</g,"&lt;")}${h.origen==='cliente'?'<span class="bcli">Cliente</span>':''}</td>
+        <td class="r">${COP(h.costo)}</td></tr>`).join("");
+
+  const btnCalc = AREA==="servicio"
+    ? `<a class="btn btn-calc" href="${CALC}?orden=${encodeURIComponent(c.ctz)}" target="_blank">🧮 Calcular y añadir servicio</a>`
+    : `<span class="btn toggle" style="cursor:default">🧮 Calculadora disponible próximamente</span>`;
+
+  return `<div class="orden">
+    <div class="ohead">
+      <div>
+        <h3>Orden N° ${c.ctz}</h3>
+        <div class="meta">${(c.observacion||"").toString().replace(/</g,"&lt;")||"—"}${c.solicito?(" · "+c.solicito):""}${c.fecha?(" · "+c.fecha):""}</div>
+      </div>
+      <div class="saldo"><span>Saldo</span><b class="${cls}">${COP(saldo)}</b></div>
+    </div>
+    <div class="barra"><i style="width:${pct}%"></i></div>
+    <div class="mini"><span>Contratado ${COP(monto)}</span><span>Consumido ${COP(c.usado||0)} (${pct}%)</span></div>
+    ${hijas ? `<div class="hijas" id="h_${i}" style="display:none"><table>${hijas}</table></div>
+      <div class="acc"><button class="btn toggle" onclick="tg(${i},this)">Ver ${(c.hijas||[]).length} consumo(s)</button>${btnCalc}</div>`
+      : `<div class="acc">${btnCalc}</div>`}
+    ${c.acumulado!=null?`<div class="mini" style="margin-top:8px"><span>Saldo acumulado</span><span>${COP(c.acumulado)}</span></div>`:""}
+  </div>`;
 }
+
+function tg(i,btn){
+  const el=document.getElementById("h_"+i);
+  const open = el.style.display==="none";
+  el.style.display = open?"block":"none";
+  btn.textContent = open ? "Ocultar consumos" : "Ver consumos";
+}
+
+document.getElementById("tabs").addEventListener("click",e=>{
+  const t=e.target.closest(".tab"); if(!t) return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  t.classList.add("on"); AREA=t.dataset.a; cargar();
+});
+cargar();
 </script>
 </body>
 </html>
