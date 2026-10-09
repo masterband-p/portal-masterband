@@ -87,23 +87,50 @@
 </div>
 
 <script>
-const BACKEND = "https://script.google.com/macros/s/AKfycbx2E77kukvlK87QSSLSZX8500hUUM17wViI0aC9qiVmaaG4-p-QVCmrfoBvLpSaWuM/exec";
+const BACKEND = "https://script.google.com/macros/s/AKfycbw8rE7Wemj-RU-jfu9BqVb_i0FyeMvfVZtDtJHdyEwyz-JsPWNbXatPf13AHG_vG7OS/exec";
 const CALC = "Masterband_CotizadorServicio.html";   // misma carpeta
 let AREA = "servicio";
 const COP = n => "$" + Math.round(+n||0).toLocaleString("es-CO");
 
+function diag(titulo, detalle){
+  document.getElementById("sumbar").innerHTML="";
+  document.getElementById("lista").innerHTML =
+    '<div class="orden"><h3 style="color:var(--rojo)">'+titulo+'</h3>'+
+    '<p style="color:var(--dim);font-size:13px;margin-top:8px;line-height:1.6">'+detalle+'</p>'+
+    '<div class="acc"><button class="btn btn-calc" onclick="cargar()">🔄 Reintentar</button></div></div>';
+}
+
 async function cargar(){
   document.getElementById("lista").innerHTML='<div class="load">Cargando órdenes…</div>';
   document.getElementById("sumbar").innerHTML="";
-  let cortes=[];
+  let j;
   try{
     const r = await fetch(BACKEND+"?tabla=ordenes_area&area="+AREA+"&t="+Date.now());
-    const j = await r.json();
-    if(j.ok) cortes = j.cortes||[];
-    else { document.getElementById("lista").innerHTML='<div class="empty">'+(j.error||j.aviso||"No se pudo cargar")+'</div>'; return; }
-  }catch(e){ document.getElementById("lista").innerHTML='<div class="empty">Error de conexión. Intente de nuevo.</div>'; return; }
+    j = await r.json();
+  }catch(e){
+    diag("No se pudo conectar con el servidor",
+      "Verifica tu conexión a internet. Importante: abre esta página desde el <b>portal en GitHub</b> "+
+      "(https://masterband-p.github.io/...), no como archivo local — al abrirla con doble clic el navegador "+
+      "puede bloquear la lectura de datos del servidor.");
+    return;
+  }
+  // El backend respondió pero NO con la ruta de órdenes (devolvió otra cosa):
+  if(Array.isArray(j) || typeof j.ok === "undefined"){
+    diag("El backend no tiene publicada la ruta de órdenes",
+      "El servidor respondió, pero sin los datos de órdenes abiertas. Esto pasa cuando el código nuevo está "+
+      "en el editor de Apps Script pero no se ha <b>publicado como Nueva versión</b>.<br><br>"+
+      "Solución: Apps Script → <b>Implementar → Gestionar implementaciones → ✏️ → Versión: Nueva versión → Implementar</b>. "+
+      "Luego verifica abriendo <code>…/exec?tabla=version</code> (debe decir <b>v47-ordenes-supervisadas</b>).");
+    return;
+  }
+  if(!j.ok){ diag("No se pudo cargar", (j.error||j.aviso||"Respuesta inesperada del servidor.")); return; }
 
-  if(!cortes.length){ document.getElementById("lista").innerHTML='<div class="empty">No hay órdenes abiertas en esta área.</div>'; return; }
+  const cortes = j.cortes||[];
+  if(!cortes.length){
+    document.getElementById("lista").innerHTML='<div class="empty">No hay órdenes abiertas en esta área'+
+      (j.aviso?('<br><span style="font-size:12px">'+j.aviso+'</span>'):'')+'.</div>';
+    return;
+  }
   render(cortes);
 }
 

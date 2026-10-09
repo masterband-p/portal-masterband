@@ -3,15 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-
 <title>Masterband · Programación de Personal</title>
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="favicon-32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-
 <style>
   :root {
     --bg:#F5F5F3; --surface:#FFFFFF; --s2:#EFEFED; --border:#E0E0E0;
@@ -29,7 +21,7 @@
   /* TOPBAR */
   .topbar{background:var(--surface);border-bottom:1px solid var(--border);height:58px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--sh)}
   .brand-wrap{display:flex;align-items:center;gap:10px}
-  .brand-icon{width:32px;height:32px;background:var(--green);border-radius:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
+  .brand-icon{width:32px;height:32px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
   .brand-text{font-size:15px;font-weight:700;color:var(--text)}.brand-text span{color:var(--accent)}
   .brand-div{width:1px;height:22px;background:var(--border);margin:0 10px}
   .brand-mod{font-size:13px;color:var(--muted)}
@@ -138,14 +130,6 @@
   .mi-chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;color:var(--dim);display:inline-block;margin:2px}
   .mi-chip.yo{background:var(--aglow);border-color:var(--accent);color:var(--accent)}
   .mi-chip.siso{background:#E8F5EE;border-color:#A7D7BC;color:var(--green)}
-  .mi-chip.falta{background:#FDECEA;border-color:#E57373;color:#C0001A;text-decoration:line-through}
-  .chip.falta{background:#FDECEA !important;border-color:#E57373 !important;color:#C0001A !important;text-decoration:line-through}
-  .chip.clickable{cursor:pointer}
-  .chip.clickable:hover{filter:brightness(0.95)}
-  .badge-asig{margin-left:6px;background:#FDECEA;border:1px solid #E57373;color:#C0001A;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px}
-  .personal-tools{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--s2)}
-  .btn-sel-all{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;transition:all .15s}
-  .btn-sel-all:hover{border-color:var(--accent);color:var(--accent)}
 
   /* MODAL CREAR/EDITAR FRENTE */
   .form-field{margin-bottom:14px}
@@ -189,7 +173,8 @@
 <div class="topbar">
   <div style="display:flex;align-items:center;gap:12px">
     <div class="brand-wrap">
-      <img src="logo-masterband.png" alt="Masterband S.A.S." style="height:38px;width:auto">
+      <div class="brand-icon">📅</div>
+      <div class="brand-text">Master<span>band</span></div>
     </div>
     <div class="brand-div"></div>
     <div class="brand-mod">Programación de Personal</div>
@@ -240,11 +225,10 @@
 <!-- MODAL CONTRASEÑA INGENIERO -->
 <div class="overlay" id="mod-pass">
   <div class="modal" style="max-width:360px;text-align:center">
-    <div style="margin-bottom:14px"><img src="logo-masterband.png" alt="Masterband S.A.S." style="height:44px;width:auto"></div>
-    <div style="margin-bottom:12px"><svg viewBox="0 0 24 24" fill="none" stroke="#C0001A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+    <div style="font-size:32px;margin-bottom:12px">🔧</div>
     <div class="modal-title" style="margin-bottom:6px">Acceso Ingeniero</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Ingresa la contraseña para programar</div>
-    <input class="finput" type="password" id="pass-input" placeholder="••••••••" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" onkeydown="if(event.key==='Enter')verificarPass()" style="text-align:center;font-size:16px;letter-spacing:4px;margin-bottom:8px">
+    <input class="finput" type="password" id="pass-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')verificarPass()" style="text-align:center;font-size:16px;letter-spacing:4px;margin-bottom:8px">
     <div style="color:var(--accent);font-size:12px;min-height:18px;margin-bottom:16px" id="pass-err"></div>
     <div class="mbtns" style="justify-content:center">
       <button class="mbtn-p" onclick="verificarPass()">Entrar</button>
@@ -286,20 +270,6 @@
         </select>
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-field">
-        <label class="flabel">Responsable PepsiCo de la actividad</label>
-        <input class="finput" id="f-responsable" list="lista-pep" placeholder="Buscar o escribir el nombre...">
-        <datalist id="lista-pep"></datalist>
-      </div>
-      <div class="form-field">
-        <label class="flabel">Jornada</label>
-        <select class="fsel" id="f-jornada">
-          <option value="">Jornada normal</option>
-          <option value="terminar">Hasta acabar actividades</option>
-        </select>
-      </div>
-    </div>
     <div class="form-field">
       <label class="flabel">Materiales / Notas</label>
       <textarea class="fta" id="f-materiales" placeholder="Ej. Bala de argón, manlift, EPP especial..."></textarea>
@@ -308,10 +278,6 @@
       <label class="flabel">Personal asignado</label>
       <div class="personal-selector">
         <input class="personal-search" id="f-personal-search" placeholder="Buscar empleado..." oninput="filtrarPersonal(this.value)">
-        <div class="personal-tools">
-          <button class="btn-sel-all" onclick="seleccionarTodos()">✓ Seleccionar todos</button>
-          <button class="btn-sel-all" onclick="quitarTodos()">✕ Quitar todos</button>
-        </div>
         <div class="personal-list" id="f-personal-list"></div>
       </div>
       <div class="sel-count" id="sel-count">0 personas seleccionadas</div>
@@ -319,7 +285,7 @@
     <div class="mbtns">
       <button class="mbtn-p" onclick="guardarFrente()">Guardar frente</button>
       <button class="mbtn-s" onclick="closeModal('mod-frente')">Cancelar</button>
-      <button class="mbtn-del" id="btn-del-frente" onclick="eliminarFrente()" style="display:none">Eliminar frente</button>
+      <button class="mbtn-del" id="btn-del-frente" onclick="eliminarFrente()" style="display:none">🗑 Eliminar</button>
     </div>
   </div>
 </div>
@@ -392,7 +358,6 @@ async function cargarEmpleados() {
 }
 
 const PASS_ING = 'ing2025';
-const PASS_SUP = 'sup2025'; // El supervisor también programa y modifica frentes
 let ingAcceso = false;
 
 function accederProgramar(){
@@ -408,8 +373,8 @@ function accederProgramar(){
 }
 
 function verificarPass(){
-  const p = document.getElementById('pass-input').value.trim().toLowerCase();
-  if(p === PASS_ING || p === PASS_SUP){
+  const p = document.getElementById('pass-input').value;
+  if(p === PASS_ING){
     ingAcceso = true;
     closeModal('mod-pass');
     document.querySelectorAll('.tnb')[0].classList.add('on');
@@ -441,10 +406,7 @@ async function cargarDia(fecha) {
       hora:       r.hora,
       siso:       r.siso,
       materiales: r.materiales,
-      responsable: r.responsable || '',
-      jornada:    r.jornada || '',
-      personal:   r.personal ? r.personal.split(',').map(n=>n.trim()).filter(Boolean) : [],
-      inasistencias: r.inasistencias ? r.inasistencias.split(',').map(n=>n.trim()).filter(Boolean) : []
+      personal:   r.personal ? r.personal.split(',').map(n=>n.trim()).filter(Boolean) : []
     }));
     saveCache();
     return true;
@@ -470,10 +432,7 @@ async function cargarTodaProg() {
         hora:       r.hora,
         siso:       r.siso,
         materiales: r.materiales,
-        responsable: r.responsable || '',
-        jornada:    r.jornada || '',
-        personal:   r.personal ? r.personal.split(',').map(n=>n.trim()).filter(Boolean) : [],
-        inasistencias: r.inasistencias ? r.inasistencias.split(',').map(n=>n.trim()).filter(Boolean) : []
+        personal:   r.personal ? r.personal.split(',').map(n=>n.trim()).filter(Boolean) : []
       });
     });
     saveCache();
@@ -500,35 +459,8 @@ async function syncGuardar(fecha, frente) {
       hora:       frente.hora,
       siso,
       materiales: frente.materiales||'',
-      responsable: frente.responsable||'',
-      jornada:    frente.jornada||'',
       personal,
-      inasistencias: (frente.inasistencias||[]).join(', '),
       rowIdx:     frente.rowIdx||''
-    });
-    const res  = await fetch(APPS_URL + '?' + params.toString());
-    const data = await res.json();
-    return data.ok;
-  } catch(e) { return false; }
-}
-
-// Guarda un frente que ya viene del Sheet (siso y personal como NOMBRES),
-// sin pasar por el mapeo de IDs — usado por el toggle de asistencia
-async function syncGuardarDirecto(fecha, f) {
-  try {
-    const params = new URLSearchParams({
-      tabla:      'guardar_frente',
-      fecha,
-      nombre:     f.nombre,
-      tipo:       f.tipo,
-      hora:       f.hora,
-      siso:       f.siso||'',
-      materiales: f.materiales||'',
-      responsable: f.responsable||'',
-      jornada:    f.jornada||'',
-      personal:   (f.personal||[]).join(', '),
-      inasistencias: (f.inasistencias||[]).join(', '),
-      rowIdx:     f.rowIdx||''
     });
     const res  = await fetch(APPS_URL + '?' + params.toString());
     const data = await res.json();
@@ -558,16 +490,7 @@ function fmtFecha(str){
   const fecha = new Date(y,m-1,d);
   return `${dias[fecha.getDay()]}, ${d} de ${meses[m-1]} de ${y}`;
 }
-function fmtHora(t){
-  if(!t) return '';
-  t = String(t).trim();
-  // Si viene como Date serializado ("... 06:00:00 GMT..."), extraer HH:MM
-  const m1 = t.match(/(\d{1,2}):(\d{2})/);
-  if(!m1) return t;
-  const hr = parseInt(m1[1]), min = m1[2];
-  if(isNaN(hr)) return t;
-  return `${hr>12?hr-12:hr===0?12:hr}:${min} ${hr>=12?'p.m.':'a.m.'}`;
-}
+function fmtHora(t){ if(!t) return ''; const [h,m]=t.split(':'); const hr=parseInt(h); return `${hr>12?hr-12:hr===0?12:hr}:${m} ${hr>=12?'p.m.':'a.m.'}`; }
 function initials(n){ const p=n.trim().split(' '); return (p[0]?.[0]||'')+(p[1]?.[0]||''); }
 function tipoColor(t){ return t==='mtto'?'azul':t==='proyecto'?'morado':'gris'; }
 function tipoLabel(t){ return t==='mtto'?'Mantenimiento':t==='proyecto'?'Proyecto':'Interno'; }
@@ -594,64 +517,39 @@ async function renderDia(){
   const frentes = prog[fechaSel] || [];
   const list = document.getElementById('frentes-list');
   if(!frentes.length){
-    list.innerHTML=`<div class="empty-dia"><div class="empty-dia-icon" style="font-size:14px;letter-spacing:.15em;color:#888;font-weight:700">SIN PROGRAMACIÓN</div><div class="empty-dia-text">Sin frentes programados</div><div style="font-size:13px;color:var(--muted)">Agrega el primer frente del día</div></div>`;
+    list.innerHTML=`<div class="empty-dia"><div class="empty-dia-icon">📅</div><div class="empty-dia-text">Sin frentes programados</div><div style="font-size:13px;color:var(--muted)">Agrega el primer frente del día</div></div>`;
     return;
   }
   list.innerHTML = frentes.map((f,i)=>{
     const sisoNombre = f.siso || '';
     const personal   = Array.isArray(f.personal) ? f.personal : [];
-    const faltas     = Array.isArray(f.inasistencias) ? f.inasistencias : [];
-    const esFalta    = n => faltas.some(x => x.trim().toUpperCase() === n.trim().toUpperCase());
     return `
     <div class="frente-card">
       <div class="frente-header ${f.tipo==='mtto'?'mtto':f.tipo==='proyecto'?'proyecto':'interno'}">
         <div>
           <div class="frente-titulo">${f.nombre}</div>
-          <div class="frente-hora">⏰ ${fmtHora(f.hora)} · ${tipoLabel(f.tipo)}${f.jornada==='terminar'?' · <span style="background:rgba(255,255,255,.25);padding:2px 8px;border-radius:10px;font-weight:800">Hasta acabar actividades</span>':''}</div>
+          <div class="frente-hora">⏰ ${fmtHora(f.hora)} · ${tipoLabel(f.tipo)}</div>
         </div>
         <div class="frente-actions-top">
-          <button class="btn-frente-edit" onclick="editarFrente(${i})" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M17 3l4 4L8 20l-5 1 1-5z"/></svg></button>
+          <button class="btn-frente-edit" onclick="editarFrente(${i})" title="Editar">✏️</button>
         </div>
       </div>
       <div class="frente-body">
         <div>
-          <div class="frente-section-title">Personal asignado (${personal.length})${faltas.length?` · <span style="color:#C0001A">${faltas.length} inasistencia${faltas.length>1?'s':''}</span>`:''}</div>
+          <div class="frente-section-title">Personal asignado (${personal.length})</div>
           <div class="personal-chips">
-            ${sisoNombre?`<span class="chip siso">SISO · ${sisoNombre.split(' ').slice(0,3).join(' ')}</span>`:''}
-            ${personal.map(n=>`<span class="chip clickable ${esFalta(n)?'falta':''}" onclick="toggleAsistencia(${i}, '${n.replace(/'/g,"\\'")}')" title="${esFalta(n)?'Clic para quitar la inasistencia':'Clic para marcar que no asistió'}">${esFalta(n)?'✕ ':''}${n.split(' ').slice(0,3).join(' ')}${esFalta(n)?' (no asistió)':''}</span>`).join('')}
+            ${sisoNombre?`<span class="chip siso">🦺 ${sisoNombre.split(' ').slice(0,3).join(' ')} (SISO)</span>`:''}
+            ${personal.map(n=>`<span class="chip">${n.split(' ').slice(0,3).join(' ')}</span>`).join('')}
             ${!personal.length && !sisoNombre?'<span style="font-size:12px;color:var(--muted);font-style:italic">Sin personal asignado</span>':''}
           </div>
-          ${personal.length?'<div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic">Toca a una persona para marcar/quitar inasistencia</div>':''}
         </div>
         <div>
-          ${f.responsable?`<div class="frente-section-title">Responsable PepsiCo</div>
-          <div class="materiales-text" style="margin-bottom:10px">${f.responsable}</div>`:''}
           <div class="frente-section-title">Materiales / Notas</div>
           <div class="materiales-text">${f.materiales||'<span style="font-style:italic;color:var(--muted)">Sin materiales especificados</span>'}</div>
         </div>
       </div>
     </div>`;
   }).join('');
-}
-
-// Marcar / desmarcar inasistencia de una persona en un frente
-async function toggleAsistencia(frenteIdx, nombre){
-  const f = (prog[fechaSel]||[])[frenteIdx];
-  if(!f) return;
-  f.inasistencias = Array.isArray(f.inasistencias) ? f.inasistencias : [];
-  const idx = f.inasistencias.findIndex(x => x.trim().toUpperCase() === nombre.trim().toUpperCase());
-  const nomCorto = nombre.split(' ').slice(0,3).join(' ');
-  if (idx >= 0) {
-    if(!confirm('¿Quitar la inasistencia de ' + nomCorto + '?')) return;
-    f.inasistencias.splice(idx, 1);
-  } else {
-    if(!confirm('¿Marcar que ' + nomCorto + ' NO asistió este día?')) return;
-    f.inasistencias.push(nombre);
-  }
-  saveCache();
-  const ok = await syncGuardarDirecto(fechaSel, f);
-  await renderDia();
-  toast(ok ? (idx>=0 ? '✓ Inasistencia eliminada' : '✓ Inasistencia registrada — ' + nomCorto) : '⚠ Guardado localmente — verifica conexión', ok ? 'ok' : 'err');
 }
 
 function abrirNuevoFrente(){
@@ -662,8 +560,6 @@ function abrirNuevoFrente(){
   document.getElementById('f-hora').value = '06:00';
   document.getElementById('f-siso').value = '';
   document.getElementById('f-materiales').value = '';
-  document.getElementById('f-responsable').value = '';
-  document.getElementById('f-jornada').value = '';
   document.getElementById('btn-del-frente').style.display = 'none';
   selPersonal = new Set();
   llenarSISO(); renderPersonalList('');
@@ -679,18 +575,9 @@ function editarFrente(i){
   document.getElementById('f-tipo').value      = f.tipo||'mtto';
   document.getElementById('f-hora').value      = f.hora||'06:00';
   document.getElementById('f-materiales').value= f.materiales||'';
-  document.getElementById('f-responsable').value = f.responsable||'';
-  document.getElementById('f-jornada').value = f.jornada||'';
   document.getElementById('btn-del-frente').style.display = 'block';
-  // El Sheet guarda NOMBRES pero la lista funciona con IDs — mapear para
-  // que el personal quede preseleccionado al editar
-  selPersonal = new Set((f.personal||[]).map(n => {
-    const emp = EMPLEADOS.find(e => e.nombre.trim().toUpperCase() === String(n).trim().toUpperCase());
-    return emp ? emp.id : null;
-  }).filter(id => id !== null));
-  // El SISO también viene como nombre — buscar su ID para preseleccionarlo
-  const sisoEmp = f.siso ? SISO.find(s => s.nombre.trim().toUpperCase() === String(f.siso).trim().toUpperCase()) : null;
-  llenarSISO(sisoEmp ? sisoEmp.id : null);
+  selPersonal = new Set(f.personal||[]);
+  llenarSISO(f.siso);
   renderPersonalList('');
   document.getElementById('mod-frente').classList.add('on');
 }
@@ -705,22 +592,7 @@ function filtrarPersonal(q){
   renderPersonalList(q);
 }
 
-// Empleados ya asignados a OTROS frentes del mismo día → Map(id → nombre del frente)
-function asignadosOtroFrente(){
-  const map = new Map();
-  (prog[fechaSel]||[]).forEach((f, i) => {
-    if (editIdx !== null && i === editIdx) return; // el frente que se está editando no cuenta
-    const nombres = [...(f.personal||[]), ...(f.siso ? [f.siso] : [])];
-    nombres.forEach(n => {
-      const emp = EMPLEADOS.find(e => e.nombre.trim().toUpperCase() === String(n).trim().toUpperCase());
-      if (emp && !map.has(emp.id)) map.set(emp.id, f.nombre);
-    });
-  });
-  return map;
-}
-
 function renderPersonalList(q){
-  const asignados = asignadosOtroFrente();
   const lista = EMPLEADOS.filter(e=>!q||e.nombre.toLowerCase().includes(q.toLowerCase()));
   document.getElementById('f-personal-list').innerHTML = lista.map(e=>`
     <label class="personal-item ${selPersonal.has(e.id)?'sel':''}">
@@ -728,7 +600,6 @@ function renderPersonalList(q){
       <span style="flex:1">
         ${e.nombre.split(' ').slice(0,3).join(' ')}
         ${e.observacion ? `<span style="margin-left:6px;background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px">⚠ ${e.observacion}</span>` : ''}
-        ${asignados.has(e.id) ? `<span class="badge-asig">En: ${asignados.get(e.id)}</span>` : ''}
       </span>
       <span class="pcargo">${e.cargo}</span>
     </label>`).join('');
@@ -736,21 +607,7 @@ function renderPersonalList(q){
 }
 
 function togglePersonal(id, checked){
-  if (checked) {
-    // Advertir si ya está asignado a otro frente del mismo día
-    const asignados = asignadosOtroFrente();
-    if (asignados.has(id)) {
-      const emp = EMPLEADOS.find(e=>e.id===id);
-      if (!confirm('⚠ ' + (emp?.nombre?.split(' ').slice(0,3).join(' ') || 'Esta persona') +
-        ' ya está asignado/a al frente "' + asignados.get(id) + '" este día.\n\n¿Asignarlo/a también a este frente?')) {
-        renderPersonalList(document.getElementById('f-personal-search').value);
-        return;
-      }
-    }
-    selPersonal.add(id);
-  } else {
-    selPersonal.delete(id);
-  }
+  if(checked) selPersonal.add(id); else selPersonal.delete(id);
   document.getElementById('sel-count').textContent = selPersonal.size + ' persona' + (selPersonal.size!==1?'s':'') + ' seleccionada' + (selPersonal.size!==1?'s':'');
   // Actualizar clases
   document.querySelectorAll('#f-personal-list .personal-item').forEach(el=>{
@@ -759,44 +616,16 @@ function togglePersonal(id, checked){
   });
 }
 
-// Selecciona todos los empleados visibles (respeta el filtro de búsqueda).
-// Los que ya están en otro frente del día se omiten para no duplicar.
-function seleccionarTodos(){
-  const q = document.getElementById('f-personal-search').value;
-  const asignados = asignadosOtroFrente();
-  const lista = EMPLEADOS.filter(e=>!q||e.nombre.toLowerCase().includes(q.toLowerCase()));
-  let omitidos = 0;
-  lista.forEach(e => {
-    if (asignados.has(e.id)) { if(!selPersonal.has(e.id)) omitidos++; return; }
-    selPersonal.add(e.id);
-  });
-  renderPersonalList(q);
-  if (omitidos > 0) toast('⚠ ' + omitidos + ' persona' + (omitidos>1?'s':'') + ' omitida' + (omitidos>1?'s':'') + ' por estar en otro frente', 'err');
-}
-
-function quitarTodos(){
-  selPersonal = new Set();
-  renderPersonalList(document.getElementById('f-personal-search').value);
-}
-
 async function guardarFrente(){
   const nombre = document.getElementById('f-nombre').value.trim();
   if(!nombre){ alert('El nombre del frente es obligatorio.'); return; }
-  // Conservar inasistencias ya registradas (solo de quienes siguen asignados)
-  const prev = editIdx !== null ? (prog[fechaSel]||[])[editIdx] : null;
-  const nombresNuevos = [...selPersonal].map(id => EMPLEADOS.find(e=>e.id===id)?.nombre || '').filter(Boolean);
-  const inasistencias = (prev?.inasistencias||[]).filter(n =>
-    nombresNuevos.some(nn => nn.trim().toUpperCase() === n.trim().toUpperCase()));
   const frente = {
     nombre,
     tipo:       document.getElementById('f-tipo').value,
     hora:       document.getElementById('f-hora').value,
     siso:       parseInt(document.getElementById('f-siso').value)||null,
     materiales: document.getElementById('f-materiales').value.trim(),
-    responsable: document.getElementById('f-responsable').value.trim(),
-    jornada:    document.getElementById('f-jornada').value,
     personal:   [...selPersonal],
-    inasistencias,
     rowIdx:     editIdx !== null ? (prog[fechaSel]||[])[editIdx]?.rowIdx : null
   };
   const btn = document.querySelector('#mod-frente .mbtn-p');
@@ -908,8 +737,6 @@ function abrirDia(str){
   document.getElementById('mod-dia-content').innerHTML = frentes.map(f=>{
     const sisoNombre = f.siso || '';
     const personal   = Array.isArray(f.personal) ? f.personal : [];
-    const faltas     = Array.isArray(f.inasistencias) ? f.inasistencias : [];
-    const esFalta    = n => faltas.some(x => x.trim().toUpperCase() === n.trim().toUpperCase());
     const miNombre   = colabActual?.nombre || '';
     const esMio = personal.some(n => n.toUpperCase().includes(miNombre.split(' ')[0])) ||
                   sisoNombre.toUpperCase().includes(miNombre.split(' ')[0]);
@@ -917,23 +744,18 @@ function abrirDia(str){
     <div class="modal-frente">
       <div class="modal-frente-hdr ${tipoColor(f.tipo)}" ${esMio?'style="outline:3px solid #fff;outline-offset:-3px"':''}>
         <span>${f.nombre} ${esMio?'<span style="font-size:11px;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:10px">✓ Tú estás aquí</span>':''}</span>
-        <span style="font-size:12px;opacity:.85">${tipoLabel(f.tipo)}</span>
+        <span style="font-size:12px;opacity:.85">⏰ ${fmtHora(f.hora)}</span>
       </div>
       <div class="modal-frente-body">
-        ${f.jornada==='terminar'?`<div style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:10px;padding:12px 16px;margin-bottom:12px;text-align:center"><span style="font-size:14px;font-weight:800;color:#92400E">JORNADA HASTA ACABAR ACTIVIDADES — ¡LLEVA TU ALMUERZO!</span></div>`:''}
-        <div class="mf-row"><span class="mf-label">Hora de ingreso</span><span class="mf-val">
-          <span style="display:inline-block;background:var(--aglow);border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:4px 14px;font-size:15px;font-weight:800">⏰ ${fmtHora(f.hora) || 'Por definir'}</span>
-        </span></div>
-        ${f.responsable?`<div class="mf-row"><span class="mf-label">Responsable PepsiCo</span><span class="mf-val" style="font-weight:600;color:var(--text)">${f.responsable}</span></div>`:''}
         ${sisoNombre?`<div class="mf-row"><span class="mf-label">SISO</span><span class="mf-val">
           <span class="mi-chip siso ${sisoNombre.toUpperCase().includes(miNombre.split(' ')[0])?'yo':''}">
-            SISO · ${sisoNombre.split(' ').slice(0,3).join(' ')}
+            🦺 ${sisoNombre.split(' ').slice(0,3).join(' ')}
             ${sisoNombre.toUpperCase().includes(miNombre.split(' ')[0])?' (tú)':''}
           </span></span></div>`:''}
         <div class="mf-row">
           <span class="mf-label">Equipo</span>
           <span class="mf-val">${personal.length
-            ? personal.map(n=>`<span class="mi-chip ${esFalta(n)?'falta':(n.toUpperCase().includes(miNombre.split(' ')[0])?'yo':'')}">${esFalta(n)?'✕ ':''}${n.split(' ').slice(0,3).join(' ')}${esFalta(n)?' (no asistió)':(n.toUpperCase().includes(miNombre.split(' ')[0])?' (tú)':'')}</span>`).join('')
+            ? personal.map(n=>`<span class="mi-chip ${n.toUpperCase().includes(miNombre.split(' ')[0])?'yo':''}">${n.split(' ').slice(0,3).join(' ')}${n.toUpperCase().includes(miNombre.split(' ')[0])?' (tú)':''}</span>`).join('')
             : '<span style="font-size:12px;color:var(--muted)">Sin asignar</span>'}</span>
         </div>
         ${f.materiales?`<div class="mf-row"><span class="mf-label">Materiales</span><span class="mf-val" style="font-weight:600;color:var(--text)">${f.materiales}</span></div>`:''}
@@ -945,25 +767,11 @@ function abrirDia(str){
 
 // ── MODALES ──
 function closeModal(id){ document.getElementById(id).classList.remove('on'); }
-// El modal de frente NO se cierra con clic afuera — evita perder el avance del ingeniero
-document.querySelectorAll('.overlay').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m && m.id!=='mod-frente') m.classList.remove('on'); }));
+document.querySelectorAll('.overlay').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('on'); }));
 
 // ── INIT ──
 document.getElementById('fecha-sel').value = fechaSel;
 // La vista por defecto es colaborador — sin contraseña
-cargarEmpleados(); // Carga empleados del Sheet en background
-
-// Cargar contactos PepsiCo para el datalist de responsable
-async function cargarContactosPep(){
-  try {
-    const res = await fetch(APPS_URL + '?tabla=correos_pep');
-    const contactos = await res.json();
-    if (Array.isArray(contactos)) {
-      document.getElementById('lista-pep').innerHTML = contactos
-        .map(c => `<option value="${c.nombre}">${c.area||''}</option>`).join('');
-    }
-  } catch(e) { /* sin lista: el campo funciona como texto libre */ }
-}
-cargarContactosPep();</script>
+cargarEmpleados(); // Carga empleados del Sheet en background</script>
 </body>
 </html>

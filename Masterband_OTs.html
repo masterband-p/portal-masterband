@@ -3,15 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-
 <title>Masterband · Gestión de Trabajos</title>
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="favicon-32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-
 <style>
   :root {
     --bg:#F5F5F3; --surface:#FFFFFF; --s2:#EFEFED; --border:#E0E0E0;
@@ -47,7 +39,7 @@
   #app{display:none}
   .topbar{background:var(--surface);border-bottom:1px solid var(--border);height:58px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--sh)}
   .brand-wrap{display:flex;align-items:center;gap:8px}
-  .brand-icon{width:32px;height:32px;background:var(--accent);border-radius:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
+  .brand-icon{width:32px;height:32px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0}
   .brand-text{font-size:15px;font-weight:700;color:var(--text)}.brand-text span{color:var(--accent)}
   .brand-div{width:1px;height:24px;background:var(--border);margin:0 8px}
   .brand-mod{font-size:13px;color:var(--muted)}
@@ -210,22 +202,22 @@
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="lcard">
-    <div class="llogo-wrap" style="justify-content:center"><div style="text-align:center"><img src="logo-masterband.png" alt="Masterband S.A.S." style="height:52px;width:auto"><div class="llogo-sub" style="margin-top:6px">Gestión de Órdenes de Trabajo</div></div></div>
+    <div class="llogo-wrap"><div class="llogo-icon">&#9881;</div><div><div class="llogo-text">Master<span>band</span></div><div class="llogo-sub">Gestión de Trabajos</div></div></div>
     <div class="ltitle">Bienvenido</div>
     <div class="fgroup">
       <label class="flabel">Ingresar como</label>
       <div class="roles">
         <button class="rbtn on" onclick="pickRole('gerencia')" id="r-g">
-          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px"><rect x="3" y="7" width="18" height="13" rx="1"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg></div><div class="label">Gerencia</div>
+          <div class="icon">👔</div><div class="label">Gerencia</div>
         </button>
         <button class="rbtn" onclick="pickRole('ingeniero')" id="r-i">
-          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 5.6L3 17.6V21h3.4l5.7-5.7a4.5 4.5 0 0 0 5.6-6L14.5 12.5l-3-3z"/></svg></div><div class="label">Ingeniero</div>
+          <div class="icon">🔧</div><div class="label">Ingeniero</div>
         </button>
       </div>
     </div>
     <div class="fgroup">
       <label class="flabel">Contraseña</label>
-      <input class="finput" type="password" id="lpass" placeholder="••••••••" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" onkeydown="if(event.key==='Enter')login()">
+      <input class="finput" type="password" id="lpass" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
     </div>
     <button class="btn-in" onclick="login()">Ingresar</button>
     <div class="lerr" id="lerr"></div>
@@ -236,7 +228,7 @@
 <div id="app">
   <div class="topbar">
     <div style="display:flex;align-items:center;gap:12px">
-      <div class="brand-wrap"><img src="logo-masterband.png" alt="Masterband S.A.S." style="height:38px;width:auto"></div>
+      <div class="brand-wrap"><div class="brand-icon">&#9881;</div><div class="brand-text">Master<span>band</span></div></div>
       <div class="brand-div"></div><div class="brand-mod">Gestión de Trabajos</div>
       <nav class="topnav" id="topnav"></nav>
     </div>
@@ -318,33 +310,6 @@
 </div>
 
 <!-- MODAL RAZÓN DE DEMORA -->
-<div class="overlay" id="mod-firma-tecnico">
-  <div class="modal" style="max-width:460px">
-    <div class="mhdr">
-      <div>
-        <div class="mtitle">Firma del técnico en sitio</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:3px">Comparte este link con el técnico del área para que confirme el recibido</div>
-      </div>
-      <button class="mclose" onclick="closeModal('mod-firma-tecnico')">✕</button>
-    </div>
-    <div style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px">
-      <input id="ft-link" readonly style="width:100%;background:#fff;border:1px solid var(--border);border-radius:6px;padding:9px 12px;font-size:12px;color:var(--dim);font-family:var(--mono)">
-    </div>
-    <div style="display:flex;gap:10px">
-      <button class="mbtn-p" style="flex:1" onclick="copiarLinkFirmaTecnico()">📋 Copiar link</button>
-      <button class="mbtn-p" style="flex:1;background:var(--green)" id="ft-abrir">📱 Abrir ahora</button>
-    </div>
-    <div style="font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5">
-      <b>Copiar link:</b> pégalo en WhatsApp y el técnico firma desde su celular.<br>
-      <b>Abrir ahora:</b> pásale tu celular al técnico para que firme al momento.<br>
-      La firma se guarda y se incorpora sola cuando crees el acta oficial.
-    </div>
-    <div style="margin-top:14px;text-align:center">
-      <button class="mbtn-s" onclick="closeModal('mod-firma-tecnico')">Omitir por ahora</button>
-    </div>
-  </div>
-</div>
-
 <div class="overlay" id="mod-demora">
   <div class="modal" style="max-width:500px">
     <div class="mhdr">
@@ -383,7 +348,7 @@
       <textarea class="fta" id="dem-detalle" placeholder="Describe brevemente qué causó la demora..." style="min-height:70px"></textarea>
     </div>
     <div class="mbtns">
-      <button class="mbtn-p" onclick="confirmarFinalizado()">✓ Confirmar finalización</button>
+      <button class="mbtn-p" onclick="confirmarFinalizado()">✅ Confirmar finalización</button>
       <button class="mbtn-s" onclick="closeModal('mod-demora')">Cancelar</button>
     </div>
   </div>
@@ -421,7 +386,7 @@
       <div class="det-block"><div class="det-label">Acta de entrega</div><div class="det-val" id="det-acta"></div></div>
     </div>
     <div class="fin-block">
-      <div class="fin-title">Información financiera</div>
+      <div class="fin-title">💼 Información financiera</div>
       <div class="fin-grid">
         <div><div class="fin-label">Costo antes IVA</div><div class="fin-val" id="det-costo"></div></div>
         <div><div class="fin-label">No. OC</div><div class="fin-val" id="det-oc"></div></div>
@@ -445,9 +410,9 @@
 <!-- PANTALLA ACTA DE ENTREGA -->
 <div id="acta-screen">
   <div class="acta-topbar">
-    <div style="font-size:15px;font-weight:700;color:var(--text)">Acta de Entrega</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text)">📋 Acta de Entrega</div>
     <div style="display:flex;gap:10px">
-      <button class="btn-pdf" onclick="generarPDF()" style="padding:7px 16px;font-size:13px">Descargar PDF</button>
+      <button class="btn-pdf" onclick="generarPDF()" style="padding:7px 16px;font-size:13px">⬇ Descargar PDF</button>
       <button class="mbtn-s" onclick="cerrarActa()" style="padding:7px 14px;font-size:13px">✕ Cerrar</button>
     </div>
   </div>
@@ -475,8 +440,10 @@
     <div class="acta-section">
       <div class="acta-section-title">Registro fotográfico del trabajo final</div>
       <div class="foto-grid">
-        <div style="display:contents" id="fotos-grid"></div>
-        <div class="foto-slot" id="foto-add"><span class="foto-slot-label">+ Agregar fotos<br><span style="font-size:10px">Puedes elegir varias</span></span><input type="file" accept="image/*" multiple onchange="agregarFotos(this)"></div>
+        <div class="foto-slot" id="slot-0"><span class="foto-slot-label">📷 Foto 1<br><span style="font-size:10px">Toca para agregar</span></span><input type="file" accept="image/*" onchange="cargarFoto(0,this)"><img id="img-0" style="display:none"></div>
+        <div class="foto-slot" id="slot-1"><span class="foto-slot-label">📷 Foto 2<br><span style="font-size:10px">Toca para agregar</span></span><input type="file" accept="image/*" onchange="cargarFoto(1,this)"><img id="img-1" style="display:none"></div>
+        <div class="foto-slot" id="slot-2"><span class="foto-slot-label">📷 Foto 3<br><span style="font-size:10px">Toca para agregar</span></span><input type="file" accept="image/*" onchange="cargarFoto(2,this)"><img id="img-2" style="display:none"></div>
+        <div class="foto-slot" id="slot-3"><span class="foto-slot-label">📷 Foto 4<br><span style="font-size:10px">Toca para agregar</span></span><input type="file" accept="image/*" onchange="cargarFoto(3,this)"><img id="img-3" style="display:none"></div>
       </div>
     </div>
 
@@ -493,32 +460,24 @@
               <canvas class="firma-canvas" id="firma-entrega"></canvas>
               <button class="btn-clear-firma" onclick="limpiarFirma('firma-entrega')">Limpiar</button>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
-              <label style="display:inline-flex;align-items:center;gap:7px;border:1px dashed var(--border);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-                Subir firma
-                <input type="file" accept="image/*" onchange="subirFirma(this,'firma-entrega')" style="display:none">
-              </label>
-              <span style="font-size:11.5px;color:var(--muted)">o dibújala arriba</span>
-            </div>
           </div>
         </div>
         <div>
-          <div style="border:1px dashed var(--border);background:var(--s2);border-radius:8px;padding:22px 18px;height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;margin:0 auto 10px"><rect x="5" y="11" width="14" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-            <div style="font-size:13px;font-weight:700;color:var(--dim);margin-bottom:4px">Sección del cliente</div>
-            <div style="font-size:12px;color:var(--muted);line-height:1.5">El nombre, cargo y firma de quien recibe los completa el solicitante desde el link que le llega por correo.</div>
-          </div>
-          <div style="display:none">
-            <input id="ac-recibe-nom"><input id="ac-recibe-cargo">
-            <canvas id="firma-recibe"></canvas>
+          <div class="acta-field"><label class="acta-label">Recibido por</label><input class="acta-input" id="ac-recibe-nom" placeholder="Nombre del cliente"></div>
+          <div class="acta-field"><label class="acta-label">Cargo</label><input class="acta-input" id="ac-recibe-cargo" placeholder="Cargo"></div>
+          <div class="acta-field">
+            <label class="acta-label">Firma</label>
+            <div class="firma-wrap">
+              <canvas class="firma-canvas" id="firma-recibe"></canvas>
+              <button class="btn-clear-firma" onclick="limpiarFirma('firma-recibe')">Limpiar</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Satisfacción: solo el cliente la diligencia desde el link -->
-    <div class="acta-section" style="display:none">
+    <!-- Satisfacción -->
+    <div class="acta-section">
       <div class="acta-section-title">Evaluación del servicio</div>
       <div class="acta-field">
         <label class="acta-label">El servicio se recibe a satisfacción, sin observaciones pendientes</label>
@@ -535,88 +494,6 @@
         <label class="acta-label">¿Cómo califica la ejecución, respuesta y calidad del trabajo? (1 = menor, 10 = mayor)</label>
         <div class="calificacion" id="cal-btns"></div>
       </div>
-    </div>
-
-    <!-- INFORME TÉCNICO DE ENTREGA -->
-    <div class="acta-section">
-      <div class="acta-section-title">Informe técnico de entrega</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Informe detallado en PDF. Al generarlo se adjunta automáticamente al acta. Los datos generales (cliente, OC, fecha, responsable) se toman del acta.</div>
-
-      <!-- 1. Descripción del trabajo -->
-      <div class="acta-field">
-        <label class="acta-label">1. Descripción del trabajo</label>
-        <textarea class="acta-textarea" id="it-descripcion" rows="4" oninput="marcarCambioInforme()" placeholder="Describe el trabajo ejecutado: qué se hizo, materiales/equipos empleados, cómo se realizó..."></textarea>
-        <div style="margin-top:6px"><label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;background:var(--s2)">+ Fotos de esta sección<input type="file" accept="image/*" multiple onchange="agregarFotoSeccion('descripcion',this)" style="display:none"></label></div>
-        <div id="it-fotos-descripcion" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px"></div>
-      </div>
-
-      <!-- 2. Secuencia de montaje -->
-      <div class="acta-field">
-        <label class="acta-label">2. Secuencia de montaje / ejecución</label>
-        <textarea class="acta-textarea" id="it-secuencia" rows="4" oninput="marcarCambioInforme()" placeholder="Etapas del trabajo en orden: primero..., luego..., finalmente... (opcional)"></textarea>
-        <div style="margin-top:6px"><label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;background:var(--s2)">+ Fotos de esta sección<input type="file" accept="image/*" multiple onchange="agregarFotoSeccion('secuencia',this)" style="display:none"></label></div>
-        <div id="it-fotos-secuencia" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px"></div>
-      </div>
-
-      <!-- 3. Observaciones técnicas -->
-      <div class="acta-field">
-        <label class="acta-label">3. Observaciones técnicas</label>
-        <textarea class="acta-textarea" id="it-observaciones" rows="3" oninput="marcarCambioInforme()" placeholder="Puntos técnicos relevantes: cómo quedó anclado, condiciones especiales, detalles a tener en cuenta..."></textarea>
-        <div style="margin-top:6px"><label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--dim);cursor:pointer;border:1px dashed var(--border);border-radius:6px;padding:6px 12px;background:var(--s2)">+ Fotos de esta sección<input type="file" accept="image/*" multiple onchange="agregarFotoSeccion('observaciones',this)" style="display:none"></label></div>
-        <div id="it-fotos-observaciones" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px"></div>
-      </div>
-
-      <!-- 4. Materiales y repuestos -->
-      <div class="acta-field">
-        <label class="acta-label">4. Materiales y repuestos utilizados</label>
-        <div id="it-materiales-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
-        <div style="display:grid;grid-template-columns:2fr 0.7fr 0.8fr auto;gap:8px;align-items:end">
-          <div><input class="acta-input" id="it-mat-desc" placeholder="Descripción" style="font-size:12px"></div>
-          <div><input class="acta-input" id="it-mat-cant" type="number" placeholder="Cant." style="font-size:12px"></div>
-          <div><input class="acta-input" id="it-mat-unidad" placeholder="Unidad" style="font-size:12px"></div>
-          <button onclick="agregarMaterial()" style="background:var(--accent);color:#fff;border:none;border-radius:6px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap">+ Agregar</button>
-        </div>
-      </div>
-
-      <!-- 5. Recomendaciones finales -->
-      <div class="acta-field">
-        <label class="acta-label">5. Recomendaciones finales</label>
-        <textarea class="acta-textarea" id="it-recomendaciones" rows="3" oninput="marcarCambioInforme()" placeholder="Conclusión del trabajo, inspecciones periódicas sugeridas, cuidados futuros..."></textarea>
-      </div>
-
-      <!-- Firma del informe (ingeniero, supervisor u otro de Masterband) -->
-      <div class="acta-field">
-        <label class="acta-label">Firma del informe</label>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Quien elabora o respalda el informe (ingeniero, supervisor u otro de Masterband).</div>
-        <div class="acta-row">
-          <div class="acta-field"><label class="acta-label">Nombre</label><input class="acta-input" id="it-firma-nombre" oninput="marcarCambioInforme()" placeholder="Nombre completo"></div>
-          <div class="acta-field"><label class="acta-label">Cargo</label><input class="acta-input" id="it-firma-cargo" oninput="marcarCambioInforme()" placeholder="Ej: Ingeniero de Proyectos"></div>
-        </div>
-        <div class="firma-wrap" style="margin-top:8px">
-          <canvas class="firma-canvas" id="firma-informe"></canvas>
-          <button class="btn-clear-firma" onclick="limpiarFirmaInforme()">Limpiar</button>
-        </div>
-        <label style="display:inline-flex;align-items:center;gap:7px;border:1px dashed var(--border);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;color:var(--dim);background:var(--s2);margin-top:8px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-          Subir firma
-          <input type="file" accept="image/*" onchange="subirFirmaInforme(this)" style="display:none">
-        </label>
-        <span style="font-size:11.5px;color:var(--muted);margin-left:8px">o dibújala arriba</span>
-      </div>
-
-      <div id="it-autoguardado" style="font-size:12px;font-weight:600;text-align:right;margin-bottom:8px;min-height:16px"></div>
-      <button onclick="generarInformeTecnico()" id="btn-informe" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:6px">Generar informe técnico y adjuntar al acta</button>
-    </div>
-
-    <!-- Informes adjuntos en PDF -->
-    <div class="acta-section">
-      <div class="acta-section-title">Informes adjuntos (PDF)</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Informe técnico, certificado de material, protocolo de pruebas... El cliente podrá descargarlos desde el acta.</div>
-      <div id="adjuntos-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
-      <label style="display:inline-flex;align-items:center;gap:8px;border:1px dashed var(--border);border-radius:8px;padding:10px 16px;cursor:pointer;font-size:13px;font-weight:700;color:var(--dim);background:var(--s2)">
-        + Adjuntar PDF
-        <input type="file" accept="application/pdf" multiple onchange="agregarAdjuntos(this)" style="display:none">
-      </label>
     </div>
 
     <!-- Documentos anexos -->
@@ -652,29 +529,9 @@
       </div>
     </div>
 
-    <div style="background:#EEF2F8;border:1px solid #C5D3E8;border-radius:8px;padding:12px 14px;margin-top:14px">
-      <label class="acta-label" style="margin-bottom:8px;display:block">¿Cómo se firma esta acta?</label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);cursor:pointer;margin-bottom:8px">
-        <input type="radio" name="tipo-firma" value="tecnico" checked style="accent-color:#C0001A">
-        <span><b>Con firma del técnico</b> — el técnico ya firmó en sitio (o firmará), luego el líder valida</span>
-      </label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim);cursor:pointer">
-        <input type="radio" name="tipo-firma" value="lider" style="accent-color:#C0001A">
-        <span><b>Directo al líder</b> — sin firma de técnico; el líder recibe y valida</span>
-      </label>
-    </div>
-
-    <div id="modo-prueba-wrap" style="background:#FFF8E6;border:1px solid #E6C860;border-radius:8px;padding:12px 14px;margin-top:14px">
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#7A5C00;cursor:pointer">
-        <input type="checkbox" id="modo-prueba" checked style="width:16px;height:16px;accent-color:#C0001A">
-        Modo prueba — enviar el correo solo a esta dirección (el cliente y los líderes NO reciben nada)
-      </label>
-      <input class="acta-input" id="correo-prueba" placeholder="tu-correo@masterband.com.co" style="margin-top:8px">
-    </div>
-
     <div class="acta-actions">
-      <button class="btn-pdf" onclick="generarPDF()">Descargar PDF</button>
-      <button class="btn-pdf" onclick="enviarAlCliente()" style="background:var(--green)" id="btn-enviar-cliente">Enviar al cliente para firma</button>
+      <button class="btn-pdf" onclick="generarPDF()">⬇ Descargar PDF</button>
+      <button class="btn-pdf" onclick="enviarAlCliente()" style="background:var(--green)" id="btn-enviar-cliente">📧 Enviar al cliente para firma</button>
       <button class="mbtn-s" onclick="cerrarActa()" style="flex:0;padding:12px 20px">Cancelar</button>
     </div>
   </div>
@@ -686,17 +543,6 @@
 // ── CONFIG ──
 const APPS_URL = 'https://script.google.com/macros/s/AKfycbw8rE7Wemj-RU-jfu9BqVb_i0FyeMvfVZtDtJHdyEwyz-JsPWNbXatPf13AHG_vG7OS/exec';
 const META     = 211000000;
-
-// POST con text/plain: evita el preflight CORS y permite payloads grandes (fotos/firmas base64)
-async function postJSON(payload) {
-  const res  = await fetch(APPS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
-  });
-  const text = await res.text();
-  return JSON.parse(text);
-}
 const PASS     = { gerencia: 'master2025', ingeniero: 'ing2025' };
 const LKEY     = 'mb_ots_v4';
 const NKEY     = 'mb_notas_v4';
@@ -733,12 +579,7 @@ function mapEtapa(estado, apro, noOC, etrab, facturado, nfact) {
   const a = (apro    ||'').toLowerCase().trim();
   const t = (etrab   ||'').toLowerCase().trim();
   const f = (facturado||'').toLowerCase().trim();
-  // ★ CORREGIDO: "Facturado" solo si la columna Facturado dice SI, o si N° Factura
-  // tiene un número real. Antes, textos como "PDTE N.E", "validar" o notas se
-  // contaban como facturadas por error, ocultando trabajos del ingeniero.
-  const nf = (nfact||'').trim();
-  const tieneFacturaReal = /\d{3,}/.test(nf) && !/pdte|pend|validar|revisar|no\.?\s*e|falta/i.test(nf);
-  if (f === 'si' || f === 'sí' || tieneFacturaReal)   return 6; // Facturado
+  if (f === 'si' || f === 'sí' || (nfact||'').trim()) return 6; // Facturado
   if (t === 'finalizado')                              return 5; // Finalizado
   if (t === 'en proceso' && (noOC||'').trim())        return 4; // En proceso
   if ((noOC||'').trim())                              return 3; // OC recibida
@@ -752,37 +593,9 @@ const ETAPAS = ['Pendiente','Enviada','Aprobada','OC recibida','En proceso','Fin
 // ── ROW → OT ──
 function gc(row, i) { return String(row[i] || '').trim(); }
 
-// Convierte un monto respetando formato colombiano, número puro JS, enteros con miles y decimales
-function parseMonto(v){
-  if (typeof v === 'number') return isNaN(v) ? 0 : v;
-  let s = String(v||'').replace(/[^0-9.,]/g,'');
-  if (!s) return 0;
-  const tienePunto = s.indexOf('.') >= 0, tieneComa = s.indexOf(',') >= 0;
-  if (tienePunto && tieneComa) { s = s.replace(/\./g,'').replace(',','.'); }
-  else if (tieneComa) { s = s.replace(',','.'); }
-  else if (tienePunto) {
-    const partes = s.split('.'), ultimo = partes[partes.length-1];
-    if (partes.length > 2 || ultimo.length === 3) s = s.replace(/\./g,'');
-  }
-  const n = parseFloat(s);
-  return isNaN(n) ? 0 : n;
-}
-
 function rowToOT(row) {
-  // ★ Validación estricta de la columna A (Cotización):
-  // el portal ignora filas con basura (teléfonos, fechas, texto de encabezado,
-  // celdas vacías) para no crear cotizaciones falsas. No modifica el Sheet.
-  const celdaA = gc(row, 0).trim();
-  // Rechazar celdas con texto no numérico pegado (Teléfono:, Contacto:, correo, etc.)
-  if (/[a-zA-Z]/.test(celdaA)) return null;
-  // Rechazar celdas con formato de fecha ISO (ej. 1718-02-01T04:56:16.000Z)
-  if (/\d{4}-\d{2}-\d{2}T/.test(celdaA) || celdaA.includes('T05:00') || celdaA.includes('T04:')) return null;
-  // Rechazar celdas vacías
-  if (!celdaA) return null;
-  // Extraer el número de cotización (solo dígitos y guiones tipo "1773-2")
-  const num = celdaA.replace(/[^0-9]/g, '');
-  // Un CTZ válido tiene entre 3 y 6 dígitos (rechaza teléfonos largos y números gigantes de fechas)
-  if (!num || num.length < 3 || num.length > 6) return null;
+  const num = gc(row, 0).replace(/\D/g,'');
+  if (!num) return null;
   const anio    = gc(row, 1).replace('.0','');
   const noOC    = gc(row, 9);
   const etrab   = gc(row, 10);
@@ -790,7 +603,7 @@ function rowToOT(row) {
   const nfact   = gc(row, 14);
   const apro    = gc(row, 8);
   const estado  = gc(row, 7);
-  const costoRaw = parseMonto(row[11]);
+  const costoRaw = gc(row, 11).replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.');
   const fechaIni = gc(row, 16); // Col Q
   const fechaFin = gc(row, 17); // Col R
   const razonDemora = gc(row, 18); // Col S
@@ -814,7 +627,7 @@ function rowToOT(row) {
     apro,
     noOC,
     etrab,
-    costo:    costoRaw || 0,
+    costo:    parseFloat(costoRaw) || 0,
     facturado: fact,
     acta:     (() => { const v = gc(row, 13).toUpperCase(); return v === 'SI' || v === 'SÍ'; })(),
     nfact,
@@ -870,7 +683,7 @@ function pickRole(r) {
   document.getElementById('r-i').classList.toggle('on', r === 'ingeniero');
 }
 function login() {
-  const p = document.getElementById('lpass').value.trim().toLowerCase();
+  const p = document.getElementById('lpass').value;
   if (p === PASS[chosen]) {
     role = chosen;
     document.getElementById('lerr').textContent = '';
@@ -946,31 +759,11 @@ function areaColor(area) {
 // ── VISTA INGENIERO ──
 let ingFiltro = 'todos'; // todos | proceso | finalizado | acta
 
-// Días transcurridos desde la finalización (para la meta de acta ≤ 5 días)
-function parseFechaDMA(s){
-  if(!s) return null;
-  s = String(s).trim();
-  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
-  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
-  return null;
-}
-function diasDesdeFin(o){
-  const f = parseFechaDMA(o.fechaFin);
-  if(!f) return null;
-  const hoy = new Date(); hoy.setHours(0,0,0,0); f.setHours(0,0,0,0);
-  return Math.max(0, Math.round((hoy - f)/864e5));
-}
-
 function renderIngTrab() {
   const activos      = ots.filter(o => o.etapa >= 3 && o.etapa < 6);
   const enProceso    = activos.filter(o => o.etapa === 4);
-  const finalizados  = activos.filter(o => o.etapa === 5)
-    // Más días sin acta = más arriba (los que rompen la meta de 5 días primero)
-    .sort((a,b) => (diasDesdeFin(b) ?? -1) - (diasDesdeFin(a) ?? -1));
+  const finalizados  = activos.filter(o => o.etapa === 5);
   const actaPend     = finalizados.filter(o => !o.acta);
-  const actasVencidas = actaPend.filter(o => (diasDesdeFin(o) ?? 0) > 5).length;
 
   // KPIs
   document.getElementById('ing-kpis').innerHTML = `
@@ -978,15 +771,14 @@ function renderIngTrab() {
     <div class="ikpi"><div class="ikpi-val y">${enProceso.length}</div><div class="ikpi-label">En proceso</div></div>
     <div class="ikpi"><div class="ikpi-val g">${finalizados.length}</div><div class="ikpi-label">Finalizados</div></div>
     <div class="ikpi"><div class="ikpi-val r">${actaPend.length}</div><div class="ikpi-label">Acta pendiente</div></div>
-    <div class="ikpi" ${actasVencidas ? 'style="outline:2px solid var(--red);outline-offset:-2px;border-radius:10px"' : ''}><div class="ikpi-val r">${actasVencidas}</div><div class="ikpi-label">⚠ Vencidas (+5 días)</div></div>
   `;
 
   // Pestañas de filtro
   const tabs = [
     { key: 'todos',      label: `Todos`,           cnt: activos.length },
-    { key: 'proceso',    label: `En proceso`,   cnt: enProceso.length },
-    { key: 'finalizado', label: `Finalizados`,  cnt: finalizados.length },
-    { key: 'acta',       label: `Acta pendiente`, cnt: actaPend.length },
+    { key: 'proceso',    label: `🟡 En proceso`,   cnt: enProceso.length },
+    { key: 'finalizado', label: `✅ Finalizados`,  cnt: finalizados.length },
+    { key: 'acta',       label: `📋 Acta pendiente`, cnt: actaPend.length },
   ];
   document.getElementById('ing-tabs').innerHTML = tabs.map(t => `
     <button class="itab ${ingFiltro === t.key ? 'on' : ''}" onclick="setIngFiltro('${t.key}')">
@@ -1010,7 +802,7 @@ function renderIngTrab() {
   if (!visible.length) {
     document.getElementById('work-grid').innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
-        <div class="empty-icon">${ingFiltro === 'acta' ? '—' : '✓'}</div>
+        <div class="empty-icon">${ingFiltro === 'acta' ? '📋' : '✅'}</div>
         <div class="empty-text">${
           ingFiltro === 'acta'       ? 'Ningún trabajo con acta pendiente' :
           ingFiltro === 'proceso'    ? 'Ningún trabajo en proceso' :
@@ -1025,17 +817,6 @@ function renderIngTrab() {
   document.getElementById('work-grid').innerHTML = visible.map(o => {
     const nota = (notas[o.id] || []).slice(-1)[0] || null;
     const esFinalizado = o.etapa === 5;
-    // Semáforo de la meta de acta ≤ 5 días tras finalizar
-    const dAf = (esFinalizado && !o.acta) ? diasDesdeFin(o) : null;
-    let actaPill;
-    if (o.acta) {
-      actaPill = `<span class="acta-pill ok">✓ Acta generada</span>`;
-    } else if (esFinalizado && dAf !== null) {
-      const c = dAf > 5 ? ['#FDECEA','#C0001A','#C0001A'] : dAf >= 4 ? ['#FEF3C7','#F59E0B','#92400E'] : ['#E8F5EE','#1E7A3E','#1E7A3E'];
-      actaPill = `<span class="acta-pill pend" style="background:${c[0]};border:1px solid ${c[1]};color:${c[2]};font-weight:800">Acta pendiente · ${dAf} día${dAf!==1?'s':''}${dAf>5?' ⚠ VENCIDA':dAf>=4?' — ¡vence pronto!':''}</span>`;
-    } else {
-      actaPill = `<span class="acta-pill pend">Acta pendiente</span>`;
-    }
     return `
       <div class="work-card ${esFinalizado ? 'finalizado' : 'proceso'}">
         <div class="wc-top">
@@ -1053,9 +834,11 @@ function renderIngTrab() {
         </div>
         <div class="wc-status">
           <span class="status-pill ${esFinalizado ? 'finalizado' : 'proceso'}">
-            ${esFinalizado ? '✓ Finalizado' : '● En proceso'}
+            ${esFinalizado ? '✅ Finalizado' : '🟡 En proceso'}
           </span>
-          ${actaPill}
+          <span class="acta-pill ${o.acta ? 'ok' : 'pend'}">
+            📋 Acta ${o.acta ? 'generada' : 'pendiente'}
+          </span>
         </div>
         <div class="wc-obs ${nota || o.obs ? 'has-obs' : ''}">
           ${nota ? `<strong>Última nota:</strong> ${nota.txt}` : (o.obs ? o.obs : '<span style="color:var(--muted);font-style:italic">Sin observaciones registradas</span>')}
@@ -1065,8 +848,8 @@ function renderIngTrab() {
             ${esFinalizado ? 'Ya finalizado' : '✅ Marcar como finalizado'}
           </button>
           ${esFinalizado
-            ? `<button class="btn-note" style="background:var(--aglow);border-color:var(--accent);color:var(--accent)" onclick="abrirActa('${o.id}')">${o.acta ? 'Ver acta' : 'Generar acta'}</button>`
-            : `<button class="btn-note" onclick="abrirNota('${o.id}')">+ Nota</button>`
+            ? `<button class="btn-note" style="background:var(--aglow);border-color:var(--accent);color:var(--accent)" onclick="abrirActa('${o.id}')">📋 ${o.acta ? 'Ver acta' : 'Generar acta'}</button>`
+            : `<button class="btn-note" onclick="abrirNota('${o.id}')">📝 Nota</button>`
           }
         </div>
       </div>`;
@@ -1121,26 +904,6 @@ function confirmarFinalizado() {
   enviarCambio('finalizado', o.num, razonFinal)
     .then(() => toast('✓ Trabajo finalizado — Sheet actualizado', 'ok'))
     .catch(() => toast('⚠ Marcado localmente. No se pudo actualizar el Sheet.', 'err'));
-  // ★ Ofrecer la firma rápida del técnico en campo
-  mostrarLinkFirmaTecnico(o.num);
-}
-
-// Modal con el link de firma rápida para el técnico (copiar o abrir)
-function mostrarLinkFirmaTecnico(ctzNum) {
-  const base = location.origin + location.pathname.replace(/[^/]*$/, '');
-  const link = base + 'firma-tecnico.html?ctz=' + encodeURIComponent(ctzNum);
-  document.getElementById('ft-link').value = link;
-  document.getElementById('ft-abrir').onclick = () => window.open(link, '_blank');
-  openModal('mod-firma-tecnico');
-}
-
-function copiarLinkFirmaTecnico() {
-  const inp = document.getElementById('ft-link');
-  inp.select(); inp.setSelectionRange(0, 99999);
-  navigator.clipboard.writeText(inp.value).then(
-    () => toast('✓ Link copiado — pégalo en WhatsApp para el técnico', 'ok'),
-    () => { document.execCommand('copy'); toast('✓ Link copiado', 'ok'); }
-  );
 }
 
 function marcarActa(id) {
@@ -1516,28 +1279,13 @@ async function enviarAlCliente() {
   if (!correo) { alert('Por favor selecciona o escribe el correo del contacto.'); return; }
   if (!actaOT) return;
 
-  const modoPrueba   = document.getElementById('modo-prueba').checked;
-  const correoPrueba = document.getElementById('correo-prueba').value.trim();
-  if (modoPrueba && !correoPrueba) {
-    alert('Modo prueba activo: escribe el correo de prueba, o desmarca la casilla para enviar al cliente real.');
-    return;
-  }
-  if (modoPrueba && !confirm('MODO PRUEBA: el correo irá solo a ' + correoPrueba + '. ¿Continuar?')) return;
-  if (!modoPrueba && !confirm('⚠️ ENVÍO REAL: el correo irá al cliente (' + correo + ') con los líderes en copia. ¿Continuar?')) return;
-
   const btn = document.getElementById('btn-enviar-cliente');
   btn.disabled = true; btn.textContent = '⏳ Enviando...';
 
   const fotosData = fotos.filter(f => f);
-  // Firma: usar la imagen subida si existe; si no, exportar el canvas dibujado.
-  // El try evita el error de "canvas contaminado" cuando se recuperó una firma de Drive.
-  let firmaEng = firmaEngData || '';
-  if (!firmaEng) {
-    try { firmaEng = document.getElementById('firma-entrega').toDataURL('image/png'); }
-    catch(e) { firmaEng = ''; }
-  }
+  const firmaEng  = document.getElementById('firma-entrega').toDataURL('image/png');
 
-  const payload = {
+  const params = new URLSearchParams({
     tabla:           'guardar_acta',
     ctz:             actaOT.num,
     fecha:           document.getElementById('ac-fecha').value,
@@ -1548,68 +1296,33 @@ async function enviarAlCliente() {
     lugar:           document.getElementById('ac-lugar').value,
     descripcion:     document.getElementById('ac-desc').value,
     fotos:           JSON.stringify(fotosData),
-    adjuntos:        JSON.stringify(adjuntos),
     firmaEng,
     entregaNombre:   document.getElementById('ac-entrega-nom').value,
     entregaCargo:    document.getElementById('ac-entrega-cargo').value,
     noOC:            actaOT.noOC    || '',
     cliente:         actaOT.cliente || '',
-    colilla:         actaOT.colilla || '',
-    modoPrueba:      modoPrueba ? '1' : '',
-    tipoFirma:       (document.querySelector('input[name="tipo-firma"]:checked')||{}).value || 'tecnico',
-    correoPrueba:    modoPrueba ? correoPrueba : ''
-  };
+    colilla:         actaOT.colilla || ''
+  });
 
-  // Envío confiable: dispara la petición y LUEGO verifica que el acta quedó
-  // guardada. Si no, avisa para reintentar (antes con no-cors no se verificaba
-  // y un fallo del servidor pasaba desapercibido).
   try {
-    // Disparar el guardado/envío (no-cors por si el servidor tarda con fotos)
-    fetch(APPS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    }).catch(() => {});
-
-    const destino = modoPrueba ? correoPrueba + ' (modo prueba)' : correo;
-    btn.textContent = '⟳ Verificando envío...';
-
-    // Verificar a los 6 segundos que el acta realmente se guardó
-    setTimeout(async () => {
-      try {
-        const chk = await fetch(APPS_URL + '?tabla=acta&ctz=' + encodeURIComponent(actaOT.num));
-        const d = await chk.json();
-        if (d && d.ok) {
-          toast('✓ Acta enviada a ' + destino + ' — el correo llega en 1-2 minutos', 'ok');
-          if (!actaOT.acta) marcarActa(actaOT.id);
-          btn.textContent = '✓ Enviado';
-          setTimeout(() => { btn.disabled = false; btn.textContent = 'Enviar al cliente para firma'; }, 6000);
-        } else {
-          // No se guardó: reintentar una vez esperando (por si tardó)
-          toast('⚠ Verificando... el acta tardó en guardarse, reintenta si no llega el correo', 'err');
-          btn.disabled = false; btn.textContent = '↻ Reintentar envío';
-        }
-      } catch(e) {
-        // No se pudo verificar (sin conexión) — dejar reintentar por si acaso
-        toast('El envío se procesó pero no se pudo confirmar. Verifica que llegue el correo o reintenta.', 'err');
-        btn.disabled = false; btn.textContent = '↻ Reintentar envío';
-      }
-    }, 6000);
-
+    const res  = await fetch(APPS_URL + '?' + params.toString());
+    const data = await res.json();
+    if (data.ok) {
+      toast('✓ Acta enviada a ' + correo + ' — el cliente recibirá el link para firmar', 'ok');
+      if (!actaOT.acta) marcarActa(actaOT.id);
+      btn.textContent = '✓ Enviado';
+    } else {
+      toast('✕ Error: ' + (data.error || 'intenta de nuevo'), 'err');
+      btn.disabled = false; btn.textContent = '📧 Enviar al cliente para firma';
+    }
   } catch(e) {
     toast('✕ Error de conexión', 'err');
-    btn.disabled = false; btn.textContent = 'Enviar al cliente para firma';
+    btn.disabled = false; btn.textContent = '📧 Enviar al cliente para firma';
   }
 }
 let satVal = null;
 let calVal = null;
-let firmaEngData = null; // firma del ingeniero subida como imagen (evita canvas contaminado)
-let fotos = []; // dinámico — las que se necesiten
-// Estado del informe técnico
-let itMateriales = [];
-let itFotos = { descripcion: [], secuencia: [], observaciones: [] };
-let adjuntos = []; // informes PDF: [{nombre, data}]
+const fotos = [null, null, null, null];
 const firmaCtx = {};
 let correosPep = [];
 
@@ -1646,45 +1359,14 @@ function abrirActa(id) {
   document.getElementById('ac-correo-manual').value = '';
   document.getElementById('ac-area-manual').value = '';
   document.getElementById('btn-enviar-cliente').disabled = false;
-  document.getElementById('btn-enviar-cliente').textContent = 'Enviar al cliente para firma';
+  document.getElementById('btn-enviar-cliente').textContent = '📧 Enviar al cliente para firma';
 
-  // Reset fotos y adjuntos
-  fotos = [];
-  renderFotos();
-  adjuntos = [];
-  renderAdjuntos();
-  firmaEngData = null;
-  document.getElementById('firma-entrega').style.backgroundImage = '';
-  // Reset informe técnico
-  itMateriales = [];
-  itFotos = { descripcion: [], secuencia: [], observaciones: [] };
-  renderMateriales();
-  ['descripcion','secuencia','observaciones'].forEach(renderFotosSeccion);
-  document.getElementById('it-descripcion').value = '';
-  document.getElementById('it-secuencia').value = '';
-  document.getElementById('it-observaciones').value = '';
-  document.getElementById('it-recomendaciones').value = '';
-  document.getElementById('btn-informe').disabled = false;
-  document.getElementById('btn-informe').textContent = 'Generar informe técnico y adjuntar al acta';
-  document.getElementById('it-autoguardado').textContent = '';
-  // Recuperar respaldo del navegador si quedó de una sesión anterior sin guardar en nube
-  try {
-    const local = localStorage.getItem('mb_informe_' + actaOT.num);
-    if (local) {
-      const inf = JSON.parse(local);
-      if (inf.descripcion || inf.secuencia || inf.observaciones || inf.recomendaciones) {
-        document.getElementById('it-descripcion').value    = inf.descripcion || '';
-        document.getElementById('it-secuencia').value      = inf.secuencia || '';
-        document.getElementById('it-observaciones').value  = inf.observaciones || '';
-        document.getElementById('it-recomendaciones').value= inf.recomendaciones || '';
-        try { itMateriales = JSON.parse(inf.materiales || '[]'); renderMateriales(); } catch(e) {}
-        ['descripcion','secuencia','observaciones'].forEach(sec => {
-          try { itFotos[sec] = JSON.parse(inf['fotos'+sec.charAt(0).toUpperCase()+sec.slice(1)] || '[]').map(x=>({img:x.img||x,desc:x.desc||''})); renderFotosSeccion(sec); } catch(e) {}
-        });
-        mostrarEstadoAutoguardado('local');
-      }
-    }
-  } catch(e) {}
+  // Reset fotos
+  fotos.fill(null);
+  [0,1,2,3].forEach(i => {
+    document.getElementById('img-' + i).style.display = 'none';
+    document.getElementById('img-' + i).src = '';
+  });
 
   // Reset satisfacción y calificación
   satVal = null; calVal = null;
@@ -1708,109 +1390,8 @@ function abrirActa(id) {
   // Inicializar canvas de firmas
   setTimeout(() => {
     iniciarFirma('firma-entrega');
-    initFirmaInforme();
     iniciarFirma('firma-recibe');
   }, 100);
-
-  // ★ Si el acta ya fue diligenciada antes, recuperar su contenido guardado
-  if (actaOT.acta) {
-    cargarActaGuardada(actaOT.num);
-  }
-}
-
-// Trae del Sheet lo que se guardó de un acta y lo vuelve a pintar en el formulario
-async function cargarActaGuardada(ctz) {
-  try {
-    const res = await fetch(APPS_URL + '?tabla=acta&ctz=' + encodeURIComponent(ctz));
-    const d = await res.json();
-    if (!d || !d.ok) return;
-
-    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-    // La fecha puede venir en formato largo; el input type=date exige yyyy-MM-dd
-    if (d.fecha) {
-      let fISO = d.fecha;
-      const dm = String(d.fecha).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if (dm) fISO = dm[3] + '-' + ('0'+dm[2]).slice(-2) + '-' + ('0'+dm[1]).slice(-2);
-      else if (!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha)) {
-        const parsed = new Date(d.fecha);
-        if (!isNaN(parsed)) fISO = parsed.toISOString().split('T')[0];
-      }
-      set('ac-fecha', fISO);
-    }
-    set('ac-posicion', d.posicion);
-    set('ac-lugar', d.lugar);
-    set('ac-desc', d.descripcion);
-    set('ac-entrega-nom', d.entregaNombre);
-    set('ac-entrega-cargo', d.entregaCargo);
-    set('ac-recibe-nom', d.recibeNombre);
-    set('ac-recibe-cargo', d.recibeCargo);
-    if (d.correoContacto) set('ac-correo-manual', d.correoContacto);
-    if (d.areaContacto)   set('ac-area-manual', d.areaContacto);
-    if (d.contacto)       set('ac-contacto-search', d.contacto);
-
-    // Fotos guardadas (URLs de Drive)
-    try {
-      const fArr = JSON.parse(d.fotos || '[]');
-      if (fArr.length) { fotos = fArr; renderFotos(); }
-    } catch(e) {}
-
-    // Informes adjuntos guardados
-    try {
-      const aArr = JSON.parse(d.adjuntos || '[]');
-      if (aArr.length) { adjuntos = aArr.map(x => ({ nombre: x.n || x.nombre, u: x.u })); renderAdjuntos(); }
-    } catch(e) {}
-
-    // ★ Borrador del informe técnico guardado → recargar para editar
-    try {
-      if (d.informe) {
-        const inf = JSON.parse(d.informe);
-        document.getElementById('it-descripcion').value    = inf.descripcion || '';
-        document.getElementById('it-secuencia').value      = inf.secuencia || '';
-        document.getElementById('it-observaciones').value  = inf.observaciones || '';
-        document.getElementById('it-recomendaciones').value= inf.recomendaciones || '';
-        try { itMateriales = JSON.parse(inf.materiales || '[]'); renderMateriales(); } catch(e) {}
-        // Fotos por sección (vienen como {img,desc} con URL de Drive)
-        const cargarFotosSec = (sec, json) => {
-          try { itFotos[sec] = JSON.parse(json || '[]').map(x => ({ img: x.img || x, desc: x.desc || '' })); renderFotosSeccion(sec); } catch(e) {}
-        };
-        cargarFotosSec('descripcion', inf.fotosDescripcion);
-        cargarFotosSec('secuencia',   inf.fotosSecuencia);
-        cargarFotosSec('observaciones', inf.fotosObservaciones);
-        document.getElementById('btn-informe').textContent = 'Regenerar informe técnico';
-      }
-    } catch(e) {}
-
-    // Firma del ingeniero guardada → guardarla como dato para reenviar,
-    // y pintarla como fondo del canvas (sin exportarlo, para no contaminarlo)
-    if (d.firmaEng) {
-      firmaEngData = d.firmaEng; // ya es URL de Drive; el backend la respeta sin re-subir
-      const c = document.getElementById('firma-entrega');
-      if (c) {
-        c.style.backgroundImage = 'url("' + d.firmaEng + '")';
-        c.style.backgroundSize = 'contain';
-        c.style.backgroundRepeat = 'no-repeat';
-        c.style.backgroundPosition = 'center';
-      }
-    }
-
-    // Evaluación del cliente (si ya firmó)
-    if (d.satisfaccion) {
-      satVal = d.satisfaccion;
-      document.getElementById('sat-si').classList.toggle('on', satVal === 'SI');
-      document.getElementById('sat-no').classList.toggle('on', satVal === 'NO');
-    }
-    if (d.calificacion) { calVal = parseInt(d.calificacion); if (calVal) setCal(calVal); }
-    if (d.pendientes) set('ac-pendientes', d.pendientes);
-
-    // Aviso del estado
-    if (d.estado === 'FIRMADA') {
-      toast('Acta firmada por el cliente — contenido cargado', 'ok');
-    } else {
-      toast('Acta recuperada — pendiente de firma del cliente', 'ok');
-    }
-  } catch(e) {
-    toast('No se pudo recuperar el contenido guardado', 'err');
-  }
 }
 
 function cerrarActa() {
@@ -1830,295 +1411,17 @@ function setCal(n) {
   [1,2,3,4,5,6,7,8,9,10].forEach(i => document.getElementById('cal-' + i).classList.toggle('on', i === n));
 }
 
-// Comprime cada imagen en el navegador (máx 1400px, JPEG 75%) — una foto
-// de celular pasa de ~3 MB a ~150 KB sin perder calidad visible
-function comprimirImagen(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        const MAX = 1400;
-        let w = img.width, hgt = img.height;
-        if (w > MAX || hgt > MAX) {
-          if (w >= hgt) { hgt = Math.round(hgt * MAX / w); w = MAX; }
-          else { w = Math.round(w * MAX / hgt); hgt = MAX; }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = hgt;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, hgt);
-        resolve(canvas.toDataURL('image/jpeg', 0.75));
-      };
-      img.onerror = reject;
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-async function agregarFotos(input) {
-  const files = [...input.files];
-  input.value = '';
-  for (const file of files) {
-    try {
-      fotos.push(await comprimirImagen(file));
-    } catch(e) { toast('No se pudo cargar una imagen', 'err'); }
-  }
-  renderFotos();
-}
-
-function quitarFoto(i) {
-  fotos.splice(i, 1);
-  renderFotos();
-}
-
-async function agregarAdjuntos(input) {
-  const files = [...input.files];
-  input.value = '';
-  for (const file of files) {
-    if (file.size > 8 * 1024 * 1024) { alert('"' + file.name + '" supera 8 MB. Comprime el PDF e inténtalo de nuevo.'); continue; }
-    const data = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = e => res(e.target.result);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
-    adjuntos.push({ nombre: file.name, data });
-  }
-  renderAdjuntos();
-}
-
-function quitarAdjunto(i) {
-  adjuntos.splice(i, 1);
-  renderAdjuntos();
-}
-
-function renderAdjuntos() {
-  document.getElementById('adjuntos-lista').innerHTML = adjuntos.map((a, i) => `
-    <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:8px;padding:8px 12px;background:var(--surface)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#C0001A" stroke-width="1.7" style="width:18px;height:18px;flex-shrink:0"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>
-      <span style="flex:1;font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.nombre}</span>
-      <button onclick="quitarAdjunto(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;font-weight:700">✕</button>
-    </div>`).join('');
-}
-
-// ── INFORME TÉCNICO ──
-function agregarMaterial() {
-  const desc = document.getElementById('it-mat-desc').value.trim();
-  const cant = document.getElementById('it-mat-cant').value.trim();
-  const uni  = document.getElementById('it-mat-unidad').value.trim();
-  if (!desc) { alert('Escribe la descripción del material.'); return; }
-  itMateriales.push({ desc, cant: cant || '—', uni: uni || '' });
-  marcarCambioInforme();
-  document.getElementById('it-mat-desc').value = '';
-  document.getElementById('it-mat-cant').value = '';
-  document.getElementById('it-mat-unidad').value = '';
-  renderMateriales();
-}
-function quitarMaterial(i) { itMateriales.splice(i,1); renderMateriales(); marcarCambioInforme(); }
-function renderMateriales() {
-  document.getElementById('it-materiales-lista').innerHTML = itMateriales.map((m,i)=>`
-    <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:6px;padding:7px 12px;background:var(--surface);font-size:13px">
-      <span style="flex:1">${m.desc}</span>
-      <span style="color:var(--muted)">${m.cant} ${m.uni}</span>
-      <button onclick="quitarMaterial(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-weight:700">✕</button>
-    </div>`).join('');
-}
-
-async function agregarFotoSeccion(seccion, input) {
-  const files = [...input.files];
-  input.value = '';
-  for (const file of files) {
-    try { itFotos[seccion].push({ img: await comprimirImagen(file), desc: '' }); }
-    catch(e) { toast('No se pudo cargar una imagen', 'err'); }
-  }
-  renderFotosSeccion(seccion);
-  marcarCambioInforme();
-}
-function quitarFotoSeccion(seccion, i) { itFotos[seccion].splice(i,1); renderFotosSeccion(seccion); marcarCambioInforme(); }
-function setDescFoto(seccion, i, val) { if(itFotos[seccion][i]) itFotos[seccion][i].desc = val; marcarCambioInforme(); }
-function renderFotosSeccion(seccion) {
-  document.getElementById('it-fotos-'+seccion).innerHTML = itFotos[seccion].map((f,i)=>`
-    <div style="position:relative;border:1px solid var(--border);border-radius:8px;padding:6px;background:var(--surface)">
-      <img src="${f.img}" style="width:100%;border-radius:6px;display:block">
-      <button onclick="quitarFotoSeccion('${seccion}',${i})" style="position:absolute;top:9px;right:9px;background:rgba(20,22,28,.75);color:#fff;border:none;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:11px;font-weight:700">✕</button>
-      <input value="${(f.desc||'').replace(/"/g,'&quot;')}" oninput="setDescFoto('${seccion}',${i},this.value)" placeholder="Descripción de la figura (opcional)" style="width:100%;margin-top:5px;border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:11px;font-family:var(--font)">
-    </div>`).join('');
-}
-
-// ── Firma del informe técnico ──
-let firmaInformeData = null, firmaInformeCtx = null, firmaInformeDraw = false, fiLastX = 0, fiLastY = 0;
-function initFirmaInforme() {
-  const c = document.getElementById('firma-informe');
-  if (!c || firmaInformeCtx) return;
-  c.width = c.offsetWidth; c.height = c.offsetHeight;
-  firmaInformeCtx = c.getContext('2d');
-  firmaInformeCtx.strokeStyle = '#1A1A1A'; firmaInformeCtx.lineWidth = 2; firmaInformeCtx.lineCap = 'round';
-  const pos = e => { const r = c.getBoundingClientRect(); const s = e.touches?e.touches[0]:e; return {x:s.clientX-r.left,y:s.clientY-r.top}; };
-  const st = e => { e.preventDefault(); firmaInformeData=null; c.style.backgroundImage=''; const p=pos(e); firmaInformeDraw=true; fiLastX=p.x; fiLastY=p.y; };
-  const dr = e => { e.preventDefault(); if(!firmaInformeDraw) return; const p=pos(e); firmaInformeCtx.beginPath(); firmaInformeCtx.moveTo(fiLastX,fiLastY); firmaInformeCtx.lineTo(p.x,p.y); firmaInformeCtx.stroke(); fiLastX=p.x; fiLastY=p.y; marcarCambioInforme(); };
-  const sp = () => firmaInformeDraw=false;
-  c.addEventListener('mousedown',st); c.addEventListener('mousemove',dr); c.addEventListener('mouseup',sp);
-  c.addEventListener('touchstart',st,{passive:false}); c.addEventListener('touchmove',dr,{passive:false}); c.addEventListener('touchend',sp);
-}
-function limpiarFirmaInforme() {
-  const c = document.getElementById('firma-informe');
-  if (firmaInformeCtx) firmaInformeCtx.clearRect(0,0,c.width,c.height);
-  c.style.backgroundImage=''; firmaInformeData=null;
-}
-function subirFirmaInforme(input) {
-  const f = input.files[0]; input.value=''; if(!f) return;
-  const c = document.getElementById('firma-informe'); initFirmaInforme();
-  const ctx = c.getContext('2d'); const r = new FileReader();
-  r.onload = e => { const im = new Image(); im.onload = () => {
-    ctx.clearRect(0,0,c.width,c.height);
-    const es = Math.min((c.width-16)/im.width,(c.height-16)/im.height);
-    const w = im.width*es, h = im.height*es;
-    ctx.drawImage(im,(c.width-w)/2,(c.height-h)/2,w,h);
-    try { const d=ctx.getImageData(0,0,c.width,c.height); const px=d.data; for(let i=0;i<px.length;i+=4){if(px[i]>205&&px[i+1]>205&&px[i+2]>205)px[i+3]=0;} ctx.putImageData(d,0,0); } catch(err){}
-    firmaInformeData = e.target.result; marcarCambioInforme();
-  }; im.src = e.target.result; };
-  r.readAsDataURL(f);
-}
-function obtenerFirmaInformeCanvas() {
-  const c = document.getElementById('firma-informe');
-  if (!firmaInformeCtx) return '';
-  const vacio = !firmaInformeCtx.getImageData(0,0,c.width,c.height).data.some(v=>v!==0);
-  if (vacio) return '';
-  try { return c.toDataURL('image/png'); } catch(e){ return ''; }
-}
-
-async function generarInformeTecnico() {
-  if (!actaOT) return;
-  const desc = document.getElementById('it-descripcion').value.trim();
-  if (!desc) { alert('La descripción del trabajo es obligatoria para el informe.'); return; }
-
-  const btn = document.getElementById('btn-informe');
-  btn.disabled = true; btn.textContent = 'Generando informe...';
-
-  try {
-    const payload = {
-      tabla:          'generar_informe',
-      ctz:            actaOT.num,
-      noOC:           actaOT.noOC || '',
-      cliente:        actaOT.cliente || '',
-      colilla:        actaOT.colilla || '',
-      fecha:          document.getElementById('ac-fecha').value,
-      lugar:          document.getElementById('ac-lugar').value,
-      posicion:       document.getElementById('ac-posicion').value,
-      responsable:    document.getElementById('ac-entrega-nom').value,
-      cargo:          document.getElementById('ac-entrega-cargo').value,
-      firmaNombre:    document.getElementById('it-firma-nombre').value.trim(),
-      firmaCargo:     document.getElementById('it-firma-cargo').value.trim(),
-      firmaInforme:   firmaInformeData || obtenerFirmaInformeCanvas(),
-      descripcion:    desc,
-      secuencia:      document.getElementById('it-secuencia').value.trim(),
-      observaciones:  document.getElementById('it-observaciones').value.trim(),
-      recomendaciones:document.getElementById('it-recomendaciones').value.trim(),
-      materiales:     JSON.stringify(itMateriales),
-      fotosDescripcion:   JSON.stringify(itFotos.descripcion),
-      fotosSecuencia:     JSON.stringify(itFotos.secuencia),
-      fotosObservaciones: JSON.stringify(itFotos.observaciones)
-    };
-    const data = await postJSON(payload);
-    if (data.ok && data.url) {
-      // Si ya había un informe técnico adjuntado, reemplazarlo (no duplicar)
-      const nombreInf = data.nombre || ('Informe técnico CTZ' + actaOT.num + '.pdf');
-      adjuntos = adjuntos.filter(a => !(a.nombre || '').startsWith('Informe '));
-      adjuntos.push({ nombre: nombreInf, u: data.url });
-      try { localStorage.removeItem('mb_informe_' + actaOT.num); } catch(e) {}
-      renderAdjuntos();
-      toast('✓ Informe técnico generado y adjuntado al acta', 'ok');
-      btn.textContent = '✓ Informe generado — adjuntado abajo';
-      setTimeout(() => { btn.disabled = false; btn.textContent = 'Regenerar informe técnico'; }, 4000);
-    } else {
-      throw new Error(data.error || 'No se pudo generar');
-    }
-  } catch(e) {
-    toast('✕ Error al generar el informe: ' + e.message, 'err');
-    btn.disabled = false; btn.textContent = 'Generar informe técnico y adjuntar al acta';
-  }
-}
-
-// ── AUTOGUARDADO DEL INFORME ──
-let autoguardarTimer = null;
-let autoguardadoEstado = ''; // '', 'guardando', 'guardado'
-
-function recogerInforme() {
-  return {
-    descripcion:    document.getElementById('it-descripcion').value.trim(),
-    secuencia:      document.getElementById('it-secuencia').value.trim(),
-    observaciones:  document.getElementById('it-observaciones').value.trim(),
-    recomendaciones:document.getElementById('it-recomendaciones').value.trim(),
-    materiales:     JSON.stringify(itMateriales),
-    fotosDescripcion:   JSON.stringify(itFotos.descripcion),
-    fotosSecuencia:     JSON.stringify(itFotos.secuencia),
-    fotosObservaciones: JSON.stringify(itFotos.observaciones)
+function cargarFoto(idx, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    fotos[idx] = e.target.result;
+    const img = document.getElementById('img-' + idx);
+    img.src = e.target.result;
+    img.style.display = 'block';
   };
-}
-
-function hayContenidoInforme(d) {
-  return d.descripcion || d.secuencia || d.observaciones || d.recomendaciones ||
-    itMateriales.length || itFotos.descripcion.length || itFotos.secuencia.length || itFotos.observaciones.length;
-}
-
-// Se llama en cada cambio; espera 2.5s sin escribir antes de guardar (debounce)
-function marcarCambioInforme() {
-  mostrarEstadoAutoguardado('escribiendo');
-  // Respaldo instantáneo en el navegador (por si se cierra antes del guardado en nube)
-  try { if (actaOT) localStorage.setItem('mb_informe_' + actaOT.num, JSON.stringify(recogerInforme())); } catch(e) {}
-  if (autoguardarTimer) clearTimeout(autoguardarTimer);
-  autoguardarTimer = setTimeout(autoguardarInformeNube, 2500);
-}
-
-async function autoguardarInformeNube() {
-  if (!actaOT) return;
-  const d = recogerInforme();
-  if (!hayContenidoInforme(d)) return; // nada que guardar
-  mostrarEstadoAutoguardado('guardando');
-  try {
-    const res = await postJSON(Object.assign({ tabla: 'autoguardar_informe', ctz: actaOT.num }, d));
-    if (res.ok) {
-      // Actualizar las fotos locales con las URLs de Drive devueltas (evita re-subir)
-      try {
-        if (res.fotosDescripcion)   itFotos.descripcion   = JSON.parse(res.fotosDescripcion);
-        if (res.fotosSecuencia)     itFotos.secuencia     = JSON.parse(res.fotosSecuencia);
-        if (res.fotosObservaciones) itFotos.observaciones = JSON.parse(res.fotosObservaciones);
-      } catch(e) {}
-      mostrarEstadoAutoguardado('guardado');
-    } else if (res.error === 'acta_no_existe') {
-      // El acta aún no se ha enviado: queda el respaldo del navegador
-      mostrarEstadoAutoguardado('local');
-    } else {
-      mostrarEstadoAutoguardado('error');
-    }
-  } catch(e) {
-    mostrarEstadoAutoguardado('local'); // sin conexión: queda el respaldo local
-  }
-}
-
-function mostrarEstadoAutoguardado(estado) {
-  const el = document.getElementById('it-autoguardado');
-  if (!el) return;
-  const textos = {
-    escribiendo: ['✎ Escribiendo...', 'var(--muted)'],
-    guardando:   ['⟳ Guardando...', 'var(--muted)'],
-    guardado:    ['✓ Guardado en la nube', 'var(--green)'],
-    local:       ['✓ Guardado en este dispositivo', 'var(--yellow)'],
-    error:       ['⚠ No se pudo guardar', 'var(--red)']
-  };
-  const [txt, color] = textos[estado] || ['', ''];
-  el.textContent = txt;
-  el.style.color = color;
-}
-
-function renderFotos() {
-  document.getElementById('fotos-grid').innerHTML = fotos.map((f, i) => `
-    <div class="foto-slot" style="border-style:solid">
-      <img src="${f}" style="display:block">
-      <button onclick="quitarFoto(${i})" style="position:absolute;top:6px;right:6px;z-index:2;background:rgba(20,22,28,.75);color:#fff;border:none;border-radius:4px;width:24px;height:24px;cursor:pointer;font-size:13px;font-weight:700">✕</button>
-    </div>`).join('');
+  reader.readAsDataURL(file);
 }
 
 // ── FIRMA DIGITAL ──
@@ -2138,7 +1441,7 @@ function iniciarFirma(canvasId) {
     const src  = e.touches ? e.touches[0] : e;
     return { x: src.clientX - rect.left, y: src.clientY - rect.top };
   }
-  function start(e) { e.preventDefault(); if(canvasId==='firma-entrega'){ firmaEngData=null; canvas.style.backgroundImage=''; } const p = getPos(e); firmaCtx[canvasId].drawing = true; firmaCtx[canvasId].lastX = p.x; firmaCtx[canvasId].lastY = p.y; }
+  function start(e) { e.preventDefault(); const p = getPos(e); firmaCtx[canvasId].drawing = true; firmaCtx[canvasId].lastX = p.x; firmaCtx[canvasId].lastY = p.y; }
   function draw(e)  { e.preventDefault(); if (!firmaCtx[canvasId].drawing) return; const p = getPos(e); ctx.beginPath(); ctx.moveTo(firmaCtx[canvasId].lastX, firmaCtx[canvasId].lastY); ctx.lineTo(p.x, p.y); ctx.stroke(); firmaCtx[canvasId].lastX = p.x; firmaCtx[canvasId].lastY = p.y; }
   function stop()   { firmaCtx[canvasId].drawing = false; }
 
@@ -2150,43 +1453,10 @@ function iniciarFirma(canvasId) {
   canvas.addEventListener('touchend',   stop);
 }
 
-// Carga una imagen de firma (foto o escaneo) dentro del canvas, centrada y
-// ajustada. Si la imagen tiene fondo blanco, lo vuelve transparente para que
-// se vea como una firma real sobre el acta.
-function subirFirma(input, canvasId) {
-  const file = input.files[0];
-  input.value = '';
-  if (!file) return;
-  const canvas = document.getElementById(canvasId);
-  const ctx = canvas.getContext('2d');
-  const reader = new FileReader();
-  reader.onload = e => {
-    const img = new Image();
-    img.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Ajustar manteniendo proporción, con un margen interno
-      const margen = 8;
-      const dispW = canvas.width - margen * 2, dispH = canvas.height - margen * 2;
-      const escala = Math.min(dispW / img.width, dispH / img.height);
-      const w = img.width * escala, hh = img.height * escala;
-      ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - hh) / 2, w, hh);
-      // Guardar la firma como imagen aparte (evita el error de canvas contaminado
-      // al exportar). Se usa esta variable al enviar en vez de toDataURL del canvas.
-      if (canvasId === 'firma-entrega') firmaEngData = e.target.result;
-      toast('Firma cargada', 'ok');
-    };
-    img.onerror = () => toast('No se pudo leer la imagen', 'err');
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
 function limpiarFirma(canvasId) {
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  canvas.style.backgroundImage = '';
-  if (canvasId === 'firma-entrega') firmaEngData = null;
 }
 
 // ── GENERAR PDF ──
@@ -2282,12 +1552,55 @@ async function generarPDF() {
     </body></html>
   `;
 
-  // Abrir ventana de impresión — SOLO descarga/imprime, no envía nada al cliente
+  // Abrir ventana de impresión
   const win = window.open('', '_blank', 'width=800,height=900');
   win.document.write(actaHTML);
   win.document.close();
   win.focus();
   setTimeout(() => { win.print(); }, 500);
+
+  // Marcar acta como generada y enviar al cliente
+  if (actaOT) {
+    const contactoNombre = document.getElementById('ac-recibe-nom').value.trim();
+    const contactoPep = correosPep.find(c =>
+      c.nombre.toLowerCase().includes(contactoNombre.toLowerCase().split(' ')[0])
+    );
+    const correoContacto = contactoPep?.correo || '';
+    const areaContacto   = contactoPep?.area   || '';
+
+    const fotosData = fotos.filter(f => f);
+    const params = new URLSearchParams({
+      tabla:           'guardar_acta',
+      ctz:             actaOT.num,
+      fecha:           document.getElementById('ac-fecha').value,
+      contacto:        contactoNombre,
+      correoContacto,
+      areaContacto,
+      posicion:        document.getElementById('ac-posicion').value,
+      lugar:           document.getElementById('ac-lugar').value,
+      descripcion:     document.getElementById('ac-desc').value,
+      fotos:           JSON.stringify(fotosData),
+      firmaEng:        document.getElementById('firma-entrega').toDataURL('image/png'),
+      entregaNombre:   document.getElementById('ac-entrega-nom').value,
+      entregaCargo:    document.getElementById('ac-entrega-cargo').value,
+      noOC:            actaOT.noOC || '',
+      cliente:         actaOT.cliente || '',
+      colilla:         actaOT.colilla || ''
+    });
+
+    fetch(APPS_URL + '?' + params.toString())
+      .then(r => r.json())
+      .then(d => {
+        if (d.ok && correoContacto) {
+          toast('✓ Acta enviada al cliente: ' + correoContacto, 'ok');
+        } else if (d.ok) {
+          toast('✓ Acta guardada. Sin correo registrado para este contacto.', 'ok');
+        }
+      })
+      .catch(() => toast('⚠ Acta guardada localmente, no se pudo enviar.', 'err'));
+
+    if (actaOT && !actaOT.acta) marcarActa(actaOT.id);
+  }
 }
 
 // ── INIT ──
