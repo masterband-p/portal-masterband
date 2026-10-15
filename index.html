@@ -35,7 +35,10 @@
   .role{border:1.5px solid var(--border);border-radius:12px;padding:14px 12px;text-align:center;transition:all .15s;background:var(--surface)}
   .role:hover{border-color:var(--rojo);background:var(--rojo-l)}
   .role.on{border-color:var(--rojo);background:var(--rojo-l);box-shadow:0 0 0 3px rgba(192,0,26,.08)}
-  .role .ic{font-size:22px}
+  .role .ic{color:var(--ink);margin-bottom:2px}
+  .role.on .ic,.role:hover .ic{color:var(--rojo)}
+  .navitem .ic{color:inherit;display:inline-flex;align-items:center}
+  .navsec .lbl svg{opacity:.7;margin-right:2px}
   .role .nm{font-weight:700;font-size:13.5px;margin-top:4px}
   .role .ds{font-size:11px;color:var(--dim)}
   .lfield{margin-bottom:14px}
@@ -135,7 +138,7 @@
   .mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
   .modcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);cursor:pointer;transition:transform .13s,box-shadow .13s;position:relative;overflow:hidden}
   .modcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,24,40,.1)}
-  .modcard .mic{font-size:26px;margin-bottom:10px}
+  .modcard .mic{width:42px;height:42px;border-radius:11px;background:var(--rojo-l);color:var(--rojo);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
   .modcard h3{font-size:14.5px;font-weight:700}
   .modcard p{font-size:12px;color:var(--dim);margin-top:3px}
   .modcard .code{position:absolute;top:14px;right:14px;font-size:10px;color:var(--mut);font-weight:700}
@@ -238,25 +241,49 @@
 /* ===================== CONFIG ===================== */
 const BACKEND = "https://script.google.com/macros/s/AKfycbw8rE7Wemj-RU-jfu9BqVb_i0FyeMvfVZtDtJHdyEwyz-JsPWNbXatPf13AHG_vG7OS/exec";
 
+/* ---------- Iconos corporativos (SVG de línea, estilo Lucide) ---------- */
+const PATHS = {
+  home:'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5M9.5 21v-6h5v6',
+  calendar:'M7 3v3M17 3v3M3.5 8.5h17M4 6h16v15H4zM8 12h3M14 12h2M8 16h3M14 16h2',
+  clipboard:'M9 4h6v2.5H9zM7 5H5v16h14V5h-2M8.5 11h7M8.5 14.5h7M8.5 18h4',
+  calendarDays:'M7 3v3M17 3v3M3.5 8.5h17M4 6h16v15H4zM8 12h.5M12 12h.5M16 12h.5M8 16h.5M12 16h.5',
+  wallet:'M3 7a2 2 0 0 1 2-2h12v3M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3M3 7h17a1 1 0 0 1 1 1v3h-5a2 2 0 0 0 0 4h5M16 13h.01',
+  check:'M9 11.5l2 2 4-4M12 3l2.5 2 3.5-.3.5 3.4 2 2.9-2 2.9-.5 3.4-3.5-.3L12 21l-2.5-2-3.5.3-.5-3.4-2-2.9 2-2.9.5-3.4 3.5.3z',
+  calculator:'M6 3h12v18H6zM9 7h6M8.5 11h.5M12 11h.5M15.5 11h.5M8.5 14h.5M12 14h.5M15.5 14v3.5M8.5 17.5h4',
+  star:'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L4.5 9.7l5.9-.9z',
+  chart:'M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6M20 14l-4-5-4 3-4-4',
+  grid:'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z',
+  user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5 20a7 7 0 0 1 14 0',
+  bank:'M4 10h16M5 10l7-5 7 5M6 10v8M10 10v8M14 10v8M18 10v8M4 21h16',
+  tools:'M14 7a3 3 0 0 0 4 3l3 3-4 4-3-3a3 3 0 0 0-3-4M10.5 10.5 4 17a2 2 0 0 0 3 3l6.5-6.5M14 7l-3-3',
+  helmet:'M4 14a8 8 0 0 1 16 0M3 14h18v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM12 6V4M9 14V9h6v5',
+  ruler:'M15.5 3.5 3.5 15.5l5 5 12-12zM7 12l2 2M10 9l2 2M13 6l2 2'
+};
+function ic(name, size){
+  const p=PATHS[name]; if(!p) return '';
+  const s=size||18;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-3px">${p.split('M').filter(Boolean).map(seg=>`<path d="M${seg}"/>`).join('')}</svg>`;
+}
+
 const PASS = { gerencia:'master2025', ingeniero:'ing2025', supervisor:'sup2025', dibujante:'dib2025' };
 const ROLES = {
-  gerencia:  {nombre:'Gerencia',  ic:'🏛️', desc:'Acceso completo'},
-  ingeniero: {nombre:'Ingeniero', ic:'🛠️', desc:'Ejecución y OTs'},
-  supervisor:{nombre:'Supervisor',ic:'👷', desc:'Programa su personal'},
-  dibujante: {nombre:'Dibujante', ic:'📐', desc:'Registra entregas'}
+  gerencia:  {nombre:'Gerencia',  ic:'bank',   desc:'Acceso completo'},
+  ingeniero: {nombre:'Ingeniero', ic:'tools',  desc:'Ejecución y OTs'},
+  supervisor:{nombre:'Supervisor',ic:'helmet', desc:'Programa su personal'},
+  dibujante: {nombre:'Dibujante', ic:'ruler',  desc:'Registra entregas'}
 };
 
 /* Registro de módulos */
 const MOD = {
-  inicio:      {label:'Inicio',               ic:'🏠', type:'home'},
-  calendario:  {label:'Calendario',           ic:'📅', type:'calendar'},
-  ots:         {label:'Órdenes de Trabajo',   ic:'📋', file:'Masterband_OTs.html',            code:'MB-01', desc:'Cotizaciones, OTs y actas'},
-  programacion:{label:'Programación',          ic:'🗓️', file:'Masterband_Programacion.html',    code:'MB-02', desc:'Programa el personal por día'},
-  ordenes:     {label:'Órdenes Abiertas',     ic:'💰', file:'Masterband_OrdenesAbiertas.html', code:'MB-05', desc:'Saldos por orden y área'},
-  cotizador:   {label:'Cotizador de Servicio',ic:'🧮', file:'Masterband_CotizadorServicio.html',code:'MB-06', desc:'Estima costos de servicio'},
-  solicitudes: {label:'Solicitudes',          ic:'✅', file:'Masterband_Solicitudes.html',     code:'MB-07', desc:'Aprueba solicitudes de clientes'},
-  evaluacion:  {label:'Evaluación',           ic:'⭐', file:'Masterband_Evaluacion.html',       code:'MB-03', desc:'Evalúa el desempeño del equipo'},
-  desempeno:   {label:'Mi Desempeño',         ic:'📈', file:'Masterband_MiDesempeno.html',     code:'MB-04', desc:'Tus indicadores y registros'}
+  inicio:      {label:'Inicio',               ic:'home',         type:'home'},
+  calendario:  {label:'Calendario',           ic:'calendar',     type:'calendar'},
+  ots:         {label:'Órdenes de Trabajo',   ic:'clipboard',    file:'Masterband_OTs.html',            code:'MB-01', desc:'Cotizaciones, OTs y actas'},
+  programacion:{label:'Programación',          ic:'calendarDays', file:'Masterband_Programacion.html',    code:'MB-02', desc:'Programa el personal por día'},
+  ordenes:     {label:'Órdenes Abiertas',     ic:'wallet',       file:'Masterband_OrdenesAbiertas.html', code:'MB-05', desc:'Saldos por orden y área'},
+  cotizador:   {label:'Cotizador de Servicio',ic:'calculator',   file:'Masterband_CotizadorServicio.html',code:'MB-06', desc:'Estima costos de servicio'},
+  solicitudes: {label:'Solicitudes',          ic:'check',        file:'Masterband_Solicitudes.html',     code:'MB-07', desc:'Aprueba solicitudes de clientes'},
+  evaluacion:  {label:'Evaluación',           ic:'star',         file:'Masterband_Evaluacion.html',       code:'MB-03', desc:'Evalúa el desempeño del equipo'},
+  desempeno:   {label:'Mi Desempeño',         ic:'chart',        file:'Masterband_MiDesempeno.html',     code:'MB-04', desc:'Tus indicadores y registros'}
 };
 
 /* Qué ve cada rol (en orden del menú) */
@@ -268,9 +295,9 @@ const NAV = {
 };
 /* Secciones del menú */
 const SECCIONES = [
-  {lbl:'Principal',  ic:'🏠', keys:['inicio','calendario']},
-  {lbl:'Operación',  ic:'🗂️', keys:['ots','programacion','ordenes','solicitudes','cotizador','evaluacion']},
-  {lbl:'Mi espacio', ic:'👤', keys:['desempeno']}
+  {lbl:'Principal',  ic:'home', keys:['inicio','calendario']},
+  {lbl:'Operación',  ic:'grid', keys:['ots','programacion','ordenes','solicitudes','cotizador','evaluacion']},
+  {lbl:'Mi espacio', ic:'user', keys:['desempeno']}
 ];
 
 /* Festivos Colombia 2026 */
@@ -285,7 +312,7 @@ const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-$
 function pintarRoles(){
   $('roles').innerHTML = Object.keys(ROLES).map(k=>`
     <div class="role" data-r="${k}" onclick="pickRole('${k}')">
-      <div class="ic">${ROLES[k].ic}</div><div class="nm">${ROLES[k].nombre}</div><div class="ds">${ROLES[k].desc}</div>
+      <div class="ic">${ic(ROLES[k].ic,22)}</div><div class="nm">${ROLES[k].nombre}</div><div class="ds">${ROLES[k].desc}</div>
     </div>`).join('');
 }
 function pickRole(k){ selRole=k; document.querySelectorAll('.role').forEach(e=>e.classList.toggle('on',e.dataset.r===k)); $('pwd').focus(); }
@@ -317,10 +344,10 @@ function pintarMenu(){
   SECCIONES.forEach(sec=>{
     const items = sec.keys.filter(k=>permit.includes(k));
     if(!items.length) return;
-    html += `<div class="navsec"><div class="lbl">${sec.ic||''} ${sec.lbl}</div>` +
+    html += `<div class="navsec"><div class="lbl">${ic(sec.ic,13)} ${sec.lbl}</div>` +
       items.map(k=>`
         <div class="navitem" data-k="${k}" onclick="ir('${k}')">
-          <span class="ic">${MOD[k].ic}</span><span>${MOD[k].label}</span>
+          <span class="ic">${ic(MOD[k].ic)}</span><span>${MOD[k].label}</span>
           ${MOD[k].code?`<span class="code">${MOD[k].code}</span>`:''}
         </div>`).join('') + `</div>`;
   });
@@ -337,7 +364,7 @@ function ir(key){
   const m=MOD[key];
   if(m.type==='home') renderHome();
   else if(m.type==='calendar') renderCalendar();
-  else $('main').innerHTML = `<iframe class="modframe" src="${m.file}" title="${m.label}"></iframe>`;
+  else { const sep=m.file.includes('?')?'&':'?'; $('main').innerHTML = `<iframe class="modframe" src="${m.file}${sep}embed=1&rol=${encodeURIComponent(ROLE)}" title="${m.label}"></iframe>`; }
 }
 function toggleSidebar(open){
   if(window.innerWidth>820) return;
@@ -363,12 +390,12 @@ async function renderHome(){
   // Banner + contenedor (los KPIs se llenan tras cargar la programación)
   let html = `<div class="pagepad">
     <div class="hero">
-      <h2>${saludo}, ${r.nombre} 👋</h2>
+      <h2>${saludo}, ${r.nombre}</h2>
       <div class="sub">Resumen general · ${fechaTxt}</div>
       <div class="chips" id="heroChips">
-        <span class="chip2">📅 <b>${now.getDate()} ${MESES[now.getMonth()].slice(0,3).toUpperCase()} ${now.getFullYear()}</b></span>
-        <span class="chip2" id="chipFrentes">🗓️ <b>—</b> frentes hoy</span>
-        <span class="chip2" id="chipPersonal">👥 <b>—</b> programados hoy</span>
+        <span class="chip2">${ic('calendar',15)} <b>${now.getDate()} ${MESES[now.getMonth()].slice(0,3).toUpperCase()} ${now.getFullYear()}</b></span>
+        <span class="chip2" id="chipFrentes">${ic('clipboard',15)} <b>—</b> frentes hoy</span>
+        <span class="chip2" id="chipPersonal">${ic('user',15)} <b>—</b> programados hoy</span>
       </div>
     </div>
     <div class="kpis" id="kpis">
@@ -377,12 +404,12 @@ async function renderHome(){
       <div class="kpi"><div class="kh"><span class="kd" style="background:var(--azul)"></span>Esta semana</div><div class="kv" id="kSem">—</div><div class="ks">frentes de lun a dom</div><div class="ka" onclick="ir('calendario')">Ver semana →</div></div>
       <div class="kpi"><div class="kh"><span class="kd" style="background:var(--naranja)"></span>Inasistencias hoy</div><div class="kv" id="kIna">—</div><div class="ks">registradas en programación</div></div>
     </div>
-    <div class="sechead">🗂️ Accesos de tu perfil</div>
+    <div class="sechead">${ic('grid',16)} Accesos de tu perfil</div>
     <div class="mods">`;
   mods.forEach(k=>{ const m=MOD[k];
     html += `<div class="modcard" onclick="ir('${k}')">
       <span class="code">${m.code||''}</span>
-      <div class="mic">${m.ic}</div><h3>${m.label}</h3><p>${m.desc||''}</p>
+      <div class="mic">${ic(m.ic,24)}</div><h3>${m.label}</h3><p>${m.desc||''}</p>
       <div class="go">Abrir módulo →</div></div>`;
   });
   html += `</div></div>`;
@@ -402,8 +429,8 @@ async function renderHome(){
   });
   const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
   set('kFre',fHoy); set('kPer',pHoy); set('kSem',fSem); set('kIna',iHoy);
-  const cf=$('chipFrentes'); if(cf) cf.innerHTML=`🗓️ <b>${fHoy}</b> frentes hoy`;
-  const cp=$('chipPersonal'); if(cp) cp.innerHTML=`👥 <b>${pHoy}</b> programados hoy`;
+  const cf=$('chipFrentes'); if(cf) cf.innerHTML=`${ic('clipboard',15)} <b>${fHoy}</b> frentes hoy`;
+  const cp=$('chipPersonal'); if(cp) cp.innerHTML=`${ic('user',15)} <b>${pHoy}</b> programados hoy`;
 }
 
 function sincronizar(btn){
@@ -452,10 +479,10 @@ function dibujarCalendario(prog){
   let html = `<div class="pagepad">
     <div class="phead"><h2>Calendario</h2><p>Programación de personal por día — datos en vivo.</p></div>
     <div class="tiles">
-      <div class="tile"><div class="dot" style="background:var(--rojo-l)">📋</div><b>${nMes}</b><span>Programados (mes)</span></div>
-      <div class="tile"><div class="dot" style="background:#F0F4FF">📍</div><b>${nHoy}</b><span>Hoy</span></div>
-      <div class="tile"><div class="dot" style="background:var(--verde-l)">🗓️</div><b>${nSemana}</b><span>Esta semana</span></div>
-      <div class="tile"><div class="dot" style="background:#FDECEC">⚠️</div><b>${nIna}</b><span>Inasistencias (mes)</span></div>
+      <div class="tile"><div class="dot" style="background:var(--rojo-l);color:var(--rojo)">${ic('clipboard',16)}</div><b>${nMes}</b><span>Programados (mes)</span></div>
+      <div class="tile"><div class="dot" style="background:#F0F4FF;color:var(--azul)">${ic('home',16)}</div><b>${nHoy}</b><span>Hoy</span></div>
+      <div class="tile"><div class="dot" style="background:var(--verde-l);color:var(--verde)">${ic('calendarDays',16)}</div><b>${nSemana}</b><span>Esta semana</span></div>
+      <div class="tile"><div class="dot" style="background:#FDECEC;color:#B91C1C">${ic('user',16)}</div><b>${nIna}</b><span>Inasistencias (mes)</span></div>
     </div>
     <div class="calbar">
       <button class="navb" onclick="mesCal(-1)">← Ant.</button>

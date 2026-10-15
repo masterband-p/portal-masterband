@@ -2295,5 +2295,31 @@ ots   = loadLocal();
 notas = loadNotas();
 cargarCorreosPep(); // Cargar correos PepsiCo en background
 </script>
+
+<script>
+/* ===== MODO EMBEBIDO (dentro del Portal) ===== */
+(function(){
+  var q=new URLSearchParams(location.search);
+  if(q.get('embed')!=='1') return;
+  var rol=q.get('rol')||'ingeniero';
+  window.__ROL__=rol;
+  var st=document.createElement('style');
+  st.textContent='.topbar .brand-wrap,.topbar .brand-div,.topbar .brand-mod,.topbar .topright{display:none!important}'
+    +'.topbar{min-height:0;padding:6px 20px}#login-screen{display:none!important}';
+  document.head.appendChild(st);
+  window.addEventListener('load',function(){
+    try{
+      role=(rol==='gerencia')?'gerencia':'ingeniero';
+      var ls=document.getElementById('login-screen'); if(ls) ls.style.display='none';
+      var ap=document.getElementById('app'); if(ap) ap.style.display='block';
+      var ur=document.getElementById('urole'); if(ur) ur.textContent=(role==='gerencia'?'Gerencia':'Ingeniero');
+      if(typeof buildNav==='function') buildNav();
+      if(typeof renderAll==='function') renderAll();
+      if(typeof sync==='function') sync();
+    }catch(e){ console.warn('embed OTs',e); }
+  });
+})();
+</script>
+
 </body>
 </html>
