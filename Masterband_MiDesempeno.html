@@ -245,5 +245,20 @@ async function cargarEntregas(){
   }catch(e){}
 }
 </script>
+
+<script>
+/* ===== MODO EMBEBIDO (dentro del Portal) ===== */
+(function(){
+  var q=new URLSearchParams(location.search);
+  if(q.get('embed')!=='1') return;
+  var rol=q.get('rol')||'';
+  window.__ROL__=rol;
+  var st=document.createElement('style');
+  st.textContent=".topbar{display:none!important}";
+  document.head.appendChild(st);
+  window.addEventListener('load',function(){ try{ if(['ingeniero','supervisor','dibujante'].indexOf(rol)>=0){ rolActual=rol;var lg=document.getElementById('login'); if(lg)lg.classList.add('off');var ap=document.getElementById('app'); if(ap)ap.style.display='block';var rl=document.getElementById('rol-label'); if(rl&&typeof LABEL!=='undefined')rl.textContent=LABEL[rol];if(typeof cargar==='function') cargar(); } }catch(e){ console.warn('embed',e); } });
+})();
+</script>
+
 </body>
 </html>

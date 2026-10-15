@@ -524,5 +524,20 @@ function addPerfil(cargo,cant){
   calcular();
 })();
 </script>
+
+<script>
+/* ===== MODO EMBEBIDO (dentro del Portal) ===== */
+(function(){
+  var q=new URLSearchParams(location.search);
+  if(q.get('embed')!=='1') return;
+  var rol=q.get('rol')||'';
+  window.__ROL__=rol;
+  var st=document.createElement('style');
+  st.textContent=".top{display:none!important}";
+  document.head.appendChild(st);
+  window.addEventListener('load',function(){ try{  }catch(e){ console.warn('embed',e); } });
+})();
+</script>
+
 </body>
 </html>

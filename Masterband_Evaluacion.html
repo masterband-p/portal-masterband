@@ -296,5 +296,20 @@ async function guardar(persona){
   }
 }
 </script>
+
+<script>
+/* ===== MODO EMBEBIDO (dentro del Portal) ===== */
+(function(){
+  var q=new URLSearchParams(location.search);
+  if(q.get('embed')!=='1') return;
+  var rol=q.get('rol')||'';
+  window.__ROL__=rol;
+  var st=document.createElement('style');
+  st.textContent=".topbar{display:none!important}";
+  document.head.appendChild(st);
+  window.addEventListener('load',function(){ try{ var mp=document.getElementById('mod-pass'); if(mp)mp.classList.remove('on');var ap=document.getElementById('app'); if(ap)ap.style.display='block';var h=new Date(); var ms=document.getElementById('mes-sel'); if(ms)ms.value=h.getFullYear()+'-'+String(h.getMonth()+1).padStart(2,'0');if(typeof cargarMes==='function') cargarMes(); }catch(e){ console.warn('embed',e); } });
+})();
+</script>
+
 </body>
 </html>
