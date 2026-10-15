@@ -380,30 +380,65 @@ function contarPersonal(txt){
   return String(txt||'').split(/[,\n;]+/).map(s=>s.trim()).filter(Boolean).length;
 }
 
+/* ---------- Datos de OTs (actas) para el resumen ---------- */
+const _cacheH={};
+async function cargarOTs(){
+  if(_cacheH.ots) return _cacheH.ots;
+  try{ const r=await fetch(BACKEND+'?nocache='+Date.now(),{cache:'no-store'}); const d=await r.json(); _cacheH.ots=Array.isArray(d)?d:[]; }
+  catch(e){ _cacheH.ots=[]; }
+  return _cacheH.ots;
+}
+function mapEtapaH(estado,apro,noOC,etrab,facturado,nfact){
+  const e=(estado||'').toLowerCase().trim(),a=(apro||'').toLowerCase().trim(),t=(etrab||'').toLowerCase().trim(),f=(facturado||'').toLowerCase().trim();
+  const nf=(nfact||'').trim(); const facReal=/\d{3,}/.test(nf)&&!/pdte|pend|validar|revisar|no\.?\s*e|falta/i.test(nf);
+  if(f==='si'||f==='sí'||facReal) return 6;
+  if(t==='finalizado') return 5;
+  if(t==='en proceso'&&(noOC||'').trim()) return 4;
+  if((noOC||'').trim()) return 3;
+  if(a==='si'||a==='sí') return 2;
+  if(e==='enviada') return 1;
+  return 0;
+}
+function parseFDMA(s){ if(!s)return null; s=String(s).trim(); let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m)return new Date(+m[3],+m[2]-1,+m[1]); m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m)return new Date(+m[1],+m[2]-1,+m[3]); return null; }
+function diasFin(s){ const f=parseFDMA(s); if(!f)return null; const h=new Date();h.setHours(0,0,0,0);f.setHours(0,0,0,0); return Math.max(0,Math.round((h-f)/864e5)); }
+function otsResumen(data){
+  let activos=0,enProceso=0,finalizados=0,actaPend=0,vencidas=0;
+  for(let i=1;i<data.length;i++){ const row=data[i]||[]; const a=String(row[0]||'').trim();
+    if(/[a-zA-Z]/.test(a)) continue; if(/\d{4}-\d{2}-\d{2}T/.test(a)) continue;
+    const num=a.replace(/[^0-9]/g,''); if(!num||num.length<3||num.length>6) continue;
+    const et=mapEtapaH(String(row[7]||''),String(row[8]||''),String(row[9]||''),String(row[10]||''),String(row[12]||''),String(row[14]||''));
+    if(et>=3&&et<6) activos++;
+    if(et===4) enProceso++;
+    if(et===5){ finalizados++; const acta=['SI','SÍ'].indexOf(String(row[13]||'').toUpperCase().trim())>=0; if(!acta){ actaPend++; if((diasFin(String(row[17]||''))||0)>5) vencidas++; } }
+  }
+  return {activos,enProceso,finalizados,actaPend,vencidas};
+}
+function kpiCard(color,title,val,sub,action,highlight){
+  return `<div class="kpi"${highlight?' style="outline:2px solid var(--rojo);outline-offset:-1px"':''}>
+    <div class="kh"><span class="kd" style="background:${color}"></span>${title}</div>
+    <div class="kv">${val}</div><div class="ks">${sub}</div>
+    ${action?`<div class="ka" onclick="${action.fn}">${action.txt} →</div>`:''}</div>`;
+}
+
 async function renderHome(){
   const r=ROLES[ROLE];
   const now=new Date();
   const saludo = now.getHours()<12?'Buenos días':now.getHours()<19?'Buenas tardes':'Buenas noches';
   const fechaTxt = `${cap(DIAS[now.getDay()])}, ${now.getDate()} de ${MESES[now.getMonth()]} de ${now.getFullYear()} · ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const resumenTit={gerencia:'Resumen general',ingeniero:'Resumen de Ingeniería',supervisor:'Resumen de Campo',dibujante:'Resumen de Diseño'}[ROLE]||'Resumen';
   const mods = NAV[ROLE].filter(k=>MOD[k].file);
 
-  // Banner + contenedor (los KPIs se llenan tras cargar la programación)
   let html = `<div class="pagepad">
     <div class="hero">
       <h2>${saludo}, ${r.nombre}</h2>
-      <div class="sub">Resumen general · ${fechaTxt}</div>
+      <div class="sub">${resumenTit} · ${fechaTxt}</div>
       <div class="chips" id="heroChips">
         <span class="chip2">${ic('calendar',15)} <b>${now.getDate()} ${MESES[now.getMonth()].slice(0,3).toUpperCase()} ${now.getFullYear()}</b></span>
-        <span class="chip2" id="chipFrentes">${ic('clipboard',15)} <b>—</b> frentes hoy</span>
-        <span class="chip2" id="chipPersonal">${ic('user',15)} <b>—</b> programados hoy</span>
+        <span class="chip2" id="chipA">${ic('clipboard',15)} <b>—</b></span>
+        <span class="chip2" id="chipB">${ic('star',15)} <b>—</b></span>
       </div>
     </div>
-    <div class="kpis" id="kpis">
-      <div class="kpi"><div class="kh"><span class="kd" style="background:var(--rojo)"></span>Frentes hoy</div><div class="kv" id="kFre">—</div><div class="ks">trabajos programados</div><div class="ka" onclick="ir('calendario')">Ver calendario →</div></div>
-      <div class="kpi"><div class="kh"><span class="kd" style="background:var(--verde)"></span>Personal hoy</div><div class="kv" id="kPer">—</div><div class="ks">colaboradores asignados</div>${NAV[ROLE].includes('programacion')?'<div class="ka" onclick="ir(\'programacion\')">Programar →</div>':''}</div>
-      <div class="kpi"><div class="kh"><span class="kd" style="background:var(--azul)"></span>Esta semana</div><div class="kv" id="kSem">—</div><div class="ks">frentes de lun a dom</div><div class="ka" onclick="ir('calendario')">Ver semana →</div></div>
-      <div class="kpi"><div class="kh"><span class="kd" style="background:var(--naranja)"></span>Inasistencias hoy</div><div class="kv" id="kIna">—</div><div class="ks">registradas en programación</div></div>
-    </div>
+    <div class="kpis" id="kpis"><div class="kpi"><div class="kv">…</div><div class="ks">cargando indicadores…</div></div></div>
     <div class="sechead">${ic('grid',16)} Accesos de tu perfil</div>
     <div class="mods">`;
   mods.forEach(k=>{ const m=MOD[k];
@@ -415,26 +450,50 @@ async function renderHome(){
   html += `</div></div>`;
   $('main').innerHTML=html;
 
-  // KPIs desde la programación real
-  const prog = await cargarProg();
-  const hoyISO=iso(new Date());
-  const wkStart=new Date(); wkStart.setDate(wkStart.getDate()-((wkStart.getDay()+6)%7)); wkStart.setHours(0,0,0,0);
-  const wkEnd=new Date(wkStart); wkEnd.setDate(wkStart.getDate()+6); wkEnd.setHours(23,59,59,999);
-  let fHoy=0, pHoy=0, fSem=0, iHoy=0;
-  prog.forEach(p=>{
-    if(!p.fecha) return;
-    const d=new Date(p.fecha+'T00:00:00'); if(isNaN(d)) return;
-    if(p.fecha===hoyISO){ fHoy++; pHoy+=contarPersonal(p.personal); if(p.inasistencias) iHoy+=contarPersonal(p.inasistencias); }
-    if(d>=wkStart && d<=wkEnd) fSem++;
-  });
-  const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
-  set('kFre',fHoy); set('kPer',pHoy); set('kSem',fSem); set('kIna',iHoy);
-  const cf=$('chipFrentes'); if(cf) cf.innerHTML=`${ic('clipboard',15)} <b>${fHoy}</b> frentes hoy`;
-  const cp=$('chipPersonal'); if(cp) cp.innerHTML=`${ic('user',15)} <b>${pHoy}</b> programados hoy`;
+  const chip=(id,h)=>{ const e=$(id); if(e) e.innerHTML=h; };
+
+  // ===== Resumen por ROL =====
+  if(ROLE==='ingeniero' || ROLE==='gerencia'){
+    const o=otsResumen(await cargarOTs());
+    $('kpis').innerHTML =
+      kpiCard('var(--rojo)','Actas pendientes',o.actaPend,'finalizados sin acta',{fn:"ir('ots')",txt:'Generar actas'}) +
+      kpiCard('#B91C1C','Actas vencidas',o.vencidas,'+5 días sin generar',{fn:"ir('ots')",txt:'Revisar'}, o.vencidas>0) +
+      kpiCard('var(--azul)','En proceso',o.enProceso,'con OC, en ejecución',{fn:"ir('ots')",txt:'Ver trabajos'}) +
+      kpiCard('var(--verde)','Finalizados',o.finalizados,'trabajos terminados',null);
+    chip('chipA',`${ic('clipboard',15)} <b>${o.actaPend}</b> actas pendientes`);
+    chip('chipB',`${ic('star',15)} <b>${o.vencidas}</b> vencidas`);
+  }
+  else if(ROLE==='supervisor'){
+    const prog=await cargarProg(); const hoyISO=iso(new Date());
+    const wkS=new Date(); wkS.setDate(wkS.getDate()-((wkS.getDay()+6)%7)); wkS.setHours(0,0,0,0);
+    const wkE=new Date(wkS); wkE.setDate(wkS.getDate()+6); wkE.setHours(23,59,59,999);
+    let fHoy=0,pHoy=0,fSem=0,iHoy=0;
+    prog.forEach(p=>{ if(!p.fecha)return; const d=new Date(p.fecha+'T00:00:00'); if(isNaN(d))return;
+      if(p.fecha===hoyISO){ fHoy++; pHoy+=contarPersonal(p.personal); if(p.inasistencias) iHoy+=contarPersonal(p.inasistencias);} if(d>=wkS&&d<=wkE)fSem++; });
+    $('kpis').innerHTML =
+      kpiCard('var(--rojo)','Frentes hoy',fHoy,'trabajos programados',{fn:"ir('calendario')",txt:'Ver calendario'}) +
+      kpiCard('var(--verde)','Personal hoy',pHoy,'colaboradores asignados',{fn:"ir('programacion')",txt:'Programar'}) +
+      kpiCard('var(--azul)','Esta semana',fSem,'frentes de lun a dom',{fn:"ir('calendario')",txt:'Ver semana'}) +
+      kpiCard('var(--naranja)','Inasistencias hoy',iHoy,'registradas en el día',null, iHoy>0);
+    chip('chipA',`${ic('clipboard',15)} <b>${fHoy}</b> frentes hoy`);
+    chip('chipB',`${ic('user',15)} <b>${pHoy}</b> programados hoy`);
+  }
+  else if(ROLE==='dibujante'){
+    let ent='—',pct='—';
+    try{ const d=await (await fetch(BACKEND+'?tabla=mi_desempeno&rol=dibujante&meses=1&t='+Date.now())).json();
+      const o=(d&&d.dibujante&&d.dibujante.existe)?d.dibujante:(d&&d.serie&&d.serie.length?d.serie[d.serie.length-1]:null);
+      if(o){ ent=(o.entregas!=null?o.entregas:'—'); if(o.entregas){ pct=Math.round((o.aTiempo||0)/o.entregas*100)+'%'; } }
+    }catch(e){}
+    $('kpis').innerHTML =
+      kpiCard('var(--rojo)','Entregas del mes',ent,'planos entregados',{fn:"ir('desempeno')",txt:'Registrar entrega'}) +
+      kpiCard('var(--verde)','% a tiempo',pct,'cumplimiento de fechas',{fn:"ir('desempeno')",txt:'Ver detalle'});
+    chip('chipA',`${ic('clipboard',15)} <b>${ent}</b> entregas del mes`);
+    chip('chipB',`${ic('star',15)} <b>${pct}</b> a tiempo`);
+  }
 }
 
 function sincronizar(btn){
-  PROG=null;
+  PROG=null; if(typeof _cacheH!=='undefined') _cacheH.ots=null;
   if(btn){ btn.disabled=true; const o=btn.innerHTML; btn.innerHTML='⟳ Sincronizando…'; setTimeout(()=>{btn.disabled=false;btn.innerHTML=o;},1200); }
   const key=(location.hash||'#inicio').replace('#','');
   if(key==='calendario') renderCalendar(); else if(key===''||key==='inicio') renderHome();
