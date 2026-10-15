@@ -4,322 +4,526 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-
-<title>Masterband · Portal de Gestión</title>
+<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="favicon-32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon-32.png" type="image/png">
+<title>Portal Masterband</title>
 <style>
-  :root {
-    --ink:#14161C; --steel:#3D434F; --muted:#7A8089;
-    --mist:#EEF0F2; --surface:#FFFFFF; --line:#D9DCE1;
-    --red:#C0001A; --red-dark:#8A0012; --red-tint:#FBF0F1;
-    --display:'Barlow Condensed',sans-serif;
-    --body:'Barlow',-apple-system,sans-serif;
-    --sh:0 1px 2px rgba(20,22,28,.06),0 4px 14px rgba(20,22,28,.06);
-    --shm:0 2px 4px rgba(20,22,28,.08),0 12px 28px rgba(20,22,28,.12);
+  :root{
+    --rojo:#C0001A; --rojo-d:#8f0013; --rojo-l:#F5E6E9;
+    --ink:#1A1D23; --dim:#6B7280; --mut:#9AA1AC;
+    --bg:#F4F5F7; --surface:#FFFFFF; --border:#E6E8EC; --border2:#EFF0F3;
+    --verde:#1E9E57; --verde-l:#E7F6EE; --azul:#3B6FD4; --naranja:#E8803A; --amber:#B45309; --amber-l:#FEF3C7;
+    --sb:#FFFFFF; --sb-active:#F5E6E9; --sb-ink:#374151;
+    --font:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+    --shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:var(--body);background:var(--mist);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+  html,body{height:100%}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+  button{font-family:var(--font);cursor:pointer}
+  a{color:inherit;text-decoration:none}
 
-  /* ── TOPBAR ── */
-  .topbar{background:var(--surface);border-bottom:1px solid var(--line);height:64px;padding:0 28px;display:flex;align-items:center;justify-content:space-between}
-  .wordmark{display:flex;align-items:center;gap:12px;text-decoration:none}
-  .mark{width:34px;height:34px;background:var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .mark svg{width:20px;height:20px;stroke:#fff}
-  .wm-text{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:.14em;color:#fff;line-height:1;text-transform:uppercase}
-  .wm-text b{color:var(--red);font-weight:700}
-  .wm-sub{font-size:10px;letter-spacing:.22em;color:#8A8F98;text-transform:uppercase;margin-top:3px}
-  .rol-wrap{display:flex;align-items:center;gap:12px}
-  .rol-pill{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:2px;padding:6px 13px;font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--ink);text-transform:uppercase}
-  .rol-pill svg{width:14px;height:14px;stroke:var(--red)}
-  .btn-rol{background:none;border:none;font-family:var(--body);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:.03em}
-  .btn-rol:hover{color:var(--red)}
+  /* ---------- LOGIN ---------- */
+  #login{position:fixed;inset:0;background:linear-gradient(135deg,#1A1D23,#2b2f38);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+  .lcard{background:var(--surface);border-radius:18px;max-width:420px;width:100%;padding:32px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+  .llogo{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .llogo img{height:40px}
+  .lcard h1{font-size:18px;font-weight:700}
+  .lcard .sub{color:var(--dim);font-size:13px;margin-bottom:20px}
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .role{border:1.5px solid var(--border);border-radius:12px;padding:14px 12px;text-align:center;transition:all .15s;background:var(--surface)}
+  .role:hover{border-color:var(--rojo);background:var(--rojo-l)}
+  .role.on{border-color:var(--rojo);background:var(--rojo-l);box-shadow:0 0 0 3px rgba(192,0,26,.08)}
+  .role .ic{font-size:22px}
+  .role .nm{font-weight:700;font-size:13.5px;margin-top:4px}
+  .role .ds{font-size:11px;color:var(--dim)}
+  .lfield{margin-bottom:14px}
+  .lfield label{display:block;font-size:12px;font-weight:600;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
+  .lfield input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;outline:none;transition:border .15s}
+  .lfield input:focus{border-color:var(--rojo)}
+  .lbtn{width:100%;background:var(--rojo);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;transition:background .15s}
+  .lbtn:hover{background:var(--rojo-d)}
+  .lerr{color:var(--rojo);font-size:12.5px;margin-top:10px;min-height:16px;text-align:center}
 
-  /* ── HERO: plano técnico ── */
-  .hero{position:relative;background:var(--surface);border-bottom:1px solid var(--line);overflow:hidden}
-  .hero::before{content:'';position:absolute;inset:0;
-    background-image:linear-gradient(rgba(20,22,28,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(20,22,28,.045) 1px,transparent 1px);
-    background-size:36px 36px}
-  .hero-inner{position:relative;max-width:980px;margin:0 auto;padding:54px 28px 46px}
-  .eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-  .eyebrow .tick{width:26px;height:2px;background:var(--red)}
-  .eyebrow span{font-size:12px;font-weight:600;letter-spacing:.28em;color:var(--steel);text-transform:uppercase}
-  .hero-title{font-family:var(--display);font-weight:700;font-size:52px;line-height:.98;letter-spacing:.01em;text-transform:uppercase;color:var(--ink)}
-  .hero-title em{font-style:normal;color:var(--red)}
-  .hero-sub{margin-top:14px;font-size:15.5px;color:var(--steel);max-width:520px;line-height:1.55}
-
-  /* ── MÓDULOS: cajetines de plano ── */
-  .modules-zone{max-width:980px;margin:0 auto;width:100%;padding:38px 28px 64px;flex:1}
-  .zone-label{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
-  .zone-label .n{font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
-  .zone-label .rule{flex:1;height:1px;background:var(--line)}
-  .modules{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
-  .module-card{position:relative;background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:box-shadow .18s,transform .18s,border-color .18s;box-shadow:var(--sh);display:none;padding:26px 26px 22px}
-  .module-card.visible{display:block}
-  .module-card::after{content:'';position:absolute;top:0;left:0;width:44px;height:3px;background:var(--red);transition:width .22s}
-  .module-card:hover{box-shadow:var(--shm);transform:translateY(-3px);border-color:#C6CAD1}
-  .module-card:hover::after{width:100%}
-  .mod-icon{width:46px;height:46px;background:var(--ink);display:flex;align-items:center;justify-content:center;margin-bottom:18px}
-  .mod-icon svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  .mod-code{position:absolute;top:20px;right:22px;font-family:var(--display);font-weight:600;font-size:12px;letter-spacing:.16em;color:#C0C4CB}
-  .mod-title{font-family:var(--display);font-weight:600;font-size:21px;letter-spacing:.02em;text-transform:uppercase;line-height:1.1;margin-bottom:8px}
-  .mod-desc{font-size:13.5px;color:var(--steel);line-height:1.55;margin-bottom:16px;min-height:42px}
-  .mod-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
-  .mod-tag{border:1px solid var(--line);padding:3px 10px;font-size:11px;font-weight:600;letter-spacing:.05em;color:var(--steel);text-transform:uppercase}
-  .mod-arrow{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--red);text-transform:uppercase;display:flex;align-items:center;gap:8px}
-  .mod-arrow::after{content:'';width:22px;height:1.5px;background:var(--red);transition:width .2s}
-  .module-card:hover .mod-arrow::after{width:34px}
-
-  /* ── SELECTOR DE ROL ── */
-  .overlay{position:fixed;inset:0;background:rgba(20,22,28,.66);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:200;padding:16px}
-  .overlay.on{display:flex}
-  .rol-modal{background:var(--surface);max-width:440px;width:100%;box-shadow:var(--shm);border-top:3px solid var(--red);padding:32px}
-  .rol-title{font-family:var(--display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.03em;text-align:center;margin-bottom:4px}
-  .rol-sub{font-size:13.5px;color:var(--muted);text-align:center;margin-bottom:22px}
-  .rol-opt{display:flex;align-items:center;gap:15px;width:100%;background:var(--surface);border:1px solid var(--line);padding:15px 18px;margin-bottom:10px;cursor:pointer;font-family:var(--body);text-align:left;transition:all .15s}
-  .rol-opt:hover{border-color:var(--red);background:var(--red-tint)}
-  .rol-opt .ric{width:40px;height:40px;background:var(--mist);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .rol-opt .ric svg{width:21px;height:21px;stroke:var(--ink);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  .rol-opt:hover .ric{background:var(--red)}
-  .rol-opt:hover .ric svg{stroke:#fff}
-  .rol-opt .tit{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}
-  .rol-opt .des{font-size:12px;color:var(--muted)}
-  .pass-zone{display:none;margin-top:6px}
-  .pass-zone.on{display:block}
-  .pass-zone input{width:100%;background:var(--mist);border:1px solid var(--line);padding:12px 14px;font-family:var(--body);font-size:14px;margin-bottom:10px;text-align:center;letter-spacing:.08em}
-  .pass-zone input:focus{outline:none;border-color:var(--red)}
-  .pass-zone .mbtn{width:100%;background:var(--red);border:none;padding:12px;font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#fff;cursor:pointer}
-  .pass-zone .mbtn:hover{background:var(--red-dark)}
-  .pass-err{font-size:12px;color:var(--red);font-weight:700;text-align:center;min-height:16px;margin-bottom:4px}
-  .pass-back{background:none;border:none;font-family:var(--body);font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;display:block;margin:8px auto 0}
-
-  /* ── FOOTER: franja de cajetín ── */
-  .footer{background:var(--ink);padding:0}
-  .foot-inner{max-width:980px;margin:0 auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
-  .foot-brand{font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.14em;color:#fff;text-transform:uppercase}
-  .foot-brand b{color:var(--red)}
-  .foot-info{font-size:11.5px;letter-spacing:.06em;color:#8A8F98;text-transform:uppercase}
-
-  @media(max-width:640px){
-    .topbar{padding:0 18px}
-    .hero-inner{padding:38px 18px 34px}
-    .hero-title{font-size:38px}
-    .modules-zone{padding:28px 18px 44px}
-    .wm-sub{display:none}
-    .foot-inner{justify-content:center;text-align:center}
+  /* ---------- APP SHELL ---------- */
+  #app{display:none;height:100vh}
+  .shell{display:grid;grid-template-columns:238px 1fr;grid-template-rows:62px 1fr;height:100vh;grid-template-areas:"side top" "side main"}
+  @media(max-width:820px){
+    .shell{grid-template-columns:1fr;grid-template-areas:"top" "main"}
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:238px;z-index:40;transform:translateX(-100%);transition:transform .22s}
+    .sidebar.open{transform:none}
+    .scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:39;display:none}
+    .scrim.on{display:block}
+    .burger{display:inline-flex!important}
   }
-  @media(prefers-reduced-motion:reduce){ *{transition:none !important} }
+
+  /* Topbar */
+  .topbar{grid-area:top;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 22px}
+  .burger{display:none;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--border);border-radius:9px;background:var(--surface);font-size:16px}
+  .tb-logo{height:32px;width:auto;display:block}
+  .tb-div{width:1px;height:30px;background:var(--border);margin:0 2px}
+  .topbar .ttl{font-weight:700;font-size:14.5px;color:var(--ink)}
+  .topbar .ttl small{display:block;font-weight:400;color:var(--dim);font-size:11.5px}
+  .topbar .sp{margin-left:auto}
+  .iconbtn{width:38px;height:38px;border:1px solid var(--border);border-radius:9px;background:var(--surface);display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:var(--dim)}
+  .iconbtn:hover{border-color:var(--rojo);color:var(--rojo)}
+  .syncbtn{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:9px 14px;font-weight:600;font-size:12.5px;color:var(--ink);display:inline-flex;align-items:center;gap:7px}
+  .syncbtn:hover{border-color:var(--rojo);color:var(--rojo)}
+  .userbox{display:flex;align-items:center;gap:10px}
+  .userbox .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1f2733,#394559);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .userbox .ui{text-align:right;line-height:1.25}
+  .userbox .ui b{display:block;font-size:13px}
+  .userbox .ui span{font-size:11.5px;color:var(--dim)}
+  .logout{border:1px solid var(--border);background:var(--surface);color:var(--rojo);border-radius:9px;padding:9px 14px;font-weight:600;font-size:12.5px}
+  .logout:hover{background:var(--rojo-l);border-color:var(--rojo)}
+  @media(max-width:700px){ .topbar .ttl,.syncbtn,.tb-div,.userbox .ui{display:none} }
+
+  /* Hero banner (corporativo) */
+  .hero{background:linear-gradient(120deg,#141922 0%,#1d2635 55%,#242f42 100%);border-radius:16px;padding:26px 30px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(20,25,34,.22)}
+  .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(192,0,26,.28),transparent 70%)}
+  .hero h2{font-size:23px;font-weight:800;position:relative}
+  .hero .sub{color:#AEB6C4;font-size:13px;margin-top:3px;position:relative}
+  .hero .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;position:relative}
+  .hero .chip2{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 13px;font-size:12.5px;color:#E6E9EF;display:inline-flex;align-items:center;gap:7px}
+  .hero .chip2 b{color:#fff}
+
+  /* KPI cards (con acción) */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:22px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+  .kpi .kh{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--dim)}
+  .kpi .kh .kd{width:9px;height:9px;border-radius:50%}
+  .kpi .kv{font-size:28px;font-weight:800;margin:8px 0 2px;color:var(--ink)}
+  .kpi .ks{font-size:12px;color:var(--mut)}
+  .kpi .ka{margin-top:12px;font-size:12px;color:var(--rojo);font-weight:700;cursor:pointer;display:inline-block}
+  .sechead{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;margin:4px 0 14px;color:var(--ink)}
+
+  /* Sidebar */
+  .sidebar{grid-area:side;background:var(--sb);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+  .sbrand{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border2)}
+  .sbrand img{height:30px}
+  .sbrand b{font-size:13px;font-weight:800;letter-spacing:-.2px}
+  .sbrand b span{color:var(--rojo)}
+  .navsec{padding:14px 12px 4px}
+  .navsec .lbl{font-size:10.5px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;padding:0 8px 6px}
+  .navitem{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;color:var(--sb-ink);font-weight:500;font-size:13.5px;cursor:pointer;transition:all .13s;margin-bottom:2px;position:relative}
+  .navitem:hover{background:#F7F7F9}
+  .navitem.on{background:var(--sb-active);color:var(--rojo);font-weight:700}
+  .navitem.on::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:2px;background:var(--rojo)}
+  .navitem .ic{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+  .navitem .code{margin-left:auto;font-size:9.5px;color:var(--mut);font-weight:600}
+  .sfoot{margin-top:auto;padding:14px 18px;border-top:1px solid var(--border2);font-size:10.5px;color:var(--mut)}
+
+  /* Main */
+  .main{grid-area:main;overflow:auto;position:relative}
+  .pagepad{padding:22px 26px}
+  @media(max-width:560px){.pagepad{padding:16px}}
+  .phead{margin-bottom:18px}
+  .phead h2{font-size:20px;font-weight:700}
+  .phead p{color:var(--dim);font-size:13px}
+
+  iframe.modframe{width:100%;height:100%;border:none;display:block;background:var(--bg)}
+
+  /* Tiles */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;text-align:center}
+  .tile .dot{width:30px;height:30px;border-radius:50%;margin-bottom:8px;display:flex;align-items:center;justify-content:center}
+  .tile b{font-size:26px;font-weight:800}
+  .tile span{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+  /* Dashboard module cards */
+  .mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .modcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);cursor:pointer;transition:transform .13s,box-shadow .13s;position:relative;overflow:hidden}
+  .modcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,24,40,.1)}
+  .modcard .mic{font-size:26px;margin-bottom:10px}
+  .modcard h3{font-size:14.5px;font-weight:700}
+  .modcard p{font-size:12px;color:var(--dim);margin-top:3px}
+  .modcard .code{position:absolute;top:14px;right:14px;font-size:10px;color:var(--mut);font-weight:700}
+  .modcard .go{margin-top:12px;font-size:12px;color:var(--rojo);font-weight:700}
+
+  /* Calendar */
+  .calbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .calbar .mn{font-size:17px;font-weight:700;min-width:150px;text-align:center}
+  .navb{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:8px 13px;font-weight:600;font-size:13px}
+  .navb:hover{border-color:var(--rojo);color:var(--rojo)}
+  .cal{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .calhead,.calgrid{display:grid;grid-template-columns:repeat(7,1fr)}
+  .calhead div{padding:10px 6px;text-align:center;font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--border)}
+  .cell{min-height:92px;border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);padding:7px 8px;cursor:pointer;transition:background .12s;position:relative}
+  .cell:hover{background:#FAFAFB}
+  .cell.empty{background:#FCFCFD;cursor:default}
+  .cell .dnum{font-size:12.5px;font-weight:600;color:var(--ink)}
+  .cell.today{background:#F0F4FF}
+  .cell.today .dnum{color:var(--azul)}
+  .cell.festivo{background:#F6F2FF}
+  .cell.festivo .fest{font-size:9px;color:#7C3AED;font-weight:700}
+  .cell .ev{margin-top:4px;display:flex;flex-direction:column;gap:3px}
+  .chip{font-size:10.5px;background:var(--rojo-l);color:var(--rojo);border-radius:5px;padding:2px 6px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip.mas{background:#EEF1F6;color:#4B5563}
+  .cell .ina{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--rojo)}
+  .leg{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:11.5px;color:var(--dim)}
+  .leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+
+  .empty-s{text-align:center;color:var(--dim);padding:40px}
+  .loading{text-align:center;color:var(--dim);padding:40px}
+
+  /* Day detail modal */
+  dialog{border:none;border-radius:16px;padding:0;max-width:520px;width:94%;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  .dlgh{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .dlgh h3{font-size:16px}
+  .dlgh button{border:none;background:none;font-size:20px;color:var(--dim)}
+  .dlgb{padding:14px 22px 22px;max-height:60vh;overflow:auto}
+  .fr{border:1px solid var(--border);border-radius:11px;padding:13px 15px;margin-bottom:10px}
+  .fr .frt{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .fr h4{font-size:14px}
+  .fr .hr{font-size:12px;font-weight:700;color:var(--rojo);background:var(--rojo-l);padding:2px 9px;border-radius:999px}
+  .fr .meta{font-size:12px;color:var(--dim);margin-top:5px;line-height:1.6}
+  .fr .tag{display:inline-block;font-size:10.5px;background:#EEF1F6;color:#4B5563;border-radius:5px;padding:1px 7px;margin-right:4px}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <a class="wordmark" href="index.html">
-    <img src="logo-masterband.png" alt="Masterband S.A.S. — Montajes Industriales" style="height:44px;width:auto">
-  </a>
-  <div class="rol-wrap" id="rol-wrap" style="display:none">
-    <span class="rol-pill" id="rol-pill"></span>
-    <button class="btn-rol" onclick="cambiarRol()">Cambiar de rol</button>
-  </div>
-</div>
-
-<!-- SELECTOR DE ROL -->
-<div class="overlay" id="rol-gate">
-  <div class="rol-modal">
-    <div id="rol-paso1">
-      <div style="text-align:center;margin-bottom:16px"><img src="logo-masterband.png" alt="Masterband S.A.S." style="height:46px;width:auto"></div>
-      <div class="rol-title">Identifícate</div>
-      <div class="rol-sub">Selecciona tu perfil para acceder a tus módulos</div>
-      <button class="rol-opt" onclick="elegirRol('gerencia')">
-        <span class="ric"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="1"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg></span>
-        <span><span class="tit">Gerencia</span><br><span class="des">Acceso completo · requiere contraseña</span></span>
-      </button>
-      <button class="rol-opt" onclick="elegirRol('ingeniero')">
-        <span class="ric"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 5.6L3 17.6V21h3.4l5.7-5.7a4.5 4.5 0 0 0 5.6-6L14.5 12.5l-3-3z"/></svg></span>
-        <span><span class="tit">Ingeniero</span><br><span class="des">Trabajos y programación · requiere contraseña</span></span>
-      </button>
-      <button class="rol-opt" onclick="elegirRol('supervisor')">
-        <span class="ric"><svg viewBox="0 0 24 24"><path d="M4 15a8 8 0 0 1 16 0"/><path d="M10 7.5V5a2 2 0 0 1 4 0v2.5"/><path d="M2 15h20v2.5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg></span>
-        <span><span class="tit">Supervisor</span><br><span class="des">Programación y frentes de trabajo · requiere contraseña</span></span>
-      </button>
-      <button class="rol-opt" onclick="elegirRol('dibujante')">
-        <span class="ric"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></span>
-        <span><span class="tit">Dibujante</span><br><span class="des">Mi desempeño y entregas · requiere contraseña</span></span>
-      </button>
-      <button class="rol-opt" onclick="elegirRol('colaborador')">
-        <span class="ric"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
-        <span><span class="tit">Colaborador</span><br><span class="des">Consulta tu programación · sin contraseña</span></span>
-      </button>
+<!-- ================= LOGIN ================= -->
+<div id="login">
+  <div class="lcard">
+    <div class="llogo"><img src="logo-masterband.png" alt="Masterband" onerror="this.style.display='none'"><div><h1>Portal Masterband</h1></div></div>
+    <p class="sub">Selecciona tu perfil e ingresa tu contraseña.</p>
+    <div class="roles" id="roles"></div>
+    <div class="lfield">
+      <label>Contraseña</label>
+      <input type="password" id="pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')entrar()">
     </div>
-    <div class="pass-zone" id="rol-paso2">
-      <div class="rol-title" id="pass-titulo">Contraseña</div>
-      <div class="rol-sub">Ingresa la contraseña de tu perfil</div>
-      <div class="pass-err" id="pass-err"></div>
-      <input type="password" id="rol-pass" placeholder="Contraseña" autocapitalize="none" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')validarRol()">
-      <button class="mbtn" onclick="validarRol()">Entrar</button>
-      <button class="pass-back" onclick="volverPaso1()">← Elegir otro perfil</button>
-    </div>
+    <button class="lbtn" onclick="entrar()">Ingresar</button>
+    <div class="lerr" id="lerr"></div>
   </div>
 </div>
 
-<div class="hero">
-  <div class="hero-inner">
-    <div class="eyebrow"><span class="tick"></span><span>Sistema Interno de Gestión</span></div>
-    <h1 class="hero-title">Portal de <em>Gestión</em><br>Masterband</h1>
-    <p class="hero-sub" id="hero-sub">Cotizaciones, ejecución en campo, actas de entrega y programación de personal — en un solo lugar.</p>
+<!-- ================= APP ================= -->
+<div id="app">
+  <div class="scrim" id="scrim" onclick="toggleSidebar(false)"></div>
+  <div class="shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sbrand">
+        <img src="logo-masterband.png" alt="MB" onerror="this.outerHTML='<b>MASTER<span>BAND</span></b>'">
+      </div>
+      <div id="nav"></div>
+      <div class="sfoot">Montajes Industriales<br>Masterband S.A.S.</div>
+    </aside>
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="burger" onclick="toggleSidebar(true)">☰</button>
+      <img class="tb-logo" src="logo-masterband.png" alt="Masterband" onerror="this.style.display='none'">
+      <div class="tb-div"></div>
+      <div class="ttl" id="pageTitle">Inicio<small>Portal de Gestión</small></div>
+      <div class="sp"></div>
+      <button class="syncbtn" onclick="sincronizar(this)">⟳ Sincronizar</button>
+      <div class="userbox">
+        <div class="ui"><b id="uName">—</b><span id="uRole">—</span></div>
+        <div class="av" id="uAv">—</div>
+        <button class="logout" onclick="salir()">Salir</button>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="main" id="main"></main>
   </div>
 </div>
 
-<div class="modules-zone">
-  <div class="zone-label"><span class="n">Módulos</span><span class="rule"></span></div>
-  <div class="modules">
-
-    <a href="Masterband_OTs.html" class="module-card" data-roles="gerencia,ingeniero">
-      <span class="mod-code">MB-01</span>
-      <div class="mod-icon"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="1"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 10l2 2 4-4"/><path d="M9 16h6"/></svg></div>
-      <div class="mod-title">Órdenes de Trabajo</div>
-      <div class="mod-desc">Cotizaciones, pipeline de proyectos, facturación, actas de entrega y seguimiento de trabajos en campo.</div>
-      <div class="mod-tags"><span class="mod-tag">Gerencia</span><span class="mod-tag">Ingeniero</span></div>
-      <div class="mod-arrow">Abrir módulo</div>
-    </a>
-
-    <a href="Masterband_Programacion.html" class="module-card" data-roles="gerencia,ingeniero,supervisor,colaborador">
-      <span class="mod-code">MB-02</span>
-      <div class="mod-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M8 14h2M14 14h2M8 18h2"/></svg></div>
-      <div class="mod-title">Programación de Personal</div>
-      <div class="mod-desc" id="desc-prog">Asigna equipos a frentes de trabajo, define horarios, SISO y materiales por actividad.</div>
-      <div class="mod-tags"><span class="mod-tag">Ingeniero</span><span class="mod-tag">Supervisor</span><span class="mod-tag">Colaboradores</span></div>
-      <div class="mod-arrow">Abrir módulo</div>
-    </a>
-
-    <a href="Masterband_MiDesempeno.html" class="module-card" data-roles="ingeniero,supervisor,dibujante">
-      <span class="mod-code">MB-04</span>
-      <div class="mod-icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg></div>
-      <div class="mod-title">Mi Desempeño</div>
-      <div class="mod-desc">Consulta tus indicadores del mes, tu evolución y registra tus entregas.</div>
-      <div class="mod-tags"><span class="mod-tag">Ingeniero</span><span class="mod-tag">Supervisor</span><span class="mod-tag">Dibujante</span></div>
-      <div class="mod-arrow">Abrir módulo</div>
-    </a>
-
-    <a href="Masterband_OrdenesAbiertas.html" class="module-card" data-roles="gerencia">
-      <span class="mod-code">MB-05</span>
-      <div class="mod-icon"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h12"/><circle cx="19" cy="18" r="2"/></svg></div>
-      <div class="mod-title">Órdenes Abiertas</div>
-      <div class="mod-desc">Saldos de las cotizaciones madre: cuánto se ha consumido y cuánto queda disponible.</div>
-      <div class="mod-tags"><span class="mod-tag">Gerencia</span></div>
-      <div class="mod-arrow">Abrir módulo</div>
-    </a>
-
-    <a href="Masterband_Evaluacion.html" class="module-card" data-roles="gerencia">
-      <span class="mod-code">MB-03</span>
-      <div class="mod-icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg></div>
-      <div class="mod-title">Evaluación de Desempeño</div>
-      <div class="mod-desc">Indicadores mensuales del equipo calculados automáticamente y registro de evaluaciones 1:1.</div>
-      <div class="mod-tags"><span class="mod-tag">Gerencia</span></div>
-      <div class="mod-arrow">Abrir módulo</div>
-    </a>
-
-  </div>
-</div>
-
-<div class="footer">
-  <div class="foot-inner">
-    <span class="foot-brand">Master<b>band</b> S.A.S.</span>
-    <span class="foot-info">Montajes Industriales · Fontibón, Bogotá D.C. · Sistema interno</span>
-  </div>
-</div>
+<dialog id="dayDlg"><div id="dayBody"></div></dialog>
 
 <script>
-// Si la URL tiene ?acta= o ?val= redirigir a la página de firma
-const params = new URLSearchParams(window.location.search);
-if (params.get('acta')) {
-  window.location.href = 'acta-firma.html?acta=' + params.get('acta');
-} else if (params.get('val')) {
-  window.location.href = 'acta-firma.html?val=' + params.get('val');
+/* ===================== CONFIG ===================== */
+const BACKEND = "https://script.google.com/macros/s/AKfycbw8rE7Wemj-RU-jfu9BqVb_i0FyeMvfVZtDtJHdyEwyz-JsPWNbXatPf13AHG_vG7OS/exec";
+
+const PASS = { gerencia:'master2025', ingeniero:'ing2025', supervisor:'sup2025', dibujante:'dib2025' };
+const ROLES = {
+  gerencia:  {nombre:'Gerencia',  ic:'🏛️', desc:'Acceso completo'},
+  ingeniero: {nombre:'Ingeniero', ic:'🛠️', desc:'Ejecución y OTs'},
+  supervisor:{nombre:'Supervisor',ic:'👷', desc:'Programa su personal'},
+  dibujante: {nombre:'Dibujante', ic:'📐', desc:'Registra entregas'}
+};
+
+/* Registro de módulos */
+const MOD = {
+  inicio:      {label:'Inicio',               ic:'🏠', type:'home'},
+  calendario:  {label:'Calendario',           ic:'📅', type:'calendar'},
+  ots:         {label:'Órdenes de Trabajo',   ic:'📋', file:'Masterband_OTs.html',            code:'MB-01', desc:'Cotizaciones, OTs y actas'},
+  programacion:{label:'Programación',          ic:'🗓️', file:'Masterband_Programacion.html',    code:'MB-02', desc:'Programa el personal por día'},
+  ordenes:     {label:'Órdenes Abiertas',     ic:'💰', file:'Masterband_OrdenesAbiertas.html', code:'MB-05', desc:'Saldos por orden y área'},
+  cotizador:   {label:'Cotizador de Servicio',ic:'🧮', file:'Masterband_CotizadorServicio.html',code:'MB-06', desc:'Estima costos de servicio'},
+  solicitudes: {label:'Solicitudes',          ic:'✅', file:'Masterband_Solicitudes.html',     code:'MB-07', desc:'Aprueba solicitudes de clientes'},
+  evaluacion:  {label:'Evaluación',           ic:'⭐', file:'Masterband_Evaluacion.html',       code:'MB-03', desc:'Evalúa el desempeño del equipo'},
+  desempeno:   {label:'Mi Desempeño',         ic:'📈', file:'Masterband_MiDesempeno.html',     code:'MB-04', desc:'Tus indicadores y registros'}
+};
+
+/* Qué ve cada rol (en orden del menú) */
+const NAV = {
+  gerencia:   ['inicio','calendario','ots','programacion','ordenes','solicitudes','cotizador','evaluacion','desempeno'],
+  ingeniero:  ['inicio','calendario','ots','programacion','desempeno'],
+  supervisor: ['inicio','calendario','programacion','desempeno'],
+  dibujante:  ['inicio','desempeno']
+};
+/* Secciones del menú */
+const SECCIONES = [
+  {lbl:'Principal',  ic:'🏠', keys:['inicio','calendario']},
+  {lbl:'Operación',  ic:'🗂️', keys:['ots','programacion','ordenes','solicitudes','cotizador','evaluacion']},
+  {lbl:'Mi espacio', ic:'👤', keys:['desempeno']}
+];
+
+/* Festivos Colombia 2026 */
+const FESTIVOS = {"2026-01-01":"Año Nuevo","2026-01-12":"Reyes","2026-03-23":"San José","2026-04-02":"J. Santo","2026-04-03":"V. Santo","2026-05-01":"Trabajo","2026-05-18":"Ascensión","2026-06-08":"Corpus","2026-06-15":"S. Corazón","2026-06-29":"S. Pedro","2026-07-20":"Independencia","2026-08-07":"Boyacá","2026-08-17":"Asunción","2026-10-12":"Raza","2026-11-02":"Todos Santos","2026-11-16":"Cartagena","2026-12-08":"Inmaculada","2026-12-25":"Navidad"};
+
+/* ===================== ESTADO ===================== */
+let ROLE=null, selRole=null, PROG=null, calRef=new Date();
+const $ = id => document.getElementById(id);
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+/* ===================== LOGIN ===================== */
+function pintarRoles(){
+  $('roles').innerHTML = Object.keys(ROLES).map(k=>`
+    <div class="role" data-r="${k}" onclick="pickRole('${k}')">
+      <div class="ic">${ROLES[k].ic}</div><div class="nm">${ROLES[k].nombre}</div><div class="ds">${ROLES[k].desc}</div>
+    </div>`).join('');
+}
+function pickRole(k){ selRole=k; document.querySelectorAll('.role').forEach(e=>e.classList.toggle('on',e.dataset.r===k)); $('pwd').focus(); }
+function entrar(){
+  if(!selRole){ $('lerr').textContent='Selecciona tu perfil.'; return; }
+  if($('pwd').value !== PASS[selRole]){ $('lerr').textContent='Contraseña incorrecta.'; return; }
+  try{ sessionStorage.setItem('mb_role', selRole); }catch(e){}
+  iniciar(selRole);
+}
+function salir(){ try{ sessionStorage.removeItem('mb_role'); }catch(e){}; location.reload(); }
+
+/* ===================== INICIAR APP ===================== */
+function iniciar(role){
+  ROLE=role;
+  $('login').style.display='none';
+  $('app').style.display='block';
+  const r=ROLES[role];
+  $('uName').textContent = r.nombre;
+  $('uRole').textContent = 'Perfil activo';
+  $('uAv').textContent = r.nombre.slice(0,2).toUpperCase();
+  pintarMenu();
+  const first = (location.hash||'').replace('#','');
+  ir(NAV[role].includes(first)?first:'inicio');
 }
 
-const PASS = { gerencia: 'master2025', ingeniero: 'ing2025', supervisor: 'sup2025', dibujante: 'dib2025' };
-const ROL_ICON = {
-  gerencia:    '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="1"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>',
-  ingeniero:   '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M14.7 6.3a4.5 4.5 0 0 0-6 5.6L3 17.6V21h3.4l5.7-5.7a4.5 4.5 0 0 0 5.6-6L14.5 12.5l-3-3z"/></svg>',
-  supervisor:  '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M4 15a8 8 0 0 1 16 0"/><path d="M2 15h20v2.5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg>',
-  dibujante:   '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 19l7-7 3 3-7 7-3-3z"/><circle cx="11" cy="11" r="2"/></svg>',
-  colaborador: '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>'
-};
-const ROL_LABEL = { gerencia: 'Gerencia', ingeniero: 'Ingeniero', supervisor: 'Supervisor', dibujante: 'Dibujante', colaborador: 'Colaborador' };
-const HERO_SUB = {
-  gerencia:    'Acceso completo a los módulos de gestión de la compañía.',
-  ingeniero:   'Tus trabajos activos y la programación de tu equipo.',
-  supervisor:  'Programa el personal y gestiona los frentes del día.',
-  colaborador: 'Consulta aquí los días, horas y frentes donde estás programado.'
-};
-let rolPendiente = null;
-
-function aplicarRol(rol){
-  document.querySelectorAll('.module-card').forEach(c => {
-    const roles = (c.dataset.roles || '').split(',');
-    c.classList.toggle('visible', roles.includes(rol));
+function pintarMenu(){
+  const permit = NAV[ROLE];
+  let html='';
+  SECCIONES.forEach(sec=>{
+    const items = sec.keys.filter(k=>permit.includes(k));
+    if(!items.length) return;
+    html += `<div class="navsec"><div class="lbl">${sec.ic||''} ${sec.lbl}</div>` +
+      items.map(k=>`
+        <div class="navitem" data-k="${k}" onclick="ir('${k}')">
+          <span class="ic">${MOD[k].ic}</span><span>${MOD[k].label}</span>
+          ${MOD[k].code?`<span class="code">${MOD[k].code}</span>`:''}
+        </div>`).join('') + `</div>`;
   });
-  document.getElementById('rol-pill').innerHTML = ROL_ICON[rol] + ROL_LABEL[rol];
-  document.getElementById('rol-wrap').style.display = 'flex';
-  document.getElementById('hero-sub').textContent = HERO_SUB[rol];
-  if (rol === 'colaborador') {
-    document.getElementById('desc-prog').textContent = 'Busca tu nombre y consulta los días, horas y frentes donde estás programado.';
+  $('nav').innerHTML=html;
+}
+
+/* ===================== NAVEGACIÓN ===================== */
+function ir(key){
+  if(!NAV[ROLE].includes(key)) key='inicio';
+  location.hash=key;
+  document.querySelectorAll('.navitem').forEach(e=>e.classList.toggle('on',e.dataset.k===key));
+  $('pageTitle').innerHTML = `${MOD[key].label}<small>${MOD[key].desc||'Sistema Interno de Gestión'}</small>`;
+  toggleSidebar(false);
+  const m=MOD[key];
+  if(m.type==='home') renderHome();
+  else if(m.type==='calendar') renderCalendar();
+  else $('main').innerHTML = `<iframe class="modframe" src="${m.file}" title="${m.label}"></iframe>`;
+}
+function toggleSidebar(open){
+  if(window.innerWidth>820) return;
+  $('sidebar').classList.toggle('open',open);
+  $('scrim').classList.toggle('on',open);
+}
+
+/* ===================== INICIO ===================== */
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function contarPersonal(txt){
+  return String(txt||'').split(/[,\n;]+/).map(s=>s.trim()).filter(Boolean).length;
+}
+
+async function renderHome(){
+  const r=ROLES[ROLE];
+  const now=new Date();
+  const saludo = now.getHours()<12?'Buenos días':now.getHours()<19?'Buenas tardes':'Buenas noches';
+  const fechaTxt = `${cap(DIAS[now.getDay()])}, ${now.getDate()} de ${MESES[now.getMonth()]} de ${now.getFullYear()} · ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const mods = NAV[ROLE].filter(k=>MOD[k].file);
+
+  // Banner + contenedor (los KPIs se llenan tras cargar la programación)
+  let html = `<div class="pagepad">
+    <div class="hero">
+      <h2>${saludo}, ${r.nombre} 👋</h2>
+      <div class="sub">Resumen general · ${fechaTxt}</div>
+      <div class="chips" id="heroChips">
+        <span class="chip2">📅 <b>${now.getDate()} ${MESES[now.getMonth()].slice(0,3).toUpperCase()} ${now.getFullYear()}</b></span>
+        <span class="chip2" id="chipFrentes">🗓️ <b>—</b> frentes hoy</span>
+        <span class="chip2" id="chipPersonal">👥 <b>—</b> programados hoy</span>
+      </div>
+    </div>
+    <div class="kpis" id="kpis">
+      <div class="kpi"><div class="kh"><span class="kd" style="background:var(--rojo)"></span>Frentes hoy</div><div class="kv" id="kFre">—</div><div class="ks">trabajos programados</div><div class="ka" onclick="ir('calendario')">Ver calendario →</div></div>
+      <div class="kpi"><div class="kh"><span class="kd" style="background:var(--verde)"></span>Personal hoy</div><div class="kv" id="kPer">—</div><div class="ks">colaboradores asignados</div>${NAV[ROLE].includes('programacion')?'<div class="ka" onclick="ir(\'programacion\')">Programar →</div>':''}</div>
+      <div class="kpi"><div class="kh"><span class="kd" style="background:var(--azul)"></span>Esta semana</div><div class="kv" id="kSem">—</div><div class="ks">frentes de lun a dom</div><div class="ka" onclick="ir('calendario')">Ver semana →</div></div>
+      <div class="kpi"><div class="kh"><span class="kd" style="background:var(--naranja)"></span>Inasistencias hoy</div><div class="kv" id="kIna">—</div><div class="ks">registradas en programación</div></div>
+    </div>
+    <div class="sechead">🗂️ Accesos de tu perfil</div>
+    <div class="mods">`;
+  mods.forEach(k=>{ const m=MOD[k];
+    html += `<div class="modcard" onclick="ir('${k}')">
+      <span class="code">${m.code||''}</span>
+      <div class="mic">${m.ic}</div><h3>${m.label}</h3><p>${m.desc||''}</p>
+      <div class="go">Abrir módulo →</div></div>`;
+  });
+  html += `</div></div>`;
+  $('main').innerHTML=html;
+
+  // KPIs desde la programación real
+  const prog = await cargarProg();
+  const hoyISO=iso(new Date());
+  const wkStart=new Date(); wkStart.setDate(wkStart.getDate()-((wkStart.getDay()+6)%7)); wkStart.setHours(0,0,0,0);
+  const wkEnd=new Date(wkStart); wkEnd.setDate(wkStart.getDate()+6); wkEnd.setHours(23,59,59,999);
+  let fHoy=0, pHoy=0, fSem=0, iHoy=0;
+  prog.forEach(p=>{
+    if(!p.fecha) return;
+    const d=new Date(p.fecha+'T00:00:00'); if(isNaN(d)) return;
+    if(p.fecha===hoyISO){ fHoy++; pHoy+=contarPersonal(p.personal); if(p.inasistencias) iHoy+=contarPersonal(p.inasistencias); }
+    if(d>=wkStart && d<=wkEnd) fSem++;
+  });
+  const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
+  set('kFre',fHoy); set('kPer',pHoy); set('kSem',fSem); set('kIna',iHoy);
+  const cf=$('chipFrentes'); if(cf) cf.innerHTML=`🗓️ <b>${fHoy}</b> frentes hoy`;
+  const cp=$('chipPersonal'); if(cp) cp.innerHTML=`👥 <b>${pHoy}</b> programados hoy`;
+}
+
+function sincronizar(btn){
+  PROG=null;
+  if(btn){ btn.disabled=true; const o=btn.innerHTML; btn.innerHTML='⟳ Sincronizando…'; setTimeout(()=>{btn.disabled=false;btn.innerHTML=o;},1200); }
+  const key=(location.hash||'#inicio').replace('#','');
+  if(key==='calendario') renderCalendar(); else if(key===''||key==='inicio') renderHome();
+}
+
+/* ===================== CALENDARIO ===================== */
+async function cargarProg(){
+  if(PROG) return PROG;
+  try{
+    const r=await fetch(BACKEND+"?tabla=programacion&t="+Date.now());
+    const j=await r.json();
+    PROG = Array.isArray(j)?j:(j.datos||[]);
+  }catch(e){ PROG=[]; }
+  return PROG;
+}
+async function renderCalendar(){
+  $('main').innerHTML = `<div class="pagepad"><div class="phead"><h2>Calendario</h2><p>Programación de personal por día.</p></div><div class="loading">Cargando programación…</div></div>`;
+  const prog = await cargarProg();
+  dibujarCalendario(prog);
+}
+function porFecha(prog){
+  const map={};
+  prog.forEach(p=>{ if(!p.fecha) return; (map[p.fecha]=map[p.fecha]||[]).push(p); });
+  return map;
+}
+function dibujarCalendario(prog){
+  const map=porFecha(prog);
+  const y=calRef.getFullYear(), mo=calRef.getMonth();
+  const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const hoyISO=iso(new Date());
+
+  // métricas del mes
+  let nMes=0, nHoy=0, nSemana=0, nIna=0;
+  const now=new Date(); const wkStart=new Date(now); wkStart.setDate(now.getDate()-((now.getDay()+6)%7)); const wkEnd=new Date(wkStart); wkEnd.setDate(wkStart.getDate()+6);
+  prog.forEach(p=>{
+    const d=new Date(p.fecha+'T00:00:00'); if(isNaN(d))return;
+    if(d.getFullYear()===y && d.getMonth()===mo){ nMes++; if(p.inasistencias) nIna++; }
+    if(p.fecha===hoyISO) nHoy++;
+    if(d>=wkStart && d<=wkEnd) nSemana++;
+  });
+
+  let html = `<div class="pagepad">
+    <div class="phead"><h2>Calendario</h2><p>Programación de personal por día — datos en vivo.</p></div>
+    <div class="tiles">
+      <div class="tile"><div class="dot" style="background:var(--rojo-l)">📋</div><b>${nMes}</b><span>Programados (mes)</span></div>
+      <div class="tile"><div class="dot" style="background:#F0F4FF">📍</div><b>${nHoy}</b><span>Hoy</span></div>
+      <div class="tile"><div class="dot" style="background:var(--verde-l)">🗓️</div><b>${nSemana}</b><span>Esta semana</span></div>
+      <div class="tile"><div class="dot" style="background:#FDECEC">⚠️</div><b>${nIna}</b><span>Inasistencias (mes)</span></div>
+    </div>
+    <div class="calbar">
+      <button class="navb" onclick="mesCal(-1)">← Ant.</button>
+      <div class="mn">${meses[mo]} ${y}</div>
+      <button class="navb" onclick="mesCal(1)">Sig. →</button>
+      <button class="navb" onclick="hoyCal()" style="margin-left:6px">Hoy</button>
+    </div>
+    <div class="cal">
+      <div class="calhead">${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map(d=>`<div>${d}</div>`).join('')}</div>
+      <div class="calgrid">`;
+
+  const first=new Date(y,mo,1); const lead=(first.getDay()+6)%7; const dim=new Date(y,mo+1,0).getDate();
+  for(let i=0;i<lead;i++) html+=`<div class="cell empty"></div>`;
+  for(let d=1; d<=dim; d++){
+    const dateISO=`${y}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evs=map[dateISO]||[];
+    const fest=FESTIVOS[dateISO];
+    const cls=['cell']; if(dateISO===hoyISO)cls.push('today'); if(fest)cls.push('festivo');
+    const hayIna=evs.some(e=>e.inasistencias);
+    let chips=evs.slice(0,2).map(e=>`<div class="chip" title="${(e.nombre||'').replace(/"/g,'')}">${e.hora?e.hora+' ':''}${e.nombre||'Frente'}</div>`).join('');
+    if(evs.length>2) chips+=`<div class="chip mas">+${evs.length-2} más</div>`;
+    html+=`<div class="${cls.join(' ')}" ${evs.length?`onclick="verDia('${dateISO}')"`:''}>
+      <div class="dnum">${d}</div>${fest?`<div class="fest">${fest}</div>`:''}
+      ${hayIna?'<span class="ina" title="Inasistencias"></span>':''}
+      <div class="ev">${chips}</div></div>`;
   }
-  document.getElementById('rol-gate').classList.remove('on');
+  html+=`</div></div>
+    <div class="leg">
+      <span><i style="background:var(--rojo-l)"></i>Frente programado</span>
+      <span><i style="background:#F0F4FF"></i>Hoy</span>
+      <span><i style="background:#F6F2FF"></i>Festivo</span>
+      <span><i style="background:var(--rojo)"></i>Con inasistencia</span>
+    </div></div>`;
+  $('main').innerHTML=html;
+}
+function mesCal(delta){ calRef.setMonth(calRef.getMonth()+delta); dibujarCalendario(PROG||[]); }
+function hoyCal(){ calRef=new Date(); dibujarCalendario(PROG||[]); }
+
+function verDia(dateISO){
+  const evs=(porFecha(PROG||[])[dateISO])||[];
+  const [Y,M,D]=dateISO.split('-'); const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const dt=new Date(dateISO+'T00:00:00');
+  let body=`<div class="dlgh"><h3>${dias[dt.getDay()]} ${+D} de ${['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][+M-1]}. ${Y}</h3>
+    <button onclick="dayDlg.close()">✕</button></div><div class="dlgb">`;
+  if(!evs.length){ body+='<div class="empty-s">Sin programación este día.</div>'; }
+  else evs.forEach(e=>{
+    body+=`<div class="fr"><div class="frt"><h4>${e.nombre||'Frente'}</h4>${e.hora?`<span class="hr">${e.hora}</span>`:''}</div>
+      <div class="meta">
+        ${e.tipo?`<span class="tag">${e.tipo}</span>`:''}${e.jornada?`<span class="tag">${e.jornada}</span>`:''}<br>
+        ${e.siso?`<b>SISO:</b> ${e.siso}<br>`:''}
+        ${e.personal?`<b>Personal:</b> ${e.personal}<br>`:''}
+        ${e.responsable?`<b>Responsable:</b> ${e.responsable}<br>`:''}
+        ${e.materiales?`<b>Materiales:</b> ${e.materiales}<br>`:''}
+        ${e.inasistencias?`<b style="color:var(--rojo)">Inasistencias:</b> ${e.inasistencias}`:''}
+      </div></div>`;
+  });
+  body+='</div>';
+  $('dayBody').innerHTML=body;
+  $('dayDlg').showModal();
 }
 
-function elegirRol(rol){
-  if (rol === 'colaborador') {
-    localStorage.setItem('mb_rol', rol);
-    aplicarRol(rol);
-    return;
-  }
-  rolPendiente = rol;
-  document.getElementById('rol-paso1').style.display = 'none';
-  document.getElementById('rol-paso2').classList.add('on');
-  document.getElementById('pass-titulo').textContent = ROL_LABEL[rol];
-  document.getElementById('pass-err').textContent = '';
-  document.getElementById('rol-pass').value = '';
-  document.getElementById('rol-pass').focus();
-}
-
-function validarRol(){
-  const p = document.getElementById('rol-pass').value.trim().toLowerCase();
-  if (p === PASS[rolPendiente]) {
-    localStorage.setItem('mb_rol', rolPendiente);
-    volverPaso1();
-    aplicarRol(rolPendiente);
-  } else {
-    document.getElementById('pass-err').textContent = 'Contraseña incorrecta';
-  }
-}
-
-function volverPaso1(){
-  document.getElementById('rol-paso2').classList.remove('on');
-  document.getElementById('rol-paso1').style.display = 'block';
-}
-
-function cambiarRol(){
-  localStorage.removeItem('mb_rol');
-  document.getElementById('rol-wrap').style.display = 'none';
-  document.querySelectorAll('.module-card').forEach(c => c.classList.remove('visible'));
-  document.getElementById('rol-gate').classList.add('on');
-}
-
-const rolGuardado = localStorage.getItem('mb_rol');
-if (rolGuardado && ROL_LABEL[rolGuardado]) {
-  aplicarRol(rolGuardado);
-} else {
-  document.getElementById('rol-gate').classList.add('on');
-}
+/* ===================== ARRANQUE ===================== */
+(function(){
+  pintarRoles();
+  let saved=null; try{ saved=sessionStorage.getItem('mb_role'); }catch(e){}
+  if(saved && PASS[saved]){ iniciar(saved); } else { $('pwd').focus(); }
+  window.addEventListener('hashchange',()=>{ if(ROLE){ const k=(location.hash||'').replace('#',''); if(NAV[ROLE].includes(k)) { document.querySelectorAll('.navitem').forEach(e=>e.classList.toggle('on',e.dataset.k===k)); } } });
+})();
 </script>
 </body>
 </html>
