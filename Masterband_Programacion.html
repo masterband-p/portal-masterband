@@ -597,6 +597,8 @@ async function renderDia(){
   document.getElementById('frentes-list').innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted)">Cargando...</div>';
   await cargarDia(fechaSel);
   const frentes = prog[fechaSel] || [];
+  const _totIna = frentes.reduce((a,f)=> a + (Array.isArray(f.inasistencias)?f.inasistencias.length:0), 0);
+  document.getElementById('frentes-titulo').innerHTML = 'Frentes del ' + fmtFecha(fechaSel) + (_totIna?` · <span style="color:#C0001A;font-weight:700">${_totIna} inasistencia${_totIna>1?'s':''} del día</span>`:'');
   const list = document.getElementById('frentes-list');
   if(!frentes.length){
     list.innerHTML=`<div class="empty-dia"><div class="empty-dia-icon" style="font-size:14px;letter-spacing:.15em;color:#888;font-weight:700">SIN PROGRAMACIÓN</div><div class="empty-dia-text">Sin frentes programados</div><div style="font-size:13px;color:var(--muted)">Agrega el primer frente del día</div></div>`;
@@ -606,7 +608,9 @@ async function renderDia(){
     const sisoNombre = f.siso || '';
     const personal   = Array.isArray(f.personal) ? f.personal : [];
     const faltas     = Array.isArray(f.inasistencias) ? f.inasistencias : [];
-    const esFalta    = n => faltas.some(x => x.trim().toUpperCase() === n.trim().toUpperCase());
+    const stripM = s => String(s).replace(/\s*\(.*\)\s*$/,'').trim().toUpperCase();
+    const esFalta    = n => faltas.some(x => stripM(x) === n.trim().toUpperCase());
+    const motivoDe   = n => { const h=faltas.find(x=>stripM(x)===n.trim().toUpperCase()); const m=h&&h.match(/\(([^)]+)\)\s*$/); return m?m[1]:''; };
     return `
     <div class="frente-card">
       <div class="frente-header ${f.tipo==='mtto'?'mtto':f.tipo==='proyecto'?'proyecto':'interno'}">
@@ -623,7 +627,7 @@ async function renderDia(){
           <div class="frente-section-title">Personal asignado (${personal.length})${faltas.length?` · <span style="color:#C0001A">${faltas.length} inasistencia${faltas.length>1?'s':''}</span>`:''}</div>
           <div class="personal-chips">
             ${sisoNombre?`<span class="chip siso">SISO · ${sisoNombre.split(' ').slice(0,3).join(' ')}</span>`:''}
-            ${personal.map(n=>`<span class="chip clickable ${esFalta(n)?'falta':''}" onclick="toggleAsistencia(${i}, '${n.replace(/'/g,"\\'")}')" title="${esFalta(n)?'Clic para quitar la inasistencia':'Clic para marcar que no asistió'}">${esFalta(n)?'✕ ':''}${n.split(' ').slice(0,3).join(' ')}${esFalta(n)?' (no asistió)':''}</span>`).join('')}
+            ${personal.map(n=>`<span class="chip clickable ${esFalta(n)?'falta':''}" onclick="toggleAsistencia(${i}, '${n.replace(/'/g,"\\'")}')" title="${esFalta(n)?'Clic para quitar la inasistencia':'Clic para marcar inasistencia'}">${esFalta(n)?'✕ ':''}${n.split(' ').slice(0,3).join(' ')}${esFalta(n)?(motivoDe(n)?' ('+motivoDe(n)+')':' (no asistió)'):''}</span>`).join('')}
             ${!personal.length && !sisoNombre?'<span style="font-size:12px;color:var(--muted);font-style:italic">Sin personal asignado</span>':''}
           </div>
           ${personal.length?'<div style="font-size:11px;color:var(--muted);margin-top:6px;font-style:italic">Toca a una persona para marcar/quitar inasistencia</div>':''}
@@ -640,23 +644,37 @@ async function renderDia(){
 }
 
 // Marcar / desmarcar inasistencia de una persona en un frente
+function _stripMot(x){ return String(x).replace(/\s*\(.*\)\s*$/,'').trim().toUpperCase(); }
 async function toggleAsistencia(frenteIdx, nombre){
   const f = (prog[fechaSel]||[])[frenteIdx];
   if(!f) return;
   f.inasistencias = Array.isArray(f.inasistencias) ? f.inasistencias : [];
-  const idx = f.inasistencias.findIndex(x => x.trim().toUpperCase() === nombre.trim().toUpperCase());
+  const idx = f.inasistencias.findIndex(x => _stripMot(x) === nombre.trim().toUpperCase());
   const nomCorto = nombre.split(' ').slice(0,3).join(' ');
   if (idx >= 0) {
     if(!confirm('¿Quitar la inasistencia de ' + nomCorto + '?')) return;
     f.inasistencias.splice(idx, 1);
+    saveCache();
+    const ok = await syncGuardarDirecto(fechaSel, f);
+    await renderDia();
+    toast(ok ? '✓ Inasistencia eliminada' : '⚠ Guardado localmente — verifica conexión', ok ? 'ok' : 'err');
   } else {
-    if(!confirm('¿Marcar que ' + nomCorto + ' NO asistió este día?')) return;
-    f.inasistencias.push(nombre);
+    window.inasCtx = { frenteIdx: frenteIdx, nombre: nombre };
+    document.getElementById('inas-nombre').textContent = nomCorto;
+    document.getElementById('mod-inas').classList.add('on');
   }
+}
+async function confirmarInasistencia(motivo){
+  const ctx = window.inasCtx; if(!ctx) return;
+  const f = (prog[fechaSel]||[])[ctx.frenteIdx]; if(!f) return;
+  f.inasistencias = Array.isArray(f.inasistencias) ? f.inasistencias : [];
+  f.inasistencias.push(ctx.nombre + ' (' + motivo + ')');
+  document.getElementById('mod-inas').classList.remove('on');
   saveCache();
   const ok = await syncGuardarDirecto(fechaSel, f);
   await renderDia();
-  toast(ok ? (idx>=0 ? '✓ Inasistencia eliminada' : '✓ Inasistencia registrada — ' + nomCorto) : '⚠ Guardado localmente — verifica conexión', ok ? 'ok' : 'err');
+  const nc = ctx.nombre.split(' ').slice(0,3).join(' ');
+  toast(ok ? ('✓ Inasistencia: ' + nc + ' — ' + motivo) : '⚠ Guardado localmente', ok ? 'ok' : 'err');
 }
 
 function abrirNuevoFrente(){
@@ -914,7 +932,9 @@ function abrirDia(str){
     const sisoNombre = f.siso || '';
     const personal   = Array.isArray(f.personal) ? f.personal : [];
     const faltas     = Array.isArray(f.inasistencias) ? f.inasistencias : [];
-    const esFalta    = n => faltas.some(x => x.trim().toUpperCase() === n.trim().toUpperCase());
+    const stripM = s => String(s).replace(/\s*\(.*\)\s*$/,'').trim().toUpperCase();
+    const esFalta    = n => faltas.some(x => stripM(x) === n.trim().toUpperCase());
+    const motivoDe   = n => { const h=faltas.find(x=>stripM(x)===n.trim().toUpperCase()); const m=h&&h.match(/\(([^)]+)\)\s*$/); return m?m[1]:''; };
     const miNombre   = colabActual?.nombre || '';
     const esMio = personal.some(n => n.toUpperCase().includes(miNombre.split(' ')[0])) ||
                   sisoNombre.toUpperCase().includes(miNombre.split(' ')[0]);
@@ -987,6 +1007,22 @@ cargarContactosPep();</script>
   });
 })();
 </script>
+
+
+<!-- Modal: motivo de inasistencia -->
+<div class="overlay" id="mod-inas">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header"><div class="modal-title">Marcar inasistencia</div>
+      <button onclick="document.getElementById('mod-inas').classList.remove('on')" style="border:none;background:none;font-size:20px;color:#888;cursor:pointer">✕</button></div>
+    <p style="color:#555;font-size:13px;margin:0 0 4px">¿Por qué no asistió <b id="inas-nombre">—</b>?</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+      <button class="mbtn-p" style="background:#C0001A" onclick="confirmarInasistencia('No llegó')">🚫 No llegó</button>
+      <button class="mbtn-p" style="background:#B45309" onclick="confirmarInasistencia('Permiso')">📝 Permiso</button>
+      <button class="mbtn-p" style="background:#1E7A3E" onclick="confirmarInasistencia('Incapacidad')">🏥 Incapacidad</button>
+      <button class="mbtn-s" onclick="document.getElementById('mod-inas').classList.remove('on')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

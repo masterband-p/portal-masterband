@@ -402,16 +402,30 @@ function mapEtapaH(estado,apro,noOC,etrab,facturado,nfact){
 function parseFDMA(s){ if(!s)return null; s=String(s).trim(); let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m)return new Date(+m[3],+m[2]-1,+m[1]); m=s.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m)return new Date(+m[1],+m[2]-1,+m[3]); return null; }
 function diasFin(s){ const f=parseFDMA(s); if(!f)return null; const h=new Date();h.setHours(0,0,0,0);f.setHours(0,0,0,0); return Math.max(0,Math.round((h-f)/864e5)); }
 function otsResumen(data){
-  let activos=0,enProceso=0,finalizados=0,actaPend=0,vencidas=0;
+  let activos=0,enProceso=0,finalizados=0,actaPend=0,vencidas=0,frenadosNE=0,listos=0;
   for(let i=1;i<data.length;i++){ const row=data[i]||[]; const a=String(row[0]||'').trim();
     if(/[a-zA-Z]/.test(a)) continue; if(/\d{4}-\d{2}-\d{2}T/.test(a)) continue;
     const num=a.replace(/[^0-9]/g,''); if(!num||num.length<3||num.length>6) continue;
     const et=mapEtapaH(String(row[7]||''),String(row[8]||''),String(row[9]||''),String(row[10]||''),String(row[12]||''),String(row[14]||''));
     if(et>=3&&et<6) activos++;
     if(et===4) enProceso++;
-    if(et===5){ finalizados++; const acta=['SI','SÍ'].indexOf(String(row[13]||'').toUpperCase().trim())>=0; if(!acta){ actaPend++; if((diasFin(String(row[17]||''))||0)>5) vencidas++; } }
+    if(et===5){ finalizados++;
+      const acta=['SI','SÍ'].indexOf(String(row[13]||'').toUpperCase().trim())>=0;
+      const neRaw=String(row[15]||'').trim();                 // col P = N° ENTRADA
+      const nePres=/\d/.test(neRaw) && !/pdte|pend|falta|validar|^no$/i.test(neRaw);
+      const facRaw=String(row[12]||'').toUpperCase().trim();
+      const facturado=(facRaw==='SI'||facRaw==='SÍ');
+      if(!acta){ actaPend++; if((diasFin(String(row[17]||''))||0)>5) vencidas++; }
+      else if(!facturado){ if(nePres) listos++; else frenadosNE++; }
+    }
   }
-  return {activos,enProceso,finalizados,actaPend,vencidas};
+  return {activos,enProceso,finalizados,actaPend,vencidas,frenadosNE,listos};
+}
+async function calProm(){
+  try{ const mes=new Date().toISOString().slice(0,7);
+    const d=await (await fetch(BACKEND+'?tabla=eval_datos&mes='+mes+'&t='+Date.now())).json();
+    return (d&&d.ok&&d.ingeniero&&d.ingeniero.calProm!=null)?d.ingeniero.calProm:null;
+  }catch(e){ return null; }
 }
 function kpiCard(color,title,val,sub,action,highlight){
   return `<div class="kpi"${highlight?' style="outline:2px solid var(--rojo);outline-offset:-1px"':''}>
@@ -455,13 +469,15 @@ async function renderHome(){
   // ===== Resumen por ROL =====
   if(ROLE==='ingeniero' || ROLE==='gerencia'){
     const o=otsResumen(await cargarOTs());
+    const calTgt = NAV[ROLE].includes('evaluacion')?'evaluacion':(NAV[ROLE].includes('desempeno')?'desempeno':'ots');
+    const cp=await calProm();
     $('kpis').innerHTML =
-      kpiCard('var(--rojo)','Actas pendientes',o.actaPend,'finalizados sin acta',{fn:"ir('ots')",txt:'Generar actas'}) +
-      kpiCard('#B91C1C','Actas vencidas',o.vencidas,'+5 días sin generar',{fn:"ir('ots')",txt:'Revisar'}, o.vencidas>0) +
-      kpiCard('var(--azul)','En proceso',o.enProceso,'con OC, en ejecución',{fn:"ir('ots')",txt:'Ver trabajos'}) +
-      kpiCard('var(--verde)','Finalizados',o.finalizados,'trabajos terminados',null);
-    chip('chipA',`${ic('clipboard',15)} <b>${o.actaPend}</b> actas pendientes`);
-    chip('chipB',`${ic('star',15)} <b>${o.vencidas}</b> vencidas`);
+      kpiCard('#B91C1C','Frenados por NE',o.frenadosNE,'acta lista, sin N° entrada',{fn:"ir('ots')",txt:'Perseguir NE'}, o.frenadosNE>0) +
+      kpiCard('var(--verde)','Listos para facturar',o.listos,'acta + NE, sin facturar',{fn:"ir('ots')",txt:'Ver'}) +
+      kpiCard('var(--rojo)','Actas pendientes',o.actaPend,(o.vencidas?o.vencidas+' vencidas (+5 días)':'al día'),{fn:"ir('ots')",txt:'Generar actas'}, o.vencidas>0) +
+      kpiCard('var(--azul)','Calificación cliente',(cp!=null?cp+'/10':'—'),'promedio del mes',{fn:"ir('"+calTgt+"')",txt:'Ver'});
+    chip('chipA',`${ic('clipboard',15)} <b>${o.frenadosNE}</b> frenados por NE`);
+    chip('chipB',`${ic('star',15)} <b>${o.listos}</b> listos para facturar`);
   }
   else if(ROLE==='supervisor'){
     const prog=await cargarProg(); const hoyISO=iso(new Date());
