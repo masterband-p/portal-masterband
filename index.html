@@ -238,6 +238,12 @@
 <dialog id="dayDlg"><div id="dayBody"></div></dialog>
 
 <script>
+/* ===== Redirección de enlaces de firma: ?acta= (técnico) y ?val= (líder) ===== */
+(function(){
+  var p = new URLSearchParams(location.search);
+  if (p.has('acta') || p.has('val')) { location.replace('acta-firma.html' + location.search); }
+})();
+
 /* ===================== CONFIG ===================== */
 const BACKEND = "https://script.google.com/macros/s/AKfycbw8rE7Wemj-RU-jfu9BqVb_i0FyeMvfVZtDtJHdyEwyz-JsPWNbXatPf13AHG_vG7OS/exec";
 
