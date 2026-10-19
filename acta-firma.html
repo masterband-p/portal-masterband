@@ -634,6 +634,12 @@ async function enviarFirma() {
         calificacion: calVal, satisfaccion: satVal, esRecepcionDirecta: '1'
       };
     } else {
+      // Firma del técnico que recibe en sitio
+      payload = {
+        tabla: 'firmar_acta', ctz: actaData.ctz,
+        firmaCliente: firma, recibeNombre: nombre, recibeCargo: cargo,
+        calificacion: calVal, satisfaccion: satVal, pendientes: pendientes
+      };
       if (document.getElementById('lider-presente').checked) {
         const ln = document.getElementById('lider-nombre').value.trim();
         const lc = document.getElementById('lider-cargo').value.trim();
