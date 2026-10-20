@@ -412,16 +412,16 @@ function otsResumen(data){
   for(let i=1;i<data.length;i++){ const row=data[i]||[]; const a=String(row[0]||'').trim();
     if(/[a-zA-Z]/.test(a)) continue; if(/\d{4}-\d{2}-\d{2}T/.test(a)) continue;
     const num=a.replace(/[^0-9]/g,''); if(!num||num.length<3||num.length>6) continue;
-    const et=mapEtapaH(String(row[7]||''),String(row[8]||''),String(row[9]||''),String(row[10]||''),String(row[12]||''),String(row[14]||''));
+    const et=mapEtapaH(String(row[8]||''),String(row[9]||''),String(row[10]||''),String(row[11]||''),String(row[13]||''),String(row[15]||''));
     if(et>=3&&et<6) activos++;
     if(et===4) enProceso++;
     if(et===5){ finalizados++;
-      const acta=['SI','SÍ'].indexOf(String(row[13]||'').toUpperCase().trim())>=0;
-      const neRaw=String(row[15]||'').trim();                 // col P = N° ENTRADA
+      const acta=['SI','SÍ'].indexOf(String(row[14]||'').toUpperCase().trim())>=0;
+      const neRaw=String(row[16]||'').trim();                 // col Q = N° ENTRADA (NE)
       const nePres=/\d/.test(neRaw) && !/pdte|pend|falta|validar|^no$/i.test(neRaw);
-      const facRaw=String(row[12]||'').toUpperCase().trim();
+      const facRaw=String(row[13]||'').toUpperCase().trim();  // col N = Facturado
       const facturado=(facRaw==='SI'||facRaw==='SÍ');
-      if(!acta){ actaPend++; if((diasFin(String(row[17]||''))||0)>5) vencidas++; }
+      if(!acta){ actaPend++; if((diasFin(String(row[18]||''))||0)>5) vencidas++; }
       else if(!facturado){ if(nePres) listos++; else frenadosNE++; }
     }
   }

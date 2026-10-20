@@ -784,16 +784,16 @@ function rowToOT(row) {
   // Un CTZ válido tiene entre 3 y 6 dígitos (rechaza teléfonos largos y números gigantes de fechas)
   if (!num || num.length < 3 || num.length > 6) return null;
   const anio    = gc(row, 1).replace('.0','');
-  const noOC    = gc(row, 9);
-  const etrab   = gc(row, 10);
-  const fact    = gc(row, 12);
-  const nfact   = gc(row, 14);
-  const apro    = gc(row, 8);
-  const estado  = gc(row, 7);
-  const costoRaw = parseMonto(row[11]);
-  const fechaIni = gc(row, 16); // Col Q
-  const fechaFin = gc(row, 17); // Col R
-  const razonDemora = gc(row, 18); // Col S
+  const noOC    = gc(row, 10);
+  const etrab   = gc(row, 11);
+  const fact    = gc(row, 13);
+  const nfact   = gc(row, 15);
+  const apro    = gc(row, 9);
+  const estado  = gc(row, 8);
+  const costoRaw = parseMonto(row[12]);
+  const fechaIni = gc(row, 17); // Col R
+  const fechaFin = gc(row, 18); // Col S
+  const razonDemora = gc(row, 19); // Col T Observaciones
 
   // Calcular días de ejecución
   let diasEjecucion = null;
@@ -809,16 +809,18 @@ function rowToOT(row) {
     colilla:  gc(row, 2) || 'Sin descripción',
     cliente:  gc(row, 4) || '—',
     contacto: gc(row, 5) || '—',
-    area:     gc(row, 6) || 'N/A',
+    area:     gc(row, 7) || 'N/A',
     estado,
     apro,
     noOC,
     etrab,
     costo:    costoRaw || 0,
     facturado: fact,
-    acta:     (() => { const v = gc(row, 13).toUpperCase(); return v === 'SI' || v === 'SÍ'; })(),
+    acta:     (() => { const v = gc(row, 14).toUpperCase(); return v === 'SI' || v === 'SÍ'; })(),
     nfact,
-    obs:      gc(row, 15),
+    obs:      gc(row, 19),
+    ne:       gc(row, 16),      // Col Q: NE
+    neFecha:  gc(row, 20),      // Col U: Fecha NE
     fechaIni,
     fechaFin,
     diasEjecucion,
@@ -1025,6 +1027,7 @@ function renderIngTrab() {
   document.getElementById('work-grid').innerHTML = visible.map(o => {
     const nota = (notas[o.id] || []).slice(-1)[0] || null;
     const esFinalizado = o.etapa === 5;
+      const nePres = /\d/.test(String(o.ne||'')) && !/pdte|pend|falta|validar/i.test(String(o.ne||''));
     // Semáforo de la meta de acta ≤ 5 días tras finalizar
     const dAf = (esFinalizado && !o.acta) ? diasDesdeFin(o) : null;
     let actaPill;
@@ -1055,7 +1058,7 @@ function renderIngTrab() {
           <span class="status-pill ${esFinalizado ? 'finalizado' : 'proceso'}">
             ${esFinalizado ? '✓ Finalizado' : '● En proceso'}
           </span>
-          ${actaPill}
+          ${actaPill}${esFinalizado?(nePres?`<span class="acta-pill ok" style="background:#E7F0FF;border:1px solid #B6D0F7;color:#1B4F9B">NE ${o.ne}</span>`:`<span class="acta-pill pend" style="background:#FEF3C7;border:1px solid #F3D38A;color:#92400E;font-weight:800">Sin NE</span>`):''}
         </div>
         <div class="wc-obs ${nota || o.obs ? 'has-obs' : ''}">
           ${nota ? `<strong>Última nota:</strong> ${nota.txt}` : (o.obs ? o.obs : '<span style="color:var(--muted);font-style:italic">Sin observaciones registradas</span>')}
@@ -1065,7 +1068,7 @@ function renderIngTrab() {
             ${esFinalizado ? 'Ya finalizado' : '✅ Marcar como finalizado'}
           </button>
           ${esFinalizado
-            ? `<button class="btn-note" style="background:var(--aglow);border-color:var(--accent);color:var(--accent)" onclick="abrirActa('${o.id}')">${o.acta ? 'Ver acta' : 'Generar acta'}</button>`
+            ? `<button class="btn-note" style="background:var(--aglow);border-color:var(--accent);color:var(--accent)" onclick="abrirActa('${o.id}')">${o.acta ? 'Ver acta' : 'Generar acta'}</button>${!nePres ? `<button class="btn-note" style="background:#FEF3C7;border-color:#F3D38A;color:#92400E;margin-left:6px" onclick="abrirNE('${o.id}')">📥 Registrar NE</button>` : ''}`
             : `<button class="btn-note" onclick="abrirNota('${o.id}')">+ Nota</button>`
           }
         </div>
@@ -2319,6 +2322,44 @@ cargarCorreosPep(); // Cargar correos PepsiCo en background
     }catch(e){ console.warn('embed OTs',e); }
   });
 })();
+</script>
+
+
+<!-- Modal: Registrar N° de Entrada (NE) -->
+<div class="overlay" id="mod-ne" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:120">
+  <div style="background:#fff;border-radius:14px;max-width:380px;width:92%;padding:22px">
+    <h3 style="font-size:16px;margin:0 0 4px">Registrar N° de Entrada (NE)</h3>
+    <p style="color:#666;font-size:13px;margin:0 0 12px">Cotización <b id="ne-ctz">—</b>. Con el NE el trabajo queda listo para facturar.</p>
+    <input id="ne-val" placeholder="N° de entrada" style="width:100%;border:1px solid #ddd;border-radius:9px;padding:11px 13px;font-size:14px;outline:none">
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="guardarNE()" style="flex:1;background:#1E7A3E;color:#fff;border:none;border-radius:9px;padding:12px;font-weight:700;cursor:pointer">Guardar NE</button>
+      <button onclick="document.getElementById('mod-ne').style.display='none'" style="background:#fff;border:1px solid #ddd;border-radius:9px;padding:12px 16px;cursor:pointer">Cancelar</button>
+    </div>
+  </div>
+</div>
+<script>
+let _neId=null;
+function abrirNE(id){
+  _neId=id; const o=ots.find(x=>x.id===id); if(!o) return;
+  document.getElementById('ne-ctz').textContent = (o.num||'') + (o.anio?('-'+o.anio):'');
+  document.getElementById('ne-val').value = o.ne||'';
+  document.getElementById('mod-ne').style.display='flex';
+  setTimeout(function(){ document.getElementById('ne-val').focus(); },50);
+}
+async function guardarNE(){
+  const o=ots.find(x=>x.id===_neId); if(!o) return;
+  const ne=document.getElementById('ne-val').value.trim();
+  if(!ne){ alert('Escribe el N° de entrada.'); return; }
+  document.getElementById('mod-ne').style.display='none';
+  try{
+    const r=await postJSON({tabla:'registrarNE', ctz:o.num, ne:ne});
+    if(r&&r.ok){
+      o.ne=ne; o.neFecha=new Date().toLocaleDateString('es-CO'); saveLocal();
+      renderAll();
+      toast('✓ NE registrado — ' + (o.num||''), 'ok');
+    } else { toast('⚠ ' + ((r&&r.error)||'No se pudo registrar'), 'err'); }
+  }catch(e){ toast('⚠ Error de conexión', 'err'); }
+}
 </script>
 
 </body>
