@@ -325,10 +325,10 @@ function pickRole(k){ selRole=k; document.querySelectorAll('.role').forEach(e=>e
 function entrar(){
   if(!selRole){ $('lerr').textContent='Selecciona tu perfil.'; return; }
   if($('pwd').value !== PASS[selRole]){ $('lerr').textContent='Contraseña incorrecta.'; return; }
-  try{ sessionStorage.setItem('mb_role', selRole); }catch(e){}
+  try{ localStorage.setItem('mb_role', selRole); }catch(e){}
   iniciar(selRole);
 }
-function salir(){ try{ sessionStorage.removeItem('mb_role'); }catch(e){}; location.reload(); }
+function salir(){ try{ localStorage.removeItem('mb_role'); sessionStorage.removeItem('mb_role'); }catch(e){}; location.reload(); }
 
 /* ===================== INICIAR APP ===================== */
 function iniciar(role){
@@ -361,7 +361,7 @@ function pintarMenu(){
 }
 
 /* ===================== NAVEGACIÓN ===================== */
-function ir(key){
+function ir(key, filtro){
   if(!NAV[ROLE].includes(key)) key='inicio';
   location.hash=key;
   document.querySelectorAll('.navitem').forEach(e=>e.classList.toggle('on',e.dataset.k===key));
@@ -370,7 +370,7 @@ function ir(key){
   const m=MOD[key];
   if(m.type==='home') renderHome();
   else if(m.type==='calendar') renderCalendar();
-  else { const sep=m.file.includes('?')?'&':'?'; $('main').innerHTML = `<iframe class="modframe" src="${m.file}${sep}embed=1&rol=${encodeURIComponent(ROLE)}" title="${m.label}"></iframe>`; }
+  else { const sep=m.file.includes('?')?'&':'?'; const fq=filtro?('&filtro='+encodeURIComponent(filtro)):''; $('main').innerHTML = `<iframe class="modframe" src="${m.file}${sep}embed=1&rol=${encodeURIComponent(ROLE)}${fq}" title="${m.label}"></iframe>`; }
 }
 function toggleSidebar(open){
   if(window.innerWidth>820) return;
@@ -478,9 +478,9 @@ async function renderHome(){
     const calTgt = NAV[ROLE].includes('evaluacion')?'evaluacion':(NAV[ROLE].includes('desempeno')?'desempeno':'ots');
     const cp=await calProm();
     $('kpis').innerHTML =
-      kpiCard('#B91C1C','Frenados por NE',o.frenadosNE,'acta lista, sin N° entrada',{fn:"ir('ots')",txt:'Perseguir NE'}, o.frenadosNE>0) +
-      kpiCard('var(--verde)','Listos para facturar',o.listos,'acta + NE, sin facturar',{fn:"ir('ots')",txt:'Ver'}) +
-      kpiCard('var(--rojo)','Actas pendientes',o.actaPend,(o.vencidas?o.vencidas+' vencidas (+5 días)':'al día'),{fn:"ir('ots')",txt:'Generar actas'}, o.vencidas>0) +
+      kpiCard('#B91C1C','Frenados por NE',o.frenadosNE,'acta lista, sin N° entrada',{fn:"ir('ots','sinne')",txt:'Perseguir NE'}, o.frenadosNE>0) +
+      kpiCard('var(--verde)','Listos para facturar',o.listos,'acta + NE, sin facturar',{fn:"ir('ots','listos')",txt:'Ver'}) +
+      kpiCard('var(--rojo)','Actas pendientes',o.actaPend,(o.vencidas?o.vencidas+' vencidas (+5 días)':'al día'),{fn:"ir('ots','acta')",txt:'Generar actas'}, o.vencidas>0) +
       kpiCard('var(--azul)','Calificación cliente',(cp!=null?cp+'/10':'—'),'promedio del mes',{fn:"ir('"+calTgt+"')",txt:'Ver'});
     chip('chipA',`${ic('clipboard',15)} <b>${o.frenadosNE}</b> frenados por NE`);
     chip('chipB',`${ic('star',15)} <b>${o.listos}</b> listos para facturar`);
@@ -628,7 +628,7 @@ function verDia(dateISO){
 /* ===================== ARRANQUE ===================== */
 (function(){
   pintarRoles();
-  let saved=null; try{ saved=sessionStorage.getItem('mb_role'); }catch(e){}
+  let saved=null; try{ saved=localStorage.getItem('mb_role') || sessionStorage.getItem('mb_role'); }catch(e){}
   if(saved && PASS[saved]){ iniciar(saved); } else { $('pwd').focus(); }
   window.addEventListener('hashchange',()=>{ if(ROLE){ const k=(location.hash||'').replace('#',''); if(NAV[ROLE].includes(k)) { document.querySelectorAll('.navitem').forEach(e=>e.classList.toggle('on',e.dataset.k===k)); } } });
 })();

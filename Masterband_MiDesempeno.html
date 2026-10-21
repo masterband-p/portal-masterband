@@ -31,6 +31,7 @@
   .kpi .trend.up{color:var(--green)}.kpi .trend.down{color:var(--accent)}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:22px}
   .card h2{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
+  .g-nota{margin-top:12px;font-size:12px;color:var(--muted);background:#F7F8FA;border:1px solid #ECEEF2;border-radius:8px;padding:9px 12px;line-height:1.4}
   .nota{background:var(--gdim);border:1px solid #A7D7BC;border-radius:10px;padding:14px 18px;font-size:13.5px;color:var(--dim);line-height:1.6}
   .nota b{color:var(--green)}
   /* Registro de entregas (dibujante) */
@@ -109,7 +110,7 @@ function entrar(){
 
 async function cargar(){
   try{
-    const res = await fetch(APPS_URL + '?tabla=mi_desempeno&rol=' + rolActual + '&meses=6');
+    const res = await fetch(APPS_URL + '?tabla=mi_desempeno&rol=' + rolActual + '&meses=6&nocache=' + Date.now(), {cache:'no-store'});
     const d = await res.json();
     if(!d.ok) throw new Error(d.error||'Error');
     render(d);
@@ -174,20 +175,50 @@ function render(d){
   }
 
   document.getElementById('contenido').innerHTML = html;
-  // Dibujar gráficos
-  setTimeout(()=>{ (window._charts||[]).forEach(c=>c()); }, 50);
+  // Dibujar gráficos — esperamos a que Chart.js (CDN) termine de cargar
+  dibujarGraficos();
   if(rolActual==='dibujante') cargarEntregas();
 }
 
 let _charts=[];
+// Ejecuta los dibujos pendientes. Si Chart.js aún no ha cargado desde el CDN,
+// reintenta hasta 5s antes de rendirse (evita gráficos en blanco por carrera de carga).
+function dibujarGraficos(intento){
+  intento = intento||0;
+  if(typeof Chart==='undefined'){
+    if(intento>50) return; // ~5s: el CDN no respondió
+    return setTimeout(()=>dibujarGraficos(intento+1), 100);
+  }
+  const pend = _charts.splice(0);
+  pend.forEach(c=>{ try{ c(); }catch(e){ console.warn('grafico',e); } });
+}
+function _numOrNull(v){ return (v==null||v===''||isNaN(Number(v))) ? null : Number(v); }
 function graficoCard(titulo, labels, datasets){
   const id = 'chart_'+Math.random().toString(36).slice(2,8);
+  // Normalizar: todo a número o null (null = mes sin datos → hueco en la gráfica)
+  const dsN = datasets.map(ds=>({ label:ds.label, color:ds.color, data:(ds.data||[]).map(_numOrNull) }));
+  // ¿Cuántos meses tienen al menos un dato real? (para saber si ya hay histórico)
+  const mesesConDato = (labels||[]).filter((_,idx)=> dsN.some(ds=> ds.data[idx]!=null )).length;
+  // Con 0-1 meses de datos una línea se ve "vacía"; usamos barras para que el dato sea visible.
+  const tipo = mesesConDato <= 1 ? 'bar' : 'line';
+  const lbls = (labels||[]).map(m=> (m&&m.length>=7) ? (m.slice(5)+'/'+m.slice(2,4)) : (m||''));
   _charts.push(()=>{
-    const ctx = document.getElementById(id); if(!ctx) return;
-    new Chart(ctx, { type:'line', data:{ labels:labels.map(m=>m.slice(5)+'/'+m.slice(2,4)), datasets:datasets.map(ds=>({label:ds.label,data:ds.data,borderColor:ds.color,backgroundColor:ds.color+'22',tension:.3,spanGaps:true,pointRadius:4})) },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:datasets.length>1}}, scales:{y:{beginAtZero:true}} } });
+    const ctx = document.getElementById(id); if(!ctx || typeof Chart==='undefined') return;
+    new Chart(ctx, {
+      type: tipo,
+      data:{ labels: lbls, datasets: dsN.map(ds=>(
+        tipo==='bar'
+          ? { label:ds.label, data:ds.data, backgroundColor:ds.color, borderColor:ds.color, borderRadius:6, maxBarThickness:46 }
+          : { label:ds.label, data:ds.data, borderColor:ds.color, backgroundColor:ds.color+'22', tension:.3, spanGaps:true, pointRadius:4, fill:false }
+      )) },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:dsN.length>1 } },
+        scales:{ y:{ beginAtZero:true } } } });
   });
-  return '<div class="card"><h2>'+titulo+'</h2><div style="height:240px"><canvas id="'+id+'"></canvas></div></div>';
+  const nota = mesesConDato <= 1
+    ? '<div class="g-nota">El histórico se construye mes a mes. Por ahora tienes datos de '+mesesConDato+' mes'+(mesesConDato===1?'':'es')+'; la tendencia aparecerá a medida que avancen los meses.</div>'
+    : '';
+  return '<div class="card"><h2>'+titulo+'</h2><div style="height:240px"><canvas id="'+id+'"></canvas></div>'+nota+'</div>';
 }
 
 // ── Registro de entregas (solo dibujante) ──

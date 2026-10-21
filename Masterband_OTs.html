@@ -809,7 +809,7 @@ function rowToOT(row) {
     colilla:  gc(row, 2) || 'Sin descripción',
     cliente:  gc(row, 4) || '—',
     contacto: gc(row, 5) || '—',
-    area:     gc(row, 7) || 'N/A',
+    area:     gc(row, 6) || 'N/A',
     estado,
     apro,
     noOC,
@@ -946,7 +946,7 @@ function areaColor(area) {
 }
 
 // ── VISTA INGENIERO ──
-let ingFiltro = 'todos'; // todos | proceso | finalizado | acta
+let ingFiltro = 'todos'; // todos | proceso | finalizado | acta | sinne | listos
 
 // Días transcurridos desde la finalización (para la meta de acta ≤ 5 días)
 function parseFechaDMA(s){
@@ -973,6 +973,12 @@ function renderIngTrab() {
     .sort((a,b) => (diasDesdeFin(b) ?? -1) - (diasDesdeFin(a) ?? -1));
   const actaPend     = finalizados.filter(o => !o.acta);
   const actasVencidas = actaPend.filter(o => (diasDesdeFin(o) ?? 0) > 5).length;
+  // Subconjuntos para el flujo de facturación (acta lista → NE → facturable)
+  const _neOK  = o => /\d/.test(String(o.ne||'')) && !/pdte|pend|falta|validar/i.test(String(o.ne||''));
+  const _facOK = o => { const f = String(o.facturado||'').toUpperCase().trim(); return f === 'SI' || f === 'SÍ'; };
+  const conActa   = finalizados.filter(o => o.acta);
+  const frenadosNE = conActa.filter(o => !_facOK(o) && !_neOK(o));   // acta lista, sin NE
+  const listosFac  = conActa.filter(o => !_facOK(o) &&  _neOK(o));   // acta + NE, sin facturar
 
   // KPIs
   document.getElementById('ing-kpis').innerHTML = `
@@ -989,6 +995,8 @@ function renderIngTrab() {
     { key: 'proceso',    label: `En proceso`,   cnt: enProceso.length },
     { key: 'finalizado', label: `Finalizados`,  cnt: finalizados.length },
     { key: 'acta',       label: `Acta pendiente`, cnt: actaPend.length },
+    { key: 'sinne',      label: `Frenados por NE`, cnt: frenadosNE.length },
+    { key: 'listos',     label: `Listos para facturar`, cnt: listosFac.length },
   ];
   document.getElementById('ing-tabs').innerHTML = tabs.map(t => `
     <button class="itab ${ingFiltro === t.key ? 'on' : ''}" onclick="setIngFiltro('${t.key}')">
@@ -1000,6 +1008,8 @@ function renderIngTrab() {
   if (ingFiltro === 'proceso')    visible = enProceso;
   if (ingFiltro === 'finalizado') visible = finalizados;
   if (ingFiltro === 'acta')       visible = actaPend;
+  if (ingFiltro === 'sinne')      visible = frenadosNE;
+  if (ingFiltro === 'listos')     visible = listosFac;
 
   // Filtrar por búsqueda (OC o CTZ)
   const q = (document.getElementById('ing-search')?.value || '').toLowerCase().trim();
@@ -1015,6 +1025,8 @@ function renderIngTrab() {
         <div class="empty-icon">${ingFiltro === 'acta' ? '—' : '✓'}</div>
         <div class="empty-text">${
           ingFiltro === 'acta'       ? 'Ningún trabajo con acta pendiente' :
+          ingFiltro === 'sinne'      ? 'Ningún trabajo frenado por NE' :
+          ingFiltro === 'listos'     ? 'Ningún trabajo listo para facturar' :
           ingFiltro === 'proceso'    ? 'Ningún trabajo en proceso' :
           ingFiltro === 'finalizado' ? 'Ningún trabajo finalizado' :
           'Sin trabajos activos por ahora'
@@ -2305,6 +2317,7 @@ cargarCorreosPep(); // Cargar correos PepsiCo en background
   var q=new URLSearchParams(location.search);
   if(q.get('embed')!=='1') return;
   var rol=q.get('rol')||'ingeniero';
+  var filtro=q.get('filtro')||'';
   window.__ROL__=rol;
   var st=document.createElement('style');
   st.textContent='.topbar .brand-wrap,.topbar .brand-div,.topbar .brand-mod,.topbar .topright{display:none!important}'
@@ -2317,6 +2330,15 @@ cargarCorreosPep(); // Cargar correos PepsiCo en background
       var ap=document.getElementById('app'); if(ap) ap.style.display='block';
       var ur=document.getElementById('urole'); if(ur) ur.textContent=(role==='gerencia'?'Gerencia':'Ingeniero');
       if(typeof buildNav==='function') buildNav();
+      // Deep-link desde el portal: abrir la lista de trabajos con un filtro aplicado
+      if(filtro){
+        try{
+          ingFiltro = filtro;
+          document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('on'); });
+          var tp=document.getElementById('pg-ing-trabajos'); if(tp) tp.classList.add('on');
+          document.querySelectorAll('.tnb').forEach(function(b){ b.classList.remove('on'); });
+        }catch(_){}
+      }
       if(typeof renderAll==='function') renderAll();
       if(typeof sync==='function') sync();
     }catch(e){ console.warn('embed OTs',e); }
