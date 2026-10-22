@@ -8,6 +8,7 @@
 <meta http-equiv="Expires" content="0">
 
 <title>Masterband · Gestión de Trabajos</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -97,6 +98,8 @@
   .itab:hover{border-color:var(--accent);color:var(--accent)}.itab.on{background:var(--aglow);border-color:var(--accent);color:var(--accent)}
   .itab-cnt{background:var(--s2);border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;color:var(--muted)}.itab.on .itab-cnt{background:var(--accent);color:#fff}
   .ing-search{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:9px 14px;color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:all .2s;box-shadow:var(--sh)}
+  .btn-xls{background:#1E7A3E;color:#fff;border:none;border-radius:6px;padding:9px 16px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:var(--sh)}
+  .btn-xls:hover{background:#196834}
   .ing-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(192,0,26,.10)}
   .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}.empty-icon{font-size:40px;margin-bottom:12px}.empty-text{font-size:15px;font-weight:600;color:var(--dim);margin-bottom:6px}.empty-sub{font-size:13px}
   .kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
@@ -255,8 +258,9 @@
     </div>
     <div class="ing-kpis" id="ing-kpis"></div>
     <div class="ing-tabs" id="ing-tabs"></div>
-    <div style="margin-bottom:18px">
+    <div style="margin-bottom:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <input class="ing-search" id="ing-search" placeholder="Buscar por No. OC o No. cotización..." oninput="renderIngTrab()">
+      <button class="btn-xls" id="btn-xls" onclick="exportarExcel()" title="Descargar en Excel el listado del filtro actual">⬇ Descargar Excel</button>
     </div>
     <div class="work-grid" id="work-grid"></div>
   </div>
@@ -947,6 +951,8 @@ function areaColor(area) {
 
 // ── VISTA INGENIERO ──
 let ingFiltro = 'todos'; // todos | proceso | finalizado | acta | sinne | listos
+let ingVisible = [];     // última vista mostrada (para exportar a Excel)
+const FILTRO_LABEL = { todos:'Todos', proceso:'En proceso', finalizado:'Finalizados', acta:'Acta pendiente', sinne:'Frenados por NE', listos:'Listos para facturar' };
 
 // Días transcurridos desde la finalización (para la meta de acta ≤ 5 días)
 function parseFechaDMA(s){
@@ -1018,6 +1024,9 @@ function renderIngTrab() {
     o.id.toLowerCase().includes(q) ||
     o.num.toLowerCase().includes(q)
   );
+
+  // Guardar la vista actual para la exportación a Excel
+  ingVisible = visible;
 
   if (!visible.length) {
     document.getElementById('work-grid').innerHTML = `
@@ -1091,6 +1100,60 @@ function renderIngTrab() {
 function setIngFiltro(f) {
   ingFiltro = f;
   renderIngTrab();
+}
+
+// ── EXPORTAR A EXCEL (el listado del filtro activo + la búsqueda) ──
+function exportarExcel() {
+  const lista = ingVisible || [];
+  if (!lista.length) { toast('No hay trabajos en este filtro para exportar', 'err'); return; }
+  const nePres = o => /\d/.test(String(o.ne||'')) && !/pdte|pend|falta|validar/i.test(String(o.ne||''));
+  const filas = lista.map(o => ({
+    'Cotización'       : o.num || '',
+    'Año'              : o.anio || '',
+    'Cliente'          : o.cliente || '',
+    'Contacto'         : o.contacto || '',
+    'Área'             : o.area || '',
+    'No. OC'           : o.noOC || '',
+    'Descripción'      : o.colilla || '',
+    'Estado'           : ETAPAS[o.etapa] || '',
+    'Costo antes IVA'  : o.costo || 0,
+    'Facturado'        : (o.facturado||'').toString().toUpperCase().startsWith('S') ? 'SI' : 'NO',
+    'Acta de entrega'  : o.acta ? 'SI' : 'NO',
+    'N° Entrada (NE)'  : nePres(o) ? o.ne : '',
+    'Fecha inicio'     : o.fechaIni || '',
+    'Fecha finalización': o.fechaFin || '',
+    'Días ejecución'   : (o.diasEjecucion != null ? o.diasEjecucion : ''),
+    'Observaciones'    : o.obs || ''
+  }));
+  const etiqueta = (FILTRO_LABEL[ingFiltro] || 'Trabajos').replace(/[^\wáéíóúñ ]/gi,'').trim();
+  const fecha = new Date().toISOString().slice(0,10);
+  const nombreHoja = (FILTRO_LABEL[ingFiltro] || 'Trabajos').slice(0,31);
+  const nombreArch = 'OTs_' + etiqueta.replace(/\s+/g,'') + '_' + fecha;
+
+  // Opción 1: Excel real con SheetJS (si la librería cargó desde el CDN)
+  if (typeof XLSX !== 'undefined') {
+    try {
+      const ws = XLSX.utils.json_to_sheet(filas);
+      ws['!cols'] = [ {wch:11},{wch:6},{wch:20},{wch:16},{wch:14},{wch:12},{wch:34},{wch:14},{wch:16},{wch:10},{wch:14},{wch:16},{wch:13},{wch:16},{wch:12},{wch:34} ];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, nombreHoja);
+      XLSX.writeFile(wb, nombreArch + '.xlsx');
+      toast('✓ Excel descargado (' + filas.length + ' trabajos)', 'ok');
+      return;
+    } catch(e) { console.warn('xlsx', e); }
+  }
+
+  // Opción 2 (respaldo): CSV con separador ; y BOM — abre directo en Excel es-CO
+  const cols = Object.keys(filas[0]);
+  const esc = v => { v = String(v==null?'':v); return /[";\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
+  const csv = '﻿' + [cols.join(';')].concat(filas.map(f => cols.map(c => esc(f[c])).join(';'))).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nombreArch + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+  toast('✓ Descargado en CSV (' + filas.length + ' trabajos)', 'ok');
 }
 
 function marcarFinalizado(id) {
