@@ -263,7 +263,8 @@ const PATHS = {
   bank:'M4 10h16M5 10l7-5 7 5M6 10v8M10 10v8M14 10v8M18 10v8M4 21h16',
   tools:'M14 7a3 3 0 0 0 4 3l3 3-4 4-3-3a3 3 0 0 0-3-4M10.5 10.5 4 17a2 2 0 0 0 3 3l6.5-6.5M14 7l-3-3',
   helmet:'M4 14a8 8 0 0 1 16 0M3 14h18v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM12 6V4M9 14V9h6v5',
-  ruler:'M15.5 3.5 3.5 15.5l5 5 12-12zM7 12l2 2M10 9l2 2M13 6l2 2'
+  ruler:'M15.5 3.5 3.5 15.5l5 5 12-12zM7 12l2 2M10 9l2 2M13 6l2 2',
+  kanban:'M4 4h4v16H4zM10 4h4v10h-4zM16 4h4v7h-4z'
 };
 function ic(name, size){
   const p=PATHS[name]; if(!p) return '';
@@ -289,20 +290,21 @@ const MOD = {
   cotizador:   {label:'Cotizador de Servicio',ic:'calculator',   file:'Masterband_CotizadorServicio.html',code:'MB-06', desc:'Estima costos de servicio'},
   solicitudes: {label:'Solicitudes',          ic:'check',        file:'Masterband_Solicitudes.html',     code:'MB-07', desc:'Aprueba solicitudes de clientes'},
   evaluacion:  {label:'Evaluación',           ic:'star',         file:'Masterband_Evaluacion.html',       code:'MB-03', desc:'Evalúa el desempeño del equipo'},
-  desempeno:   {label:'Mi Desempeño',         ic:'chart',        file:'Masterband_MiDesempeno.html',     code:'MB-04', desc:'Tus indicadores y registros'}
+  desempeno:   {label:'Mi Desempeño',         ic:'chart',        file:'Masterband_MiDesempeno.html',     code:'MB-04', desc:'Tus indicadores y registros'},
+  tablero:     {label:'Tablero de Trabajos',  ic:'kanban',       file:'Masterband_Tablero.html',         code:'MB-08', desc:'Control visual de trabajos en ejecución'}
 };
 
 /* Qué ve cada rol (en orden del menú) */
 const NAV = {
-  gerencia:   ['inicio','calendario','ots','programacion','ordenes','solicitudes','cotizador','evaluacion'],
-  ingeniero:  ['inicio','calendario','ots','programacion','desempeno'],
-  supervisor: ['inicio','calendario','programacion','desempeno'],
+  gerencia:   ['inicio','calendario','tablero','ots','programacion','ordenes','solicitudes','cotizador','evaluacion'],
+  ingeniero:  ['inicio','calendario','tablero','ots','programacion','desempeno'],
+  supervisor: ['inicio','calendario','tablero','programacion','desempeno'],
   dibujante:  ['inicio','desempeno']
 };
 /* Secciones del menú */
 const SECCIONES = [
   {lbl:'Principal',  ic:'home', keys:['inicio','calendario']},
-  {lbl:'Operación',  ic:'grid', keys:['ots','programacion','ordenes','solicitudes','cotizador','evaluacion']},
+  {lbl:'Operación',  ic:'grid', keys:['tablero','ots','programacion','ordenes','solicitudes','cotizador','evaluacion']},
   {lbl:'Mi espacio', ic:'user', keys:['desempeno']}
 ];
 
