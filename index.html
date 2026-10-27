@@ -93,6 +93,13 @@
 
   /* KPI cards (con acción) */
   .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:22px}
+  .avisos-box{background:#FFF7ED;border:1px solid #F3C98B;border-radius:12px;padding:14px 16px;margin-bottom:20px}
+  .avisos-head{font-size:13px;font-weight:800;color:#92400E;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+  .aviso-item{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1px solid #F0DFC3;border-radius:9px;padding:10px 12px;margin-top:8px;flex-wrap:wrap}
+  .ai-txt{font-size:13px;color:var(--ink);flex:1;min-width:180px}
+  .ai-meta{display:block;font-size:11px;color:var(--mut);margin-top:2px}
+  .ai-btn{background:var(--rojo);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .ai-btn:hover{background:var(--rojo-d)}
   .kpi{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
   .kpi .kh{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--dim)}
   .kpi .kh .kd{width:9px;height:9px;border-radius:50%}
@@ -442,6 +449,27 @@ function kpiCard(color,title,val,sub,action,highlight){
     ${action?`<div class="ka" onclick="${action.fn}">${action.txt} →</div>`:''}</div>`;
 }
 
+async function cargarAvisos(){
+  const cont=$('avisos'); if(!cont) return;
+  try{
+    const res=await fetch(BACKEND+'?tabla=notificaciones&rol='+ROLE+'&nocache='+Date.now(),{cache:'no-store'});
+    const d=await res.json();
+    const items=(d&&d.ok&&Array.isArray(d.avisos))?d.avisos:[];
+    if(!items.length){ cont.innerHTML=''; return; }
+    cont.innerHTML=`<div class="avisos-box">
+      <div class="avisos-head">${ic('clipboard',16)} Avisos · ${items.length} trabajo${items.length===1?'':'s'} finalizado${items.length===1?'':'s'} pendiente${items.length===1?'':'s'} de acta</div>
+      ${items.map(a=>`<div class="aviso-item">
+         <div class="ai-txt"><b>CTZ ${a.ctz}</b> — ${a.mensaje||'Trabajo finalizado en campo'}<span class="ai-meta">${a.fecha||''}${a.por?(' · '+a.por):''}</span></div>
+         <button class="ai-btn" onclick="verAviso('${String(a.id||'').replace(/[^0-9A-Za-z_-]/g,'')}')">Generar acta →</button>
+      </div>`).join('')}
+    </div>`;
+  }catch(e){ cont.innerHTML=''; }
+}
+function verAviso(id){
+  try{ if(id) fetch(BACKEND,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({tabla:'marcar_aviso',id:id})}); }catch(e){}
+  ir('ots','acta');
+}
+
 async function renderHome(){
   const r=ROLES[ROLE];
   const now=new Date();
@@ -460,6 +488,7 @@ async function renderHome(){
         <span class="chip2" id="chipB">${ic('star',15)} <b>—</b></span>
       </div>
     </div>
+    <div id="avisos"></div>
     <div class="kpis" id="kpis"><div class="kpi"><div class="kv">…</div><div class="ks">cargando indicadores…</div></div></div>
     <div class="sechead">${ic('grid',16)} Accesos de tu perfil</div>
     <div class="mods">`;
@@ -486,6 +515,7 @@ async function renderHome(){
       kpiCard('var(--azul)','Calificación cliente',(cp!=null?cp+'/10':'—'),'promedio del mes',{fn:"ir('"+calTgt+"')",txt:'Ver'});
     chip('chipA',`${ic('clipboard',15)} <b>${o.frenadosNE}</b> frenados por NE`);
     chip('chipB',`${ic('star',15)} <b>${o.listos}</b> listos para facturar`);
+    cargarAvisos();
   }
   else if(ROLE==='supervisor'){
     const prog=await cargarProg(); const hoyISO=iso(new Date());
