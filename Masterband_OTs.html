@@ -1790,10 +1790,9 @@ function abrirActa(id) {
     iniciarFirma('firma-recibe');
   }, 100);
 
-  // ★ Si el acta ya fue diligenciada antes, recuperar su contenido guardado
-  if (actaOT.acta) {
-    cargarActaGuardada(actaOT.num);
-  }
+  // ★ Recuperar contenido guardado del acta: ya sea un acta diligenciada,
+  // o el registro fotográfico que dejó el supervisor al finalizar en campo.
+  cargarActaGuardada(actaOT.num);
 }
 
 // Trae del Sheet lo que se guardó de un acta y lo vuelve a pintar en el formulario
@@ -1883,6 +1882,9 @@ async function cargarActaGuardada(ctz) {
     // Aviso del estado
     if (d.estado === 'FIRMADA') {
       toast('Acta firmada por el cliente — contenido cargado', 'ok');
+    } else if (d.estado === 'EN CAMPO') {
+      let nf = 0; try { nf = JSON.parse(d.fotos || '[]').length; } catch(e) {}
+      toast('📷 ' + (nf ? nf + ' foto(s) del supervisor cargadas' : 'Cierre de campo registrado') + ' — completa y envía el acta', 'ok');
     } else {
       toast('Acta recuperada — pendiente de firma del cliente', 'ok');
     }
